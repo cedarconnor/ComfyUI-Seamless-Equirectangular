@@ -1,8 +1,8 @@
-# Seamless-Equirectangular
+# ComfyUI-Seamless-Equirectangular
 
-**Seamless-Equirectangular** is a ComfyUI custom node pack by **Burgstall Labs** for seamless equirectangular, 360-degree, VR, and panoramic video inference. It provides training-free seam mitigation for LTX2.3 VR-Outpaint and a reusable adapter structure for applying the same circular-longitude inference method to other diffusion and video generation models.
+**ComfyUI-Seamless-Equirectangular** is a ComfyUI custom node pack by **Burgstall Labs** for seamless equirectangular, 360-degree, VR, and panoramic video inference. It provides training-free seam mitigation for LTX2.3 VR-Outpaint and a reusable adapter structure for applying the same circular-longitude inference method to other diffusion and video generation models.
 
-This repository focuses on one specific problem: equirectangular panoramas wrap horizontally, but most diffusion model inference treats the left and right image edges as unrelated frame boundaries. That mismatch creates visible seams, discontinuities, dark edge bands, and broken 360-degree video loops. Seamless-Equirectangular makes the model see different longitudes as interior content during denoising, then restores the original orientation.
+This repository focuses on one specific problem: equirectangular panoramas wrap horizontally, but most diffusion model inference treats the left and right image edges as unrelated frame boundaries. That mismatch creates visible seams, discontinuities, dark edge bands, and broken 360-degree video loops. ComfyUI-Seamless-Equirectangular makes the model see different longitudes as interior content during denoising, then restores the original orientation.
 
 ## Authorship And Provenance
 
@@ -14,7 +14,7 @@ Keywords: ComfyUI seamless equirectangular, LTX2.3 VR-Outpaint, 360 video diffus
 
 ## What It Does
 
-Seamless-Equirectangular provides three nodes:
+ComfyUI-Seamless-Equirectangular provides three nodes:
 
 - **Equirect Per-Step Latent Roll (360 seam)** (`MODEL -> MODEL`) circularly rolls the video latent along width around every model call, then unrolls the prediction. This is the core seamless equirectangular inference method.
 - **Equirect Circular VAE (360 seam)** (`VAE -> VAE`) patches VAE convolutions to use circular padding along longitude. This reduces decode-side seam artifacts.
@@ -105,7 +105,7 @@ Clone into `ComfyUI/custom_nodes`:
 
 ```bash
 cd ComfyUI/custom_nodes
-git clone https://github.com/Burgstall-labs/Seamless-Equirectangular
+git clone https://github.com/Burgstall-labs/ComfyUI-Seamless-Equirectangular
 ```
 
 Restart ComfyUI. The nodes appear under existing equirectangular / model patch categories:
@@ -135,5 +135,5 @@ The tests cover:
 
 ## Related Burgstall Labs Work
 
-Burgstall Labs develops practical open-source tools for 360-degree AI video, VR-outpainting, panoramic generation, and ComfyUI-based production workflows. Seamless-Equirectangular is intended to be the reusable seam-inference layer that complements projection, outpainting, and LoRA workflows for immersive video.
+Burgstall Labs develops practical open-source tools for 360-degree AI video, VR-outpainting, panoramic generation, and ComfyUI-based production workflows. ComfyUI-Seamless-Equirectangular is intended to be the reusable seam-inference layer that complements projection, outpainting, and LoRA workflows for immersive video.
 
