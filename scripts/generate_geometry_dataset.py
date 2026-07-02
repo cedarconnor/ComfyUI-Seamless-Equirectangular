@@ -16,10 +16,10 @@ Usage:
     # Generate 300 clips with default settings (gradient sphere + grid patterns)
     python generate_geometry_dataset.py --out_dir ./geo_data --num_clips 300
 
-    # Custom resolution, slower rotation, all pattern types
+    # Custom resolution, longer clips, all pattern types
     python generate_geometry_dataset.py --out_dir ./geo_data \\
-        --num_clips 500 --height 384 --width 768 --num_frames 25 \\
-        --pattern all --rotation_speed 6.0 --fps 24
+        --num_clips 500 --height 384 --width 768 --num_frames 65 \\
+        --pattern all --rotation_speed 15.0 --fps 24
 
 Training cmdline (musubi-tuner):
     python ltx2_train_network.py \\
@@ -560,8 +560,8 @@ def main():
     parser.add_argument(
         "--num_frames",
         type=int,
-        default=17,
-        help="Frames per clip (default: 17 — odd number avoids odd-length bucket issues)",
+        default=49,
+        help="Frames per clip (default: 49 — ~2 sec at 24 fps, enough to show cyclic wrap motion)",
     )
     parser.add_argument(
         "--pattern",
@@ -573,9 +573,9 @@ def main():
     parser.add_argument(
         "--rotation_speed",
         type=float,
-        default=6.0,
-        help="Y-axis rotation speed in degrees/second (default: 6.0, "
-             "~4° visible drift across a 17-frame clip at 24 fps)",
+        default=15.0,
+        help="Y-axis rotation speed in degrees/second (default: 15.0, "
+             "~30° total rotation across a 49-frame clip at 24 fps)",
     )
     parser.add_argument(
         "--fps",
