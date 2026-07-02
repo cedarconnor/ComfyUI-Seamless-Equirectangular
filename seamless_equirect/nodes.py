@@ -234,15 +234,168 @@ class EquirectLatentSeamBlend:
         return (out,)
 
 
+# ---------------------------------------------------------------------------
+# Semantic Distortion CFG (SpheRoPE-inspired)
+# ---------------------------------------------------------------------------
+class EquirectSemanticDistortionCFG:
+    """Three-way classifier-free guidance from the SpheRoPE paper.
+
+    The standard CFG formula is extended with a third geometric anchoring term:
+
+        eps = eps_uncond + w_sem * (eps_cond - eps_uncond)
+                         + gamma * (eps_geo - eps_cond)
+
+    The *geo* conditioning should be the user's positive prompt concatenated with
+    an equirectangular geometry description, e.g.:
+        "a mountain landscape, equirectangular projection, 360-degree spherical
+        panorama"
+
+    The difference (eps_geo - eps_cond) isolates the pure projection-geometry
+    signal orthogonal to semantic content, amplifying the latent equirectangular
+    priors that pretrained models already exhibit weakly from large-scale
+    panoramic training data.
+
+    Reference: https://orhir.github.io/SpheRoPE/
+    """
+
+    CATEGORY = "model_patches/equirect"
+    RETURN_TYPES = ("MODEL",)
+    FUNCTION = "patch"
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "model": ("MODEL",),
+                "geo_conditioning": (
+                    "CONDITIONING",
+                    {
+                        "tooltip": "CLIP-encoded conditioning for your prompt + equirectangular "
+                        "geometry description, e.g. CLIPTextEncode('... , equirectangular "
+                        "projection, 360-degree spherical panorama')",
+                    },
+                ),
+                "w_sem": (
+                    "FLOAT",
+                    {
+                        "default": 7.0,
+                        "min": 0.0,
+                        "max": 30.0,
+                        "step": 0.1,
+                        "tooltip": "Semantic CFG scale (standard guidance).",
+                    },
+                ),
+                "gamma": (
+                    "FLOAT",
+                    {
+                        "default": 3.0,
+                        "min": 0.0,
+                        "max": 30.0,
+                        "step": 0.1,
+                        "tooltip": "Geometric anchoring strength. Higher = stronger "
+                        "equirectangular prior enforcement. 2-4 is sensible.",
+                    },
+                ),
+                "enabled": ("BOOLEAN", {"default": True}),
+            },
+        }
+
+    def patch(self, model, geo_conditioning, w_sem, gamma, enabled):
+        if not enabled:
+            return (model,)
+
+        m = model.clone()
+
+        # Force the sampler to always compute uncond (needed for our three-way
+        # formula even when cond_scale ≈ 1).
+        m.model_options["disable_cfg1_optimization"] = True
+
+        # Stash the geo conditioning and tuning parameters where the batch and
+        # CFG wrappers below can reach them at sampling time.
+        m.model_options["equirect_geo_cond"] = geo_conditioning
+        m.model_options["equirect_w_sem"] = w_sem
+        m.model_options["equirect_gamma"] = gamma
+
+        m.set_model_sampler_calc_cond_batch_function(self._make_calc_cond_batch())
+        m.set_model_sampler_cfg_function(self._make_cfg())
+
+        logger.info(
+            "EquirectSemanticDistortionCFG active on %s: w_sem=%.1f, gamma=%.1f",
+            "cloned model", w_sem, gamma,
+        )
+        return (m,)
+
+    # ------------------------------------------------------------------ private
+
+    @staticmethod
+    def _make_calc_cond_batch():
+        """Return a ``sampler_calc_cond_batch_function`` that adds the geo
+        conditioning to the sampler's (cond, uncond) batch."""
+
+        def wrapper(args):
+            from comfy.samplers import calc_cond_batch as _calc_cond_batch
+
+            model = args["model"]
+            conds = args["conds"]  # [cond, uncond] -- always 2 after disable_cfg1
+            x = args["input"]
+            timestep = args["sigma"]
+            model_options = args["model_options"]
+
+            geo_cond = model_options.get("equirect_geo_cond")
+            if geo_cond is None:
+                return _calc_cond_batch(model, conds, x, timestep, model_options)
+
+            # Run the model with three conditionings: cond, uncond, geo.
+            new_conds = list(conds) + [geo_cond]
+            out = _calc_cond_batch(model, new_conds, x, timestep, model_options)
+            # out = [cond_pred, uncond_pred, geo_pred]
+
+            # Stash the geo prediction so the CFG function can use it.
+            model_options["equirect_geo_pred"] = out[2]
+            return out[:2]
+
+        return wrapper
+
+    @staticmethod
+    def _make_cfg():
+        """Return a ``sampler_cfg_function`` that applies the three-way formula."""
+
+        def cfg(args):
+            eps_cond = args["cond"]
+            eps_uncond = args["uncond"]
+            x = args["input"]
+            model_options = args["model_options"]
+
+            w_sem = model_options.get("equirect_w_sem", 7.0)
+            gamma = model_options.get("equirect_gamma", 3.0)
+            geo_pred = model_options.get("equirect_geo_pred", None)
+
+            # Standard two-way fallback when no geo term is available or gamma
+            # was set to zero.
+            if geo_pred is None or gamma == 0.0:
+                return eps_uncond + w_sem * (eps_cond - eps_uncond)
+
+            eps_geo = x - geo_pred
+            return (
+                eps_uncond
+                + w_sem * (eps_cond - eps_uncond)
+                + gamma * (eps_geo - eps_cond)
+            )
+
+        return cfg
+
+
 NODE_CLASS_MAPPINGS = {
     "EquirectPerStepRoll": EquirectPerStepRoll,
     "EquirectCircularVAE": EquirectCircularVAE,
     "EquirectLatentSeamBlend": EquirectLatentSeamBlend,
+    "EquirectSemanticDistortionCFG": EquirectSemanticDistortionCFG,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
     "EquirectPerStepRoll": "Equirect Per-Step Latent Roll (360 seam)",
     "EquirectCircularVAE": "Equirect Circular VAE (360 seam)",
     "EquirectLatentSeamBlend": "Equirect Latent Seam Blend (fallback)",
+    "EquirectSemanticDistortionCFG": "Equirect Semantic Distortion CFG (SpheRoPE)",
 }
 

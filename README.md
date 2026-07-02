@@ -14,17 +14,19 @@ Keywords: ComfyUI seamless equirectangular, LTX2.3 VR-Outpaint, 360 video diffus
 
 ## What It Does
 
-ComfyUI-Seamless-Equirectangular provides three nodes:
+ComfyUI-Seamless-Equirectangular provides four nodes:
 
 - **Equirect Per-Step Latent Roll (360 seam)** (`MODEL -> MODEL`) circularly rolls the video latent along width around every model call, then unrolls the prediction. This is the core seamless equirectangular inference method.
 - **Equirect Circular VAE (360 seam)** (`VAE -> VAE`) patches VAE convolutions to use circular padding along longitude. This reduces decode-side seam artifacts.
 - **Equirect Latent Seam Blend (fallback)** (`LATENT -> LATENT`) cross-fades a thin latent band at the width edge. This is a conservative fallback for cosmetic edge smoothing.
+- **Equirect Semantic Distortion CFG (SpheRoPE)** (`MODEL -> MODEL`) extends standard classifier-free guidance with a third geometric anchoring term, inspired by the SpheRoPE paper (https://orhir.github.io/SpheRoPE/). Accepts a `geo_conditioning` input that should encode the user's prompt with an equirectangular geometry description (e.g. "... , equirectangular projection, 360-degree spherical panorama"). The `gamma` parameter controls the strength of the geometric prior.
 
 Node IDs, categories, behavior, and defaults are intentionally stable for existing tested workflows:
 
 - `EquirectPerStepRoll`
 - `EquirectCircularVAE`
 - `EquirectLatentSeamBlend`
+- `EquirectSemanticDistortionCFG`
 
 ## Why Equirectangular Inference Needs This
 
@@ -75,6 +77,40 @@ For LTX2.3 VR-Outpaint workflows, start with:
 - **Equirect Circular VAE** before decode, usually with decoder patching enabled.
 
 This node pack is intentionally separate from projection and camera-calibration tooling. Use it alongside VR-outpainting prep workflows when the model is already operating on an equirectangular canvas or latent.
+
+## Semantic Distortion CFG (SpheRoPE)
+
+`EquirectSemanticDistortionCFG` implements a three-way classifier-free guidance formulation inspired by SpheRoPE (https://orhir.github.io/SpheRoPE/):
+
+```
+ε̂ = ε_uncond + w_sem · (ε_cond − ε_uncond) + γ · (ε_geo − ε_cond)
+```
+
+The third term `(ε_geo − ε_cond)` uses a "geometric anchor" conditioning — your prompt with an equirectangular description appended — to isolate the pure projection geometry signal orthogonal to semantic content. This amplifies the latent equirectangular priors that pretrained models already exhibit weakly from large-scale training.
+
+### How to wire it
+
+1. Add a second **CLIPTextEncode** node alongside your existing positive/negative ones.
+2. Set its text to your positive prompt with a geometry description appended, e.g.:
+
+   > "a mountain landscape at sunset, equirectangular projection, 360-degree spherical panoramic view"
+
+3. Connect this to the `geo_conditioning` input of `EquirectSemanticDistortionCFG`.
+4. Wire the model through the node (works with or without `EquirectPerStepRoll` upstream).
+5. Start with `gamma=3.0` and adjust if the geometric prior overpowers your semantic prompt.
+
+### Relationship to per-step rolling
+
+The two nodes address different root causes and are **complementary**:
+
+- **Per-step rolling** tackles the *processing boundary* — it ensures no single longitude always sits at the model's artificial edge.
+- **Semantic Distortion CFG** tackles the *positional semantics* — it steers the model toward equirectangular geometry awareness.
+
+They can be chained (`PerStepRoll → SemanticDistortionCFG` or vice versa), and each works independently.
+
+### Limitations
+
+The Semantic Distortion CFG is a **soft signal**, not a hard geometric constraint. It amplifies existing priors but does not enforce polar convergence. The "void at top/bottom" and "egg-shaped projection" issues are caused by the model's lack of polar convergence (equirectangular topology requires the entire top and bottom rows to collapse to single points). The SpheRoPE paper's main contribution — spherical positional encoding — addresses this directly but requires modifying the attention mechanism, which is model-specific and architecturally invasive. The Semantic Distortion CFG may mitigate these issues somewhat but is not a complete solution.
 
 ## Circular VAE Padding
 
