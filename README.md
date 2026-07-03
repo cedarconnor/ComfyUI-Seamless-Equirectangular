@@ -19,7 +19,7 @@ This is the result of extensive experimentation: training a dedicated equirectan
 
 ### Pre-SpheRoPE development
 
-I started with training a dedicated equirectangular LoRA — a rank-128 LoRA on 78 equirectangular panoramas at 15k steps (April 2026). The model cannot produce text-to-video equirectangular output without it; the frozen 22B base model's rectilinear bias is too strong even with inference-time tricks.
+I started with training a dedicated equirectangular LoRA — a rank-128 LoRA for 15k steps (April 2026). The model cannot produce text-to-video equirectangular output without it; the frozen 22B base model's rectilinear bias is too strong even with inference-time tricks.
 
 With the LoRA producing equirectangular video, two problems remained:
 
