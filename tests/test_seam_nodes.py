@@ -215,6 +215,109 @@ def test_seam_blend_w():
     print("ok: seam_blend_w edge continuity + interior preservation")
 
 
+# ---------------------------------------------------------------------------
+# Semantic Distortion CFG
+# ---------------------------------------------------------------------------
+def test_semantic_cfg_node_disabled():
+    """enabled=False must return the original model object."""
+    class StubModel:
+        def clone(self):
+            return self
+
+    stub = StubModel()
+    out_model, = sn.EquirectSemanticDistortionCFG().patch(
+        stub, geo_conditioning=[[torch.zeros(2, 4), {}]],
+        w_sem=7.0, gamma=3.0, enabled=False,
+    )
+    assert out_model is stub
+    print("ok: SemanticDistortionCFG disabled returns original model")
+
+
+def test_semantic_cfg_three_way_formula():
+    """The three-way formula is algebraically correct."""
+    cfg_fn = sn.EquirectSemanticDistortionCFG._make_cfg()
+
+    # Toy tensor: shape (B=1, C=4, T=3, H=2, W=6) for visual clarity
+    x = torch.arange(1.0, 1 + 4 * 3 * 2 * 6).reshape(1, 4, 3, 2, 6)
+    eps_cond = torch.randn_like(x)
+    eps_uncond = torch.randn_like(x)
+    eps_geo = torch.randn_like(x)
+
+    w_sem = 7.0
+    gamma = 3.0
+
+    args = {
+        "cond": eps_cond,
+        "uncond": eps_uncond,
+        "input": x,
+        "model_options": {
+            "equirect_w_sem": w_sem,
+            "equirect_gamma": gamma,
+            "equirect_geo_pred": x - eps_geo,  # geo_pred = x - eps_geo
+        },
+    }
+
+    result = cfg_fn(args)
+    expected = eps_uncond + w_sem * (eps_cond - eps_uncond) + gamma * (eps_geo - eps_cond)
+    assert torch.allclose(result, expected, rtol=1e-4, atol=1e-4), "three-way formula mismatch"
+    print("ok: SemanticDistortionCFG three-way formula")
+
+
+def test_semantic_cfg_gamma_zero_fallback():
+    """gamma=0.0 must produce standard CFG behavior without crashing."""
+    cfg_fn = sn.EquirectSemanticDistortionCFG._make_cfg()
+
+    x = torch.randn(1, 4, 3, 5, 7)
+    eps_cond = torch.randn_like(x)
+    eps_uncond = torch.randn_like(x)
+
+    args = {
+        "cond": eps_cond,
+        "uncond": eps_uncond,
+        "input": x,
+        "model_options": {
+            "equirect_w_sem": 7.0,
+            "equirect_gamma": 0.0,
+            "equirect_geo_pred": None,  # also tests the None-geo_pred path
+        },
+    }
+
+    result = cfg_fn(args)
+    expected = eps_uncond + 7.0 * (eps_cond - eps_uncond)
+    assert torch.allclose(result, expected, atol=1e-6), "gamma=0 fallback mismatch"
+    print("ok: SemanticDistortionCFG gamma=0 fallback to standard CFG")
+
+
+def test_semantic_cfg_model_options_set_correctly():
+    """The node must set disable_cfg1_optimization and stashed params."""
+    class StubModel:
+        def __init__(self):
+            self.model_options = {}
+
+        def clone(self):
+            return self
+
+        def set_model_sampler_calc_cond_batch_function(self, fn):
+            self._calc_batch_fn = fn
+
+        def set_model_sampler_cfg_function(self, fn):
+            self._cfg_fn = fn
+
+    geo_cond = [[torch.tensor([[1.0, 2.0, 3.0]]), {"pooled_output": torch.zeros(1, 4)}]]
+    stub = StubModel()
+    sn.EquirectSemanticDistortionCFG().patch(
+        stub, geo_conditioning=geo_cond, w_sem=5.5, gamma=2.0, enabled=True,
+    )
+
+    assert stub.model_options.get("disable_cfg1_optimization") is True
+    assert stub.model_options.get("equirect_geo_cond") is geo_cond
+    assert stub.model_options.get("equirect_w_sem") == 5.5
+    assert stub.model_options.get("equirect_gamma") == 2.0
+    assert hasattr(stub, "_cfg_fn")
+    assert hasattr(stub, "_calc_batch_fn")
+    print("ok: SemanticDistortionCFG model_options set correctly")
+
+
 if __name__ == "__main__":
     test_circular_conv_patch_unpatch()
     test_patch_vae_walk_scoping()
@@ -223,4 +326,8 @@ if __name__ == "__main__":
     test_per_step_roll_wrapper_end_to_end()
     test_dual_average_and_feather()
     test_seam_blend_w()
+    test_semantic_cfg_node_disabled()
+    test_semantic_cfg_three_way_formula()
+    test_semantic_cfg_gamma_zero_fallback()
+    test_semantic_cfg_model_options_set_correctly()
     print("ALL TESTS PASSED")

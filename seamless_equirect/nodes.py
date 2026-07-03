@@ -1,25 +1,25 @@
 """360 equirect seam nodes for LTX-2.x and compatible latent layouts.
+Copyright (C) 2026  Burgstall Labs — Licensed under CC BY-NC 4.0.
+https://creativecommons.org/licenses/by-nc/4.0/
 
-Three tools against the longitude-wrap seam:
+Tools for equirectangular 360 video generation:
 
-- EquirectPerStepRoll: training-free per-step circular roll of the video latent during
-  sampling (Diffusion360 / PanoDiffusion-style "circular shift denoising"). At every model
-  call the latent is rolled along W by a per-sigma deterministic shift and the prediction
-  is unrolled, so each longitude is generated as *interior* at most steps and content is
-  forced coherent across the wrap. Works with the frozen base + production LoRA.
+- EquirectCircularVAE: circular-W conv padding on the loaded VAE decoder.
+  Fixes the seam that zero-padded VAE convs create at the longitude wrap.
 
-- EquirectCircularVAE: circular-W conv padding on the loaded VAE (the cosmetic decode-side
-  fix; rebuilt from the vendored circular_conv.py). NOTE: ComfyUI caches the VAE by file,
-  so this patches the *shared* object in place -- every consumer of the same VAE file in
-  the run sees the same state. The node always resets to stock first, then re-patches per
-  its flags, so its own output is deterministic; true stock-vs-circular A/B in ONE graph
-  is not possible with a single loaded VAE file.
+- EquirectPerStepRoll: per-step circular latent roll during denoising.
+  Every model call sees a W-rolled latent so no column is always at the
+  wrap boundary — forces content coherent across the seam.
 
-- EquirectLatentSeamBlend: thin cross-fade of the W-edge latent columns (off-by-default
-  fallback; smooths the boundary band only, does not make content wrap).
+- EquirectLatentSeamBlend: thin cross-fade of the W-edge latent columns
+  (off-by-default cosmetic fallback).
 
-This module intentionally imports no comfy internals so its helpers are unit-testable
-standalone.
+- EquirectWrappedNoise: SpheRoPE-style spherical phase remaster.
+  Modifies the initial noise latent's low-frequency phase to encode
+  polar convergence, reducing stretching at the top and bottom.
+
+This module intentionally imports no comfy internals so its helpers are
+unit-testable standalone.
 """
 
 import logging
@@ -234,15 +234,143 @@ class EquirectLatentSeamBlend:
         return (out,)
 
 
+# ---------------------------------------------------------------------------
+# Spherical Phase Remaster (SpheRoPE wrapped noise)
+# ---------------------------------------------------------------------------
+
+def _spherical_phase_remaster(x_T: torch.Tensor, radius: int = 12) -> torch.Tensor:
+    """Force low-frequency phase of noise to respect spherical pole convergence.
+
+    Args:
+        x_T: (B, C, H, W) or (H, W) noise tensor.
+        radius: Circular frequency mask radius.
+
+    Returns: Same shape and dtype as input.
+    """
+    orig_ndim = x_T.ndim
+    orig_dtype = x_T.dtype
+    if orig_ndim == 2:
+        x_T = x_T.unsqueeze(0).unsqueeze(0)
+    elif orig_ndim == 3:
+        x_T = x_T.unsqueeze(0)
+    B, C, H, W = x_T.shape
+    device = x_T.device
+    dtype = x_T.dtype
+
+    # Step 1: Create macro-structure by pinching poles toward row means
+    rows = torch.arange(H, dtype=torch.float32, device=device)
+    theta = ((rows + 0.5) / H) * math.pi - (math.pi / 2.0)
+    alpha = (1.0 - torch.cos(theta)).view(1, 1, H, 1)  # 0 at equator, ~1 at poles
+    row_means = x_T.mean(dim=-1, keepdim=True)           # [B, C, H, 1]
+    x_macro = x_T * (1.0 - alpha) + row_means * alpha
+
+    # Step 2: 2D FFT in float32 for precision
+    F_orig = torch.fft.fftshift(torch.fft.fft2(x_T.float(), norm="ortho"), dim=(-2, -1))
+    F_macro = torch.fft.fftshift(torch.fft.fft2(x_macro.float(), norm="ortho"), dim=(-2, -1))
+
+    Mag_orig = torch.abs(F_orig)
+    Phase_macro = torch.angle(F_macro)
+    Phase_orig = torch.angle(F_orig)
+
+    # Step 3: Circular low-pass mask centered at DC
+    Y, X_grid = torch.meshgrid(
+        torch.arange(H, device=device) - H // 2,
+        torch.arange(W, device=device) - W // 2,
+        indexing="ij",
+    )
+    mask = (torch.sqrt(Y.float() ** 2 + X_grid.float() ** 2) <= radius).float().view(1, 1, H, W)
+
+    # Step 4: Replace low-frequency phase with macro version
+    Phase_final = mask * Phase_macro + (1.0 - mask) * Phase_orig
+
+    # Step 5: Reconstruct with pristine magnitude
+    F_final = Mag_orig * torch.exp(1j * Phase_final)
+    F_final_unshifted = torch.fft.ifftshift(F_final, dim=(-2, -1))
+    x_final = torch.fft.ifft2(F_final_unshifted, norm="ortho").real
+
+    # Restore original dimensionality
+    if orig_ndim == 2:
+        x_final = x_final.squeeze(0).squeeze(0)
+    elif orig_ndim == 3:
+        x_final = x_final.squeeze(0)
+    return x_final.to(orig_dtype)
+
+
+class EquirectWrappedNoise:
+    """Wrap the NOISE generator so initial noise has spherically coherent low-frequency phase.
+
+    Intercepts the generate_noise() call and applies spherical phase remaster
+    per video frame. The magnitude spectrum and high-frequency details are
+    preserved; only the low-frequency phase is modified to encode polar
+    convergence.
+
+    Place this node between your RandomNoise and SamplerCustomAdvanced.
+    """
+
+    CATEGORY = "noise/equirect"
+    RETURN_TYPES = ("NOISE",)
+    FUNCTION = "wrap"
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "noise": ("NOISE",),
+                "enabled": ("BOOLEAN", {"default": True}),
+                "radius": ("INT", {
+                    "default": 12, "min": 1, "max": 64,
+                    "tooltip": "Frequency mask radius. Low-frequency bins inside this radius "
+                               "get spherical phase. 12 is the SpheRoPE default for 64x128 latents.",
+                }),
+            },
+        }
+
+    def wrap(self, noise, enabled, radius=12):
+        if not enabled:
+            return (noise,)
+
+        orig_generate = noise.generate_noise
+        import functools
+
+        def wrapped_generate(latent):
+            n = orig_generate(latent)
+
+            if hasattr(n, 'tensors') and isinstance(n.tensors, list):
+                for i in range(len(n.tensors)):
+                    t = n.tensors[i]
+                    if t.ndim == 2:
+                        # (H, W) single channel — add B/C dims, remaster, remove them
+                        n.tensors[i] = _spherical_phase_remaster(
+                            t.unsqueeze(0).unsqueeze(0), radius=radius
+                        ).reshape(t.shape)
+                    elif t.ndim == 4:
+                        # (B, C, H, W) — direct
+                        n.tensors[i] = _spherical_phase_remaster(t, radius=radius)
+                return n
+            if n.ndim == 5:
+                for t in range(n.shape[2]):
+                    n[:, :, t, :, :] = _spherical_phase_remaster(n[:, :, t, :, :], radius=radius)
+            elif n.ndim == 4:
+                n = _spherical_phase_remaster(n, radius=radius)
+            else:
+                print(f"[EquirectWrappedNoise] skipped (ndim={n.ndim})")
+            return n
+
+        noise.generate_noise = wrapped_generate
+        return (noise,)
+
+
 NODE_CLASS_MAPPINGS = {
     "EquirectPerStepRoll": EquirectPerStepRoll,
     "EquirectCircularVAE": EquirectCircularVAE,
     "EquirectLatentSeamBlend": EquirectLatentSeamBlend,
+    "EquirectWrappedNoise": EquirectWrappedNoise,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
     "EquirectPerStepRoll": "Equirect Per-Step Latent Roll (360 seam)",
     "EquirectCircularVAE": "Equirect Circular VAE (360 seam)",
     "EquirectLatentSeamBlend": "Equirect Latent Seam Blend (fallback)",
+    "EquirectWrappedNoise": "Equirect Wrapped Noise (SpheRoPE spherical phase remaster)",
 }
 
