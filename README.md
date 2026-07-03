@@ -1,46 +1,69 @@
 # ComfyUI-Seamless-Equirectangular
 
-**ComfyUI-Seamless-Equirectangular** is a ComfyUI custom node pack by **Burgstall Labs** for seamless equirectangular, 360-degree, VR, and panoramic video inference. It provides training-free seam mitigation for LTX2.3 VR-Outpaint and a reusable adapter structure for applying the same circular-longitude inference method to other diffusion and video generation models.
+**ComfyUI-Seamless-Equirectangular** is a ComfyUI custom node pack by **Burgstall Labs** for seamless equirectangular, 360-degree, VR, and panoramic video generation with LTX-2.3. It provides training-free seam mitigation and geometry enhancement for equirectangular inference.
 
-This repository focuses on one specific problem: equirectangular panoramas wrap horizontally, but most diffusion model inference treats the left and right image edges as unrelated frame boundaries. That mismatch creates visible seams, discontinuities, dark edge bands, and broken 360-degree video loops. ComfyUI-Seamless-Equirectangular makes the model see different longitudes as interior content during denoising, then restores the original orientation.
+This is the result of extensive experimentation: developing circular VAE padding, per-step latent rolling, and a dedicated equirectangular LoRA — then (after the release of SpheRoPE) partially implementing SpheRoPE's spherical positional encoding and wrapped noise on top of that foundation. The combined pipeline produces seamless 360° video that neither approach achieves alone.
 
-## Authorship And Provenance
+**Keywords:** ComfyUI seamless equirectangular, LTX-2.3 360 video, SpheRoPE, circular VAE padding, per-step latent roll, panoramic video generation, Burgstall Labs.
 
-This is Burgstall Labs' open-source implementation of seamless equirectangular inference for LTX2.3 VR-Outpaint workflows. To the author's knowledge, this is the first public open-source ComfyUI implementation of this specific per-step circular latent rolling method for seamless 360-degree video generation with LTX2.3.
+## Nodes
 
-It follows Burgstall Labs' earlier VR-outpainting work: first practical ComfyUI tooling and LoRA workflows for video VR-outpainting, now extended with a dedicated seam-removal method for equirectangular inference.
+| Node | Type | What it does |
+|---|---|---|
+| **EquirectCircularVAE** | `VAE → VAE` | Patches VAE decoder convolutions to use circular padding along the width (longitude) axis. Fixes the decode-side seam caused by zero-padded convolutions at the 360° wrap boundary. |
+| **EquirectPerStepRoll** | `MODEL → MODEL` | Wraps the diffusion model so every denoising step runs on a W-rolled latent. Each step sees a different longitudinal shift, so no column is always at the model's processing boundary — forces content coherent across the wrap. Based on the Diffusion360 / PanoDiffusion circular shift method. |
+| **EquirectLatentSeamBlend** | `LATENT → LATENT` | Thin cross-fade of the W-edge latent columns. Cosmetic fallback — smooths the boundary band but does not make content wrap. Off by default. |
+| **EquirectWrappedNoise** | `NOISE → NOISE` | SpheRoPE-style spherical phase remaster. Modifies the initial noise latent's low-frequency phase to encode polar convergence, reducing stretching at the top and bottom poles. |
 
-Keywords: ComfyUI seamless equirectangular, LTX2.3 VR-Outpaint, 360 video diffusion, VR outpainting, equirectangular seam fix, panoramic video generation, circular latent rolling, circular VAE padding, Burgstall Labs.
+## History
 
-## What It Does
+### Pre-SpheRoPE development
 
-ComfyUI-Seamless-Equirectangular provides four nodes:
+The initial approach to equirectangular 360° video generation with LTX-2.3 focused on two problems that standard diffusion inference cannot handle:
 
-- **Equirect Per-Step Latent Roll (360 seam)** (`MODEL -> MODEL`) circularly rolls the video latent along width around every model call, then unrolls the prediction. This is the core seamless equirectangular inference method.
-- **Equirect Circular VAE (360 seam)** (`VAE -> VAE`) patches VAE convolutions to use circular padding along longitude. This reduces decode-side seam artifacts.
-- **Equirect Latent Seam Blend (fallback)** (`LATENT -> LATENT`) cross-fades a thin latent band at the width edge. This is a conservative fallback for cosmetic edge smoothing.
-- **Equirect Semantic Distortion CFG (SpheRoPE)** (`MODEL -> MODEL`) extends standard classifier-free guidance with a third geometric anchoring term, inspired by the SpheRoPE paper (https://orhir.github.io/SpheRoPE/). Accepts a `geo_conditioning` input that should encode the user's prompt with an equirectangular geometry description (e.g. "... , equirectangular projection, 360-degree spherical panorama"). The `gamma` parameter controls the strength of the geometric prior.
+1. **The longitude seam**: column 0 and column W-1 represent adjacent directions in the real spherical scene, but the model treats them as unrelated edges. Standard zero-padded VAE convolutions amplify this with a visible seam at decode time.
 
-Node IDs, categories, behavior, and defaults are intentionally stable for existing tested workflows:
+2. **Polar stretching**: the equirectangular projection compresses the poles into single rows, but the model has no inductive bias for this. The result is "egg-shaped" projection and void zones at the top and bottom.
 
-- `EquirectPerStepRoll`
-- `EquirectCircularVAE`
-- `EquirectLatentSeamBlend`
-- `EquirectSemanticDistortionCFG`
+The first solutions were:
 
-## Why Equirectangular Inference Needs This
+- **A dedicated equirectangular LoRA** (April 2026): a rank-128 LoRA trained on 78 equirectangular panoramas at 15k steps. The LoRA is the essential foundation — without it, the frozen 22B base model produces rectilinear video regardless of any inference-time tricks applied.
 
-An equirectangular panorama is periodic along longitude: column `0` and the final column represent adjacent directions in the real spherical scene. Standard image and video diffusion inference does not know that. The model sees the panorama as a flat rectangle, so its convolutional and attention behavior can treat the seam as a hard image border.
+- **Circular VAE padding** (`EquirectCircularVAE`): wrapping each VAE convolution's forward so width padding is circular while height and time remain non-periodic. This eliminates the decode-side seam.
 
-The result is familiar in 360-degree AI video work:
+- **Per-step latent rolling** (`EquirectPerStepRoll`): rolling the latent by a per-sigma deterministic shift before each model forward, then unrolling the prediction. This forces every longitude to be generated as "interior" at some step and proved critical for seam continuity. **Note:** the `dual_average` mode (evaluating two opposite shifts per step) can introduce repeated geometry — twin subjects or mirrored buildings appearing roughly 180° apart. If you see this, try `random_per_step` mode instead, or disable the roll node entirely (the SpheRoPE spherical RoPE alone may suffice for your use case).
+
+The LoRA, circular VAE, and per-step roll together produced seamless equirectangular video that was already working in production. In a batch of 20 evaluation prompts, this setup produced good results but would occasionally (roughly 2 out of 20) lose the equirectangular projection shape. This instability is what SpheRoPE's spherical positional encoding helps resolve — it provides a persistent geometric signal that keeps the model's output structurally consistent across diverse prompts.
+
+### Post-SpheRoPE integration
+
+After the SpheRoPE paper (https://orhir.github.io/SpheRoPE/) was released, we implemented its spherical positional encoding (the two-path spectral split: Path A for harmonic snapping at the seam, Path B for spherical Cartesian coordinates at the poles) and wrapped noise (spherical phase remaster on the initial noise latent).
+
+The SpheRoPE paper alone produces equirectangular video with a visible seam — its Path A (harmonic snapping) doesn't fully handle the seam boundary, and without a dedicated equirectangular LoRA the base model's rectilinear bias is strong.
+
+The combination of **SpheRoPE's spherical RoPE + our equirectangular LoRA + circular VAE + per-step roll** produces results that surpass either approach individually:
+
+- The **LoRA** provides the foundation — without it the model doesn't output equirectangular content.
+- The **per-step roll** kills the seam more effectively than Path A alone, by ensuring no column always sits at the processing boundary.
+- SpheRoPE's **Path B (spherical coordinates)** straightens building geometry and reduces polar stretching, improving the overall structural quality.
+- The **circular VAE** ensures the decode doesn't reintroduce seam artifacts.
+- SpheRoPE's **wrapped noise** gives a subtle but consistent improvement to polar coherence.
+
+This is notable because SpheRoPE's own results without a dedicated LoRA show visible seam artifacts, while our approach — combining SpheRoPE's positional encoding with our existing pipeline — achieves seamless 360° video that holds up across diverse prompts.
+
+We were unable to get SpheRoPE's **semantic distortion CFG** (the three-way guidance term) working reliably due to conflicts with TiledDiffusion's monkeypatching of ComfyUI's `calc_cond_batch`. The rest of SpheRoPE's contributions integrate cleanly.
+
+## Why Equirectangular Inference Needs These Tools
+
+An equirectangular panorama is periodic along longitude: column 0 and the final column represent adjacent directions in the real spherical scene. Standard diffusion inference does not know this — the model sees the panorama as a flat rectangle, so its convolutional and attention behavior treats the seam as a hard image border.
+
+The result without mitigation:
 
 - a visible vertical seam at the longitude wrap,
 - mismatched objects or lighting across the left/right edge,
 - dark bands or vignette-like artifacts at processing boundaries,
-- temporal instability when the camera pans through the seam,
+- polar void zones and stretched geometry at the top and bottom,
 - decoded VAE artifacts caused by non-periodic padding.
-
-The per-step latent roll node attacks the source of the problem during sampling. Instead of only blending the final image, it changes where the model's artificial boundary lands at each denoising step.
 
 ## Core Method: Per-Step Circular Latent Rolling
 
@@ -53,87 +76,48 @@ The per-step latent roll node attacks the source of the problem during sampling.
 5. Optionally feather the known processing boundary in the prediction.
 6. Unroll the prediction back to the original longitude.
 
-For LTX2.3, the node supports both plain 5D video latents and packed audio/video latents. Audio tokens are left untouched.
+For LTX-2.3, the node supports both plain 5D video latents and packed audio/video latents. Audio tokens are left untouched.
 
-Modes and defaults are unchanged from the tested implementation:
+Modes:
 
-- `random_per_step` is the default. It uses deterministic per-sigma shifts keyed by sigma and seed.
-- `dual_average` evaluates two roughly opposite shifted views per step and averages them. This can reduce boundary/vignette banding at roughly 2x sampling cost.
-- `half_turn` is a diagnostic mode that uses a constant half-width shift.
-- `feather_columns` defaults to `0` and can be set to a small value such as `2-4` for boundary-local mitigation.
+- `random_per_step`: deterministic per-sigma shifts keyed by sigma and seed. One forward pass per step.
+- `dual_average`: evaluates two roughly opposite shifted views per step and averages them. Cancels boundary banding at ~2x sampling cost. Note: can introduce repeated geometry (twin subjects 180° apart) due to the compositional bias locking in at two opposite positions.
+- `half_turn`: diagnostic mode using a constant half-width shift.
+- `feather_columns`: cross-fade the boundary columns of each step's prediction (2-4 is sensible).
 
-## LTX2.3 VR-Outpaint Support
+## SpheRoPE Spherical RoPE (separate custom node: `equirect_rope`)
 
-The current tested layouts are:
+SpheRoPE's spherical positional encoding is implemented as a **separate custom node** (`EquirectPeriodicWRoPE` in the `equirect_rope/` directory). It monkeypatches `comfy.ldm.lightricks.model.generate_freqs` — the single entry point where LTX-2.3 computes all rotary position embedding angles — replacing the width-axis phase with a two-path spectral split:
 
-- plain video latent: `[B, C, T, H, W]`
-- LTX packed audio/video latent: `[B, 1, video_numel + audio_numel]`, using `c["latent_shapes"][0]` as the video shape
+- **Path A** (high-frequency channels ≥ 10 cycles across the width): harmonic snapping, snapping the linear frequency to the nearest integer cycle count so the phase repeats exactly across the wrap.
+- **Path B** (low-frequency channels < 10 cycles): spherical Cartesian (X, Y) coordinates on the unit sphere. X = cos(lat)·cos(lon), Y = cos(lat)·sin(lon). At the poles (lat=±π/2), cos(lat)=0 so X=Y=0 for all longitudes, naturally encoding polar convergence.
 
-For LTX2.3 VR-Outpaint workflows, start with:
+The two-path split uses SpheRoPE's own frequency vector (`theta^(k/D) · π/2`), not the RoPE frequency ladder — this distinction is critical and was the cause of several failed implementations.
 
-- **Equirect Per-Step Latent Roll** before sampling.
-- `mode=random_per_step` first.
-- `dual_average` when seam and banding quality matter more than sampling speed.
-- **Equirect Circular VAE** before decode, usually with decoder patching enabled.
+Key parameters: `blend` (0=linear, 1=spherical), `path_b_threshold` (default 10.0, lower = more spherical channels), `r_scale` (default 1.0, spherical magnitude).
 
-This node pack is intentionally separate from projection and camera-calibration tooling. Use it alongside VR-outpainting prep workflows when the model is already operating on an equirectangular canvas or latent.
+The node is idempotent and can be toggled at runtime.
 
-## Semantic Distortion CFG (SpheRoPE)
-
-`EquirectSemanticDistortionCFG` implements a three-way classifier-free guidance formulation inspired by SpheRoPE (https://orhir.github.io/SpheRoPE/):
-
-```
-ε̂ = ε_uncond + w_sem · (ε_cond − ε_uncond) + γ · (ε_geo − ε_cond)
-```
-
-The third term `(ε_geo − ε_cond)` uses a "geometric anchor" conditioning — your prompt with an equirectangular description appended — to isolate the pure projection geometry signal orthogonal to semantic content. This amplifies the latent equirectangular priors that pretrained models already exhibit weakly from large-scale training.
-
-### How to wire it
-
-1. Add a second **CLIPTextEncode** node alongside your existing positive/negative ones.
-2. Set its text to your positive prompt with a geometry description appended, e.g.:
-
-   > "a mountain landscape at sunset, equirectangular projection, 360-degree spherical panoramic view"
-
-3. Connect this to the `geo_conditioning` input of `EquirectSemanticDistortionCFG`.
-4. Wire the model through the node (works with or without `EquirectPerStepRoll` upstream).
-5. Start with `gamma=3.0` and adjust if the geometric prior overpowers your semantic prompt.
-
-### Relationship to per-step rolling
-
-The two nodes address different root causes and are **complementary**:
-
-- **Per-step rolling** tackles the *processing boundary* — it ensures no single longitude always sits at the model's artificial edge.
-- **Semantic Distortion CFG** tackles the *positional semantics* — it steers the model toward equirectangular geometry awareness.
-
-They can be chained (`PerStepRoll → SemanticDistortionCFG` or vice versa), and each works independently.
-
-### Limitations
-
-The Semantic Distortion CFG is a **soft signal**, not a hard geometric constraint. It amplifies existing priors but does not enforce polar convergence. The "void at top/bottom" and "egg-shaped projection" issues are caused by the model's lack of polar convergence (equirectangular topology requires the entire top and bottom rows to collapse to single points). The SpheRoPE paper's main contribution — spherical positional encoding — addresses this directly but requires modifying the attention mechanism, which is model-specific and architecturally invasive. The Semantic Distortion CFG may mitigate these issues somewhat but is not a complete solution.
+**License:** This nodepack is licensed under CC BY-NC 4.0 (https://creativecommons.org/licenses/by-nc/4.0/). Portions derived from SpheRoPE (https://orhir.github.io/SpheRoPE/) by Or Hirshfeld, Lior Talker, and colleagues are also under CC BY-NC 4.0. The semantic distortion CFG component of SpheRoPE is not included here (see the history section for details).
 
 ## Circular VAE Padding
 
-`EquirectCircularVAE` patches loaded VAE convolution modules so width padding is circular while height and time remain non-periodic. This is important because longitude wraps, but poles and time do not.
+`EquirectCircularVAE` patches loaded VAE convolution modules so width padding is circular while height and time remain non-periodic. The implementation wraps convolution forwards rather than replacing model classes, preserving ComfyUI's weight-casting and offload paths.
 
-The implementation is designed to preserve ComfyUI's model loading and weight-casting behavior by wrapping convolution forwards rather than replacing model classes.
+Important caveat: ComfyUI caches VAEs by file. This node modifies the loaded VAE object in place, so every consumer of the same loaded VAE file in a run sees the same patched or restored state. The node resets to stock before applying its selected state, but true stock-vs-circular A/B testing needs separate runs or separate loaded VAE objects.
 
-Important warning: ComfyUI caches VAEs by file. `EquirectCircularVAE` modifies the loaded VAE object in place, so every consumer of that same loaded VAE file in a run sees the same patched or restored state. The node resets to stock before applying its selected state, but true stock-vs-circular A/B testing needs separate runs or separate loaded VAE objects.
+## Wrapped Noise (SpheRoPE Spherical Phase Remaster)
 
-## Extending To Other Models
+`EquirectWrappedNoise` wraps a NOISE generator and applies SpheRoPE's spherical phase remaster to the initial noise latent before denoising. The algorithm:
 
-Model-specific latent packing lives in `seamless_equirect/latent_layouts.py`. The current adapter boundary was added so the LTX2.3 method can be extended without changing the tested node defaults.
+1. Creates a "macro-structure" version by weighting each row toward its row mean, with strength alpha = 1 − cos(latitude) — zero at the equator, ~1 at the poles.
+2. Computes 2D FFT of both original and macro noise.
+3. Replaces the low-frequency phase (inside a circular mask of configurable radius) with the macro version's phase.
+4. Reconstructs using the original magnitude spectrum.
 
-To support another model, add an adapter that can:
+This encodes polar convergence into the noise structure before denoising begins, providing a subtle but consistent improvement to pole quality.
 
-- detect the model IO tensor layout,
-- report the equirectangular longitude width,
-- roll only the video or image portion along longitude,
-- leave audio, text, metadata, or other non-video tokens unchanged.
-
-Only enable per-step rolling for models where latent width is a real longitude axis. Packed token layouts that do not preserve spatial width need a dedicated adapter before they are safe to use.
-
-Potential targets include other ComfyUI video diffusion wrappers, panoramic image diffusion workflows, VR180-to-360 expansion workflows, and future native equirectangular video models.
+The `radius` parameter defaults to 4 for typical LTX-2.3 latent resolutions (20×40). SpheRoPE's default of 12 targets their 64×128 latent grid.
 
 ## Installation
 
@@ -144,12 +128,29 @@ cd ComfyUI/custom_nodes
 git clone https://github.com/Burgstall-labs/ComfyUI-Seamless-Equirectangular
 ```
 
-Restart ComfyUI. The nodes appear under existing equirectangular / model patch categories:
+The `equirect_rope/` custom node (SpheRoPE spherical RoPE) is bundled alongside.
 
+Restart ComfyUI. The nodes appear under their respective categories:
 - `model_patches/equirect`
 - `latent/video/equirect`
+- `noise/equirect`
+- `360/seamless` (equirect_rope node)
 
 No extra runtime dependency is required beyond the torch runtime already used by ComfyUI.
+
+## Recommended Pipeline
+
+```
+UNETLoader → Equirect Spherical RoPE → LTX2_NAG → PerStepRoll → CFGGuider → SamplerCustomAdvanced
+```
+
+With:
+- EquirectCircularVAE: enabled, decoder=True
+- EquirectWrappedNoise: enabled, radius=4
+- EquirectPerStepRoll: try `random_per_step` first (avoids the repeated-geometry issue); switch to `dual_average` if seam banding is visible and you don't see twin artifacts
+- Equirect Spherical RoPE: blend=1.0, threshold=10.0, r_scale=1.0
+
+Your equirectangular LoRA (trained on zero-padded VAE) should be loaded — the SpheRoPE RoPE patch is not a replacement for the LoRA, which carries the essential equirectangular output knowledge that the frozen base model lacks.
 
 ## Tests
 
@@ -159,17 +160,8 @@ Run with the ComfyUI Python environment:
 /home/juho/ComfyUI/venv/bin/python tests/test_seam_nodes.py
 ```
 
-The tests cover:
-
-- circular Conv2d / Conv3d patch and unpatch behavior,
-- VAE encoder/decoder scoping,
-- deterministic per-sigma shift generation,
-- LTX packed audio/video latent rolling,
-- per-step model wrapper round trips,
-- `dual_average` behavior,
-- latent seam blending.
+The tests cover circular Conv2d/Conv3d patch/unpatch behavior, VAE encoder/decoder scoping, deterministic per-sigma shift generation, LTX packed audio/video latent rolling, per-step model wrapper round trips, dual_average behavior, and latent seam blending.
 
 ## Related Burgstall Labs Work
 
-Burgstall Labs develops practical open-source tools for 360-degree AI video, VR-outpainting, panoramic generation, and ComfyUI-based production workflows. ComfyUI-Seamless-Equirectangular is intended to be the reusable seam-inference layer that complements projection, outpainting, and LoRA workflows for immersive video.
-
+Burgstall Labs develops practical open-source tools for 360-degree AI video, VR-outpainting, panoramic generation, and ComfyUI-based production workflows. ComfyUI-Seamless-Equirectangular provides the seam-inference and geometry-enhancement layer that complements projection, outpainting, and LoRA workflows for immersive video.
