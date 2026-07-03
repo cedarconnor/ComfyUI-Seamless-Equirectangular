@@ -2,7 +2,7 @@
 
 **ComfyUI-Seamless-Equirectangular** is a ComfyUI custom node pack by **Burgstall Labs** for seamless equirectangular, 360-degree, VR, and panoramic video generation with LTX-2.3. It provides training-free seam mitigation and geometry enhancement for equirectangular inference.
 
-This is the result of extensive experimentation: developing circular VAE padding, per-step latent rolling, and a dedicated equirectangular LoRA — then (after the release of SpheRoPE) partially implementing SpheRoPE's spherical positional encoding and wrapped noise on top of that foundation. The combined pipeline produces seamless 360° video that neither approach achieves alone.
+This is the result of extensive experimentation: training a dedicated equirectangular LoRA, then developing circular VAE padding and per-step latent rolling to handle the seam — then (after the release of SpheRoPE) partially implementing SpheRoPE's spherical positional encoding and wrapped noise on top of that foundation. The combined pipeline produces seamless 360° video that neither approach achieves alone.
 
 **Keywords:** ComfyUI seamless equirectangular, LTX-2.3 360 video, SpheRoPE, circular VAE padding, per-step latent roll, panoramic video generation, Burgstall Labs.
 
@@ -19,15 +19,15 @@ This is the result of extensive experimentation: developing circular VAE padding
 
 ### Pre-SpheRoPE development
 
-The initial approach to equirectangular 360° video generation with LTX-2.3 focused on two problems that standard diffusion inference cannot handle:
+I started with training a dedicated equirectangular LoRA — a rank-128 LoRA on 78 equirectangular panoramas at 15k steps (April 2026). The model cannot produce text-to-video equirectangular output without it; the frozen 22B base model's rectilinear bias is too strong even with inference-time tricks.
 
-1. **The longitude seam**: column 0 and column W-1 represent adjacent directions in the real spherical scene, but the model treats them as unrelated edges. Standard zero-padded VAE convolutions amplify this with a visible seam at decode time.
+With the LoRA producing equirectangular video, two problems remained:
 
-2. **Polar stretching**: the equirectangular projection compresses the poles into single rows, but the model has no inductive bias for this. Sometimes, this would result in an "egg-shaped" projection and void zones at the top and bottom.
+1. **The longitude seam**: column 0 and column W-1 represent adjacent directions in the real spherical scene, but the model treats them as unrelated edges. Standard zero-padded VAE convolutions amplify this with a visible seam at decode time — even WITH the LoRA.
+
+2. **Polar stretching**: the equirectangular projection compresses the poles into single rows, but the model has no inductive bias for this. Sometimes this would result in an "egg-shaped" projection and void zones at the top and bottom — again, even with the LoRA (the base model has clearly seen equirectangular footage during training, but not enough to overcome the problem consistently).
 
 The first solutions were:
-
-- **A dedicated equirectangular LoRA** (April 2026): a rank-128 LoRA trained on 78 equirectangular panoramas at 15k steps. The LoRA is the essential foundation — without it, the frozen 22B base model produces rectilinear video regardless of any inference-time tricks applied. Even though it has clearly seen equirectangular footage at base model training.
 
 - **Circular VAE padding** (`EquirectCircularVAE`): wrapping each VAE convolution's forward so width padding is circular while height and time remain non-periodic. This eliminates the decode-side seam.
 
@@ -37,21 +37,21 @@ The LoRA, circular VAE, and per-step roll together produced seamless equirectang
 
 ### Post-SpheRoPE integration
 
-After the SpheRoPE paper (https://orhir.github.io/SpheRoPE/) was released, we implemented its spherical positional encoding (the two-path spectral split: Path A for harmonic snapping at the seam, Path B for spherical Cartesian coordinates at the poles) and wrapped noise (spherical phase remaster on the initial noise latent).
+After the SpheRoPE paper (https://orhir.github.io/SpheRoPE/) was released, I implemented its spherical positional encoding (the two-path spectral split: Path A for harmonic snapping at the seam, Path B for spherical Cartesian coordinates at the poles) and wrapped noise (spherical phase remaster on the initial noise latent).
 
 The SpheRoPE paper alone produces equirectangular video with a visible seam — its Path A (harmonic snapping) doesn't fully handle the seam boundary, and without a dedicated equirectangular LoRA the base model's rectilinear bias is strong.
 
-The combination of **SpheRoPE's spherical RoPE + our equirectangular LoRA + circular VAE + per-step roll** produces results that surpass either approach individually:
+The combination of **SpheRoPE's spherical RoPE + my equirectangular LoRA + circular VAE + per-step roll** produces results that surpass either approach individually:
 
-- The **LoRA** provides the foundation — without it the model doesn't output equirectangular content.
+- The **LoRA** provides the foundation — without it the model doesn't output equirectangular content at all.
 - The **per-step roll** kills the seam more effectively than Path A alone, by ensuring no column always sits at the processing boundary.
 - SpheRoPE's **Path B (spherical coordinates)** straightens building geometry and reduces polar stretching, improving the overall structural quality.
 - The **circular VAE** ensures the decode doesn't reintroduce seam artifacts.
 - SpheRoPE's **wrapped noise** gives a subtle but consistent improvement to polar coherence.
 
-This is notable because in my testing this SpheRoPE's method shows a visible seam, while our approach — combining SpheRoPE's positional encoding with our existing pipeline — achieves seamless 360° video that holds up across diverse prompts.
+This is notable because in my testing SpheRoPE's method alone shows a visible seam, while combining SpheRoPE's positional encoding with my existing LoRA-based pipeline achieves seamless 360° video that holds up across diverse prompts.
 
-We were unable to get SpheRoPE's **semantic distortion CFG** (the three-way guidance term) working reliably due to conflicts with TiledDiffusion's monkeypatching of ComfyUI's `calc_cond_batch`. The rest of SpheRoPE's contributions integrate cleanly.
+I was unable to get SpheRoPE's **semantic distortion CFG** (the three-way guidance term) working reliably due to conflicts with TiledDiffusion's monkeypatching of ComfyUI's `calc_cond_batch`. The rest of SpheRoPE's contributions integrate cleanly.
 
 ## Why Equirectangular Inference Needs These Tools
 
