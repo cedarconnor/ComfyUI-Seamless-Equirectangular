@@ -4,6 +4,10 @@
 
 This is the result of extensive experimentation: training a dedicated equirectangular LoRA, then developing circular VAE padding and per-step latent rolling to handle the seam — then (after the release of SpheRoPE) partially implementing SpheRoPE's spherical positional encoding and wrapped noise on top of that foundation. The combined pipeline produces seamless 360° video that neither approach achieves alone.
 
+The LoRA is available on Hugging Face: [TheBurgstall/Seamless-Equirectangular-LTX2.3-LoRA](https://huggingface.co/TheBurgstall/Seamless-Equirectangular-LTX2.3-LoRA)
+
+**Important:** This LoRA was trained with the default zero-padded VAE. **Do not use `--circular_vae`** at inference if using musubi-tuner. In ComfyUI, the `EquirectCircularVAE` node is fine — it patches the VAE decoder only, which doesn't conflict with the LoRA's training.
+
 **Keywords:** ComfyUI seamless equirectangular, LTX-2.3 360 video, SpheRoPE, circular VAE padding, per-step latent roll, panoramic video generation, Burgstall Labs.
 
 ## Nodes
