@@ -102,7 +102,7 @@ Key parameters: `blend` (0=linear, 1=spherical), `path_b_threshold` (default 10.
 
 The node is idempotent and can be toggled at runtime.
 
-**License:** This nodepack is licensed under CC BY-NC 4.0 (https://creativecommons.org/licenses/by-nc/4.0/). Portions derived from SpheRoPE (https://orhir.github.io/SpheRoPE/) by Or Hirshfeld, Lior Talker, and colleagues are also under CC BY-NC 4.0. The semantic distortion CFG component of SpheRoPE is not included here (see the history section for details).
+**License:** This nodepack is licensed under the PolyForm Noncommercial License 1.0.0 (https://polyformproject.org/licenses/noncommercial/1.0.0). The code derived from SpheRoPE (https://orhir.github.io/SpheRoPE/) by Or Hirshfeld, Lior Talker, and colleagues is used under CC BY-NC 4.0 compatibility — see the LICENSE file for details.
 
 ## Circular VAE Padding
 
