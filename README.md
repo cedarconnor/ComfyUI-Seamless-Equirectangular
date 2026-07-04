@@ -6,8 +6,6 @@ This is the result of extensive experimentation: training a dedicated equirectan
 
 The LoRA is available on Hugging Face: [TheBurgstall/Seamless-Equirectangular-LTX2.3-LoRA](https://huggingface.co/TheBurgstall/Seamless-Equirectangular-LTX2.3-LoRA)
 
-**Important:** This LoRA was trained with the default zero-padded VAE. **Do not use `--circular_vae`** at inference if using musubi-tuner. In ComfyUI, the `EquirectCircularVAE` node is fine — it patches the VAE decoder only, which doesn't conflict with the LoRA's training.
-
 **Keywords:** ComfyUI seamless equirectangular, LTX-2.3 360 video, SpheRoPE, circular VAE padding, per-step latent roll, panoramic video generation, Burgstall Labs.
 
 ## Nodes
@@ -17,22 +15,22 @@ The LoRA is available on Hugging Face: [TheBurgstall/Seamless-Equirectangular-LT
 | **EquirectCircularVAE** | `VAE → VAE` | Patches VAE decoder convolutions to use circular padding along the width (longitude) axis. Fixes the decode-side seam caused by zero-padded convolutions at the 360° wrap boundary. |
 | **EquirectPerStepRoll** | `MODEL → MODEL` | Wraps the diffusion model so every denoising step runs on a W-rolled latent. Each step sees a different longitudinal shift, so no column is always at the model's processing boundary — forces content coherent across the wrap. Based on the Diffusion360 / PanoDiffusion circular shift method. |
 | **EquirectLatentSeamBlend** | `LATENT → LATENT` | Thin cross-fade of the W-edge latent columns. Cosmetic fallback — smooths the boundary band but does not make content wrap. Off by default. |
-| **EquirectWrappedNoise** | `NOISE → NOISE` | Spherical phase remaster on the initial noise latent. Encodes polar convergence into low-frequency phase, reducing stretching at the poles. |
+| **EquirectWrappedNoise** | `NOISE → NOISE` | Spherical phase remaster on the initial noise latent. Encodes polar convergence into low-frequency phase, reducing stretching at the poles. Based on the SpheRoPE paper. |
 | **EquirectSphericalRoPE** | `MODEL → MODEL` | Spherical-aware width-axis RoPE with two-path spectral split (harmonic snapping + spherical coordinates). Based on the SpheRoPE paper. |
 
 ## History
 
 ### Pre-SpheRoPE development
 
-I started with training a dedicated equirectangular LoRA — a rank-128 LoRA for 15k steps (April 2026). The model cannot produce text-to-video equirectangular output without it; the frozen 22B base model's rectilinear bias is too strong even with inference-time tricks.
+I started with training a dedicated equirectangular LoRA — a rank-128 LoRA for 15k steps. In my previous experiments, the model could not produce text-to-video equirectangular output without it; the frozen 22B base model's rectilinear bias is too strong even with inference-time tricks.
 
 With the LoRA producing equirectangular video, two problems remained:
 
 1. **The longitude seam**: column 0 and column W-1 represent adjacent directions in the real spherical scene, but the model treats them as unrelated edges. Standard zero-padded VAE convolutions amplify this with a visible seam at decode time — even WITH the LoRA.
 
-2. **Polar stretching**: the equirectangular projection compresses the poles into single rows, but the model has no inductive bias for this. Sometimes this would result in an "egg-shaped" projection and void zones at the top and bottom — again, even with the LoRA (the base model has clearly seen equirectangular footage during training, but not enough to overcome the problem consistently).
+2. **Polar stretching**: the equirectangular projection compresses the poles into single rows, but the model has no inductive bias for this. Sometimes this would result in polar voids, even with the LoRA (the base model has clearly seen equirectangular footage during training, but not enough to overcome the problem consistently).
 
-The first solutions were:
+The first solutions I implemented were:
 
 - **Circular VAE padding** (`EquirectCircularVAE`): wrapping each VAE convolution's forward so width padding is circular while height and time remain non-periodic. This eliminates the decode-side seam.
 
@@ -40,7 +38,7 @@ The first solutions were:
 
 - **Per-step latent rolling** (`EquirectPerStepRoll`): rolling the latent by a per-sigma deterministic shift before each model forward, then unrolling the prediction. This forces every longitude to be generated as "interior" at some step and proved critical for seam continuity. **Note:** the `dual_average` mode (evaluating two opposite shifts per step) can introduce repeated geometry — twin subjects or mirrored buildings appearing roughly 180° apart. If you see this, try `random_per_step` mode instead, or disable the roll node entirely.
 
-The LoRA, circular VAE, and per-step roll together produced seamless equirectangular video that was already working in production. In a batch of 20 evaluation prompts, this setup produced good results but would occasionally (roughly 2 out of 20) lose the equirectangular projection shape. This instability is what SpheRoPE's method for spherical positional encoding helps resolve — it provides a persistent geometric signal that keeps the model's output structurally consistent across diverse prompts.
+The LoRA, circular VAE, and per-step roll together produced seamless equirectangular video that was already working in production. In a batch of 20 evaluation prompts, this setup produced good results but would occasionally (roughly 2 out of 20) lose the equirectangular projection shape and produce polar voids. This instability is what SpheRoPE's method for spherical positional encoding helps resolve — it provides a persistent geometric signal that keeps the model's output structurally consistent across diverse prompts.
 
 ### Post-SpheRoPE integration
 
@@ -48,15 +46,15 @@ After the SpheRoPE paper (https://arxiv.org/abs/2606.32033) was released, I impl
 
 In my testing, a partial implementation of SpheRoPE's methods on their own was not sufficient to produce fully seamless equirectangular output. However, combining their spherical positional encoding ideas with my existing equirectangular LoRA and pre-SpheRoPE findings produced excellent results:
 
-- My **LoRA** provides the essential foundation — the model cannot produce text-to-video equirectangular output without it.
+- My **LoRA** provides the essential foundation — the model cannot produce text-to-video equirectangular output without it. Not even with my partial implementation of the SpheRoPE ideas. (Note: This is not to say the full implementation cannot do this, I have not had the opportunity to test the full original implementation yet.)
 - My **per-step roll** handles the seam boundary more effectively than Path A alone, by ensuring no column always sits at the processing boundary.
-- SpheRoPE's **Path B (spherical coordinates)** straightens building geometry and reduces polar stretching, improving overall structural quality.
+- SpheRoPE methodology for **Path B (spherical coordinates)** straightens building geometry and reduces polar stretching, improving overall structural quality.
 - My **circular VAE** ensures the decode doesn't reintroduce seam artifacts.
-- SpheRoPE's **wrapped noise** gives a subtle but consistent improvement to polar coherence.
+- SpheRoPE methodology for **wrapped noise** gives a subtle but consistent improvement to polar coherence.
 
-The combination of my LoRA-based pipeline with SpheRoPE's positional encoding ideas produces seamless equirectangular 360° video that neither approach achieves alone.
+The combination of my LoRA-based pipeline with SpheRoPE's positional encoding ideas produces seamless equirectangular 360° video that neither approach achieves alone (in my testing, admittedly missing the tests with the original full SpheRoPE implementation).
 
-I was unable to get SpheRoPE's **semantic distortion CFG** (the three-way guidance term) working reliably due to conflicts with TiledDiffusion's monkeypatching of ComfyUI's `calc_cond_batch`. The rest of their ideas integrate cleanly.
+I was unable to get SpheRoPE's **semantic distortion CFG** (the three-way guidance term) working reliably due to conflicts with TiledDiffusion's monkeypatching of ComfyUI's `calc_cond_batch`. The rest of their described methodologies integrate cleanly.
 
 ## Why Equirectangular Inference Needs These Tools
 
@@ -70,7 +68,7 @@ The result without mitigation:
 - polar void zones and stretched geometry at the top and bottom,
 - decoded VAE artifacts caused by non-periodic padding.
 
-## Core Method: Per-Step Circular Latent Rolling
+## Per-Step Circular Latent Rolling
 
 `EquirectPerStepRoll` wraps the ComfyUI model object and intercepts each model call during sampling:
 
