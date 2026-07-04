@@ -2,7 +2,7 @@
 
 **ComfyUI-Seamless-Equirectangular** is a ComfyUI custom node pack by **Burgstall Labs** for seamless equirectangular, 360-degree, VR, and panoramic video generation with LTX-2.3. It provides training-free seam mitigation and geometry enhancement for equirectangular inference.
 
-This is the result of extensive experimentation: training a dedicated equirectangular LoRA, then developing circular VAE padding and per-step latent rolling to handle the seam — then (after the release of SpheRoPE) partially implementing SpheRoPE's spherical positional encoding and wrapped noise on top of that foundation. The combined pipeline produces seamless 360° video that neither approach achieves alone.
+This is the result of extensive experimentation: training a dedicated equirectangular LoRA, then developing circular VAE padding and per-step latent rolling to handle the seam — then implementing the spherical positional encoding and wrapped noise ideas from the SpheRoPE paper (https://arxiv.org/abs/2606.32033) on top of that foundation. The combined pipeline produces seamless 360° video that neither approach achieves alone.
 
 The LoRA is available on Hugging Face: [TheBurgstall/Seamless-Equirectangular-LTX2.3-LoRA](https://huggingface.co/TheBurgstall/Seamless-Equirectangular-LTX2.3-LoRA)
 
@@ -41,21 +41,19 @@ The LoRA, circular VAE, and per-step roll together produced seamless equirectang
 
 ### Post-SpheRoPE integration
 
-After the SpheRoPE paper (https://orhir.github.io/SpheRoPE/) was released, I implemented its spherical positional encoding (the two-path spectral split: Path A for harmonic snapping at the seam, Path B for spherical Cartesian coordinates at the poles) and wrapped noise (spherical phase remaster on the initial noise latent).
+After the SpheRoPE paper (https://arxiv.org/abs/2606.32033) was released, I implemented its spherical positional encoding ideas — the two-path spectral split (Path A for harmonic snapping at the seam, Path B for spherical Cartesian coordinates at the poles) and wrapped noise (spherical phase remaster on the initial noise latent).
 
-The SpheRoPE paper alone produces equirectangular video with a visible seam — its Path A (harmonic snapping) doesn't fully handle the seam boundary, and without a dedicated equirectangular LoRA the base model's rectilinear bias is strong.
+In my testing, a partial implementation of SpheRoPE's methods on their own was not sufficient to produce fully seamless equirectangular output. However, combining their spherical positional encoding ideas with my existing equirectangular LoRA and pre-SpheRoPE findings produced excellent results:
 
-The combination of **SpheRoPE's spherical RoPE + my equirectangular LoRA + circular VAE + per-step roll** produces results that surpass either approach individually:
-
-- The **LoRA** provides the foundation — without it the model doesn't output equirectangular content at all.
-- The **per-step roll** kills the seam more effectively than Path A alone, by ensuring no column always sits at the processing boundary.
-- SpheRoPE's **Path B (spherical coordinates)** straightens building geometry and reduces polar stretching, improving the overall structural quality.
-- The **circular VAE** ensures the decode doesn't reintroduce seam artifacts.
+- My **LoRA** provides the essential foundation — the model cannot produce text-to-video equirectangular output without it.
+- My **per-step roll** handles the seam boundary more effectively than Path A alone, by ensuring no column always sits at the processing boundary.
+- SpheRoPE's **Path B (spherical coordinates)** straightens building geometry and reduces polar stretching, improving overall structural quality.
+- My **circular VAE** ensures the decode doesn't reintroduce seam artifacts.
 - SpheRoPE's **wrapped noise** gives a subtle but consistent improvement to polar coherence.
 
-This is notable because in my testing SpheRoPE's method alone shows a visible seam, while combining SpheRoPE's positional encoding with my existing LoRA-based pipeline achieves seamless 360° video that holds up across diverse prompts.
+The combination of my LoRA-based pipeline with SpheRoPE's positional encoding ideas produces seamless equirectangular 360° video that neither approach achieves alone.
 
-I was unable to get SpheRoPE's **semantic distortion CFG** (the three-way guidance term) working reliably due to conflicts with TiledDiffusion's monkeypatching of ComfyUI's `calc_cond_batch`. The rest of SpheRoPE's contributions integrate cleanly.
+I was unable to get SpheRoPE's **semantic distortion CFG** (the three-way guidance term) working reliably due to conflicts with TiledDiffusion's monkeypatching of ComfyUI's `calc_cond_batch`. The rest of their ideas integrate cleanly.
 
 ## Why Equirectangular Inference Needs These Tools
 
@@ -91,7 +89,7 @@ Modes:
 
 ## SpheRoPE Spherical RoPE (separate custom node: `equirect_rope`)
 
-SpheRoPE's spherical positional encoding is implemented as a **separate custom node** (`EquirectPeriodicWRoPE` in the `equirect_rope/` directory). It monkeypatches `comfy.ldm.lightricks.model.generate_freqs` — the single entry point where LTX-2.3 computes all rotary position embedding angles — replacing the width-axis phase with a two-path spectral split:
+The spherical positional encoding described in the SpheRoPE paper (https://arxiv.org/abs/2606.32033) is implemented as a **separate custom node** (`EquirectPeriodicWRoPE` in the `equirect_rope/` directory). It monkeypatches `comfy.ldm.lightricks.model.generate_freqs` — the single entry point where LTX-2.3 computes all rotary position embedding angles — replacing the width-axis phase with a two-path spectral split:
 
 - **Path A** (high-frequency channels ≥ 10 cycles across the width): harmonic snapping, snapping the linear frequency to the nearest integer cycle count so the phase repeats exactly across the wrap.
 - **Path B** (low-frequency channels < 10 cycles): spherical Cartesian (X, Y) coordinates on the unit sphere. X = cos(lat)·cos(lon), Y = cos(lat)·sin(lon). At the poles (lat=±π/2), cos(lat)=0 so X=Y=0 for all longitudes, naturally encoding polar convergence.
@@ -102,7 +100,7 @@ Key parameters: `blend` (0=linear, 1=spherical), `path_b_threshold` (default 10.
 
 The node is idempotent and can be toggled at runtime.
 
-**License:** This nodepack is licensed under the PolyForm Noncommercial License 1.0.0 (https://polyformproject.org/licenses/noncommercial/1.0.0). The code derived from SpheRoPE (https://orhir.github.io/SpheRoPE/) by Or Hirshfeld, Lior Talker, and colleagues is used under CC BY-NC 4.0 compatibility — see the LICENSE file for details.
+**License:** This nodepack is licensed under the PolyForm Noncommercial License 1.0.0 (https://polyformproject.org/licenses/noncommercial/1.0.0). The spherical positional encoding and wrapped noise implementations are based on ideas from the SpheRoPE paper (https://arxiv.org/abs/2606.32033) by Or Hirshfeld, Lior Talker, and colleagues — see the LICENSE file for details.
 
 ## Circular VAE Padding
 
