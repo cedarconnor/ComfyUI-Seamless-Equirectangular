@@ -1,6 +1,7 @@
 """360 equirect seam nodes for LTX-2.x and compatible latent layouts.
-Copyright (C) 2026  Burgstall Labs — Licensed under CC BY-NC 4.0.
-https://creativecommons.org/licenses/by-nc/4.0/
+Copyright (C) 2026  Burgstall Labs
+Licensed under the PolyForm Noncommercial License 1.0.0.
+https://polyformproject.org/licenses/noncommercial/1.0.0
 
 Tools for equirectangular 360 video generation:
 
