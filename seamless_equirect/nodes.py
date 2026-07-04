@@ -15,21 +15,35 @@ Tools for equirectangular 360 video generation:
 - EquirectLatentSeamBlend: thin cross-fade of the W-edge latent columns
   (off-by-default cosmetic fallback).
 
-- EquirectWrappedNoise: SpheRoPE-style spherical phase remaster.
-  Modifies the initial noise latent's low-frequency phase to encode
-  polar convergence, reducing stretching at the top and bottom.
+- EquirectWrappedNoise: spherical phase remaster on the initial noise
+  latent, encoding polar convergence to reduce stretching at the poles.
+
+- EquirectSphericalRoPE: monkeypatches the LTX-2.3 transformer's position
+  encoding with a two-path spectral split (harmonic snapping for seam,
+  spherical coordinates for poles). Based on ideas from the SpheRoPE
+  paper (https://arxiv.org/abs/2606.32033).
 
 This module intentionally imports no comfy internals so its helpers are
 unit-testable standalone.
 """
 
+import importlib.util
 import logging
 import math
+import os
 
 import torch
+import comfy.ldm.lightricks.model as _ltx_model
 
 from .circular_conv import patch_vae_circular, seam_blend_w, unpatch_vae_circular
 from .latent_layouts import find_layout, roll_model_io, video_shape_from_conditioning
+
+# Load the vendored periodic_rope module
+_spec = importlib.util.spec_from_file_location(
+    "equirect_periodic_rope", os.path.join(os.path.dirname(__file__), "periodic_rope.py")
+)
+_periodic_rope = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(_periodic_rope)
 
 logger = logging.getLogger("SeamlessEquirectangular.seam")
 
@@ -361,17 +375,86 @@ class EquirectWrappedNoise:
         return (noise,)
 
 
+# ---------------------------------------------------------------------------
+# Spherical RoPE (SpheRoPE two-path spectral split)
+# ---------------------------------------------------------------------------
+
+def _resolve_w_scale(model):
+    for attr_chain in (("model", "diffusion_model"), ("model",)):
+        obj = model
+        ok = True
+        for a in attr_chain:
+            obj = getattr(obj, a, None)
+            if obj is None:
+                ok = False
+                break
+        if ok:
+            vsf = getattr(obj, "vae_scale_factors", None)
+            if vsf is not None and len(vsf) >= 3:
+                return float(vsf[2])
+    return 32.0
+
+
+class EquirectSphericalRoPE:
+    """Monkeypatches the LTX-2.3 transformer's RoPE with a spherical-aware
+    two-path spectral split for the width (longitude) axis.
+
+    Path A (high-frequency channels, >= threshold cycles): harmonic snapping
+      for seam continuity.
+    Path B (low-frequency channels, < threshold cycles): spherical Cartesian
+      (X, Y) coordinates for polar convergence.
+
+    Based on the SpheRoPE paper (https://arxiv.org/abs/2606.32033).
+    """
+
+    CATEGORY = "model_patches/equirect"
+    RETURN_TYPES = ("MODEL",)
+    FUNCTION = "patch"
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "model": ("MODEL",),
+                "enabled": ("BOOLEAN", {"default": True}),
+                "blend": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 1.0, "step": 0.05,
+                                     "tooltip": "0 = original linear, 1 = fully spherical."}),
+            },
+            "optional": {
+                "path_b_threshold": ("FLOAT", {"default": 10.0, "min": 0.0, "max": 100.0, "step": 0.5,
+                                                "tooltip": "Cycle threshold for Path A vs Path B. "
+                                                "Lower = more spherical channels."}),
+                "r_scale": ("FLOAT", {"default": 1.0, "min": 0.1, "max": 10.0, "step": 0.1,
+                                       "tooltip": "Spherical coordinate magnitude."}),
+            },
+        }
+
+    def patch(self, model, enabled, blend, path_b_threshold=10.0, r_scale=1.0):
+        w_scale = _resolve_w_scale(model)
+        _periodic_rope.install(_ltx_model, w_scale=w_scale)
+        _periodic_rope.set_params(
+            enabled=bool(enabled), alpha=float(blend), w_scale=w_scale,
+            path_b_threshold=float(path_b_threshold), r_scale=float(r_scale),
+        )
+        mode = "spherical Path A+B" if enabled else "linear"
+        print(f"[EquirectSphericalRoPE] enabled={enabled} blend={blend} "
+              f"threshold={path_b_threshold} r_scale={r_scale} (W-axis: {mode})")
+        return (model,)
+
+
 NODE_CLASS_MAPPINGS = {
     "EquirectPerStepRoll": EquirectPerStepRoll,
     "EquirectCircularVAE": EquirectCircularVAE,
     "EquirectLatentSeamBlend": EquirectLatentSeamBlend,
     "EquirectWrappedNoise": EquirectWrappedNoise,
+    "EquirectSphericalRoPE": EquirectSphericalRoPE,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
     "EquirectPerStepRoll": "Equirect Per-Step Latent Roll (360 seam)",
     "EquirectCircularVAE": "Equirect Circular VAE (360 seam)",
     "EquirectLatentSeamBlend": "Equirect Latent Seam Blend (fallback)",
-    "EquirectWrappedNoise": "Equirect Wrapped Noise (SpheRoPE spherical phase remaster)",
+    "EquirectWrappedNoise": "Equirect Wrapped Noise (spherical phase remaster)",
+    "EquirectSphericalRoPE": "Equirect Spherical RoPE (SpheRoPE)",
 }
 

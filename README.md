@@ -17,7 +17,8 @@ The LoRA is available on Hugging Face: [TheBurgstall/Seamless-Equirectangular-LT
 | **EquirectCircularVAE** | `VAE → VAE` | Patches VAE decoder convolutions to use circular padding along the width (longitude) axis. Fixes the decode-side seam caused by zero-padded convolutions at the 360° wrap boundary. |
 | **EquirectPerStepRoll** | `MODEL → MODEL` | Wraps the diffusion model so every denoising step runs on a W-rolled latent. Each step sees a different longitudinal shift, so no column is always at the model's processing boundary — forces content coherent across the wrap. Based on the Diffusion360 / PanoDiffusion circular shift method. |
 | **EquirectLatentSeamBlend** | `LATENT → LATENT` | Thin cross-fade of the W-edge latent columns. Cosmetic fallback — smooths the boundary band but does not make content wrap. Off by default. |
-| **EquirectWrappedNoise** | `NOISE → NOISE` | SpheRoPE-style spherical phase remaster. Modifies the initial noise latent's low-frequency phase to encode polar convergence, reducing stretching at the top and bottom poles. |
+| **EquirectWrappedNoise** | `NOISE → NOISE` | Spherical phase remaster on the initial noise latent. Encodes polar convergence into low-frequency phase, reducing stretching at the poles. |
+| **EquirectSphericalRoPE** | `MODEL → MODEL` | Spherical-aware width-axis RoPE with two-path spectral split (harmonic snapping + spherical coordinates). Based on the SpheRoPE paper. |
 
 ## History
 
@@ -35,7 +36,9 @@ The first solutions were:
 
 - **Circular VAE padding** (`EquirectCircularVAE`): wrapping each VAE convolution's forward so width padding is circular while height and time remain non-periodic. This eliminates the decode-side seam.
 
-- **Per-step latent rolling** (`EquirectPerStepRoll`): rolling the latent by a per-sigma deterministic shift before each model forward, then unrolling the prediction. This forces every longitude to be generated as "interior" at some step and proved critical for seam continuity. **Note:** the `dual_average` mode (evaluating two opposite shifts per step) can introduce repeated geometry — twin subjects or mirrored buildings appearing roughly 180° apart. If you see this, try `random_per_step` mode instead, or disable the roll node entirely (the SpheRoPE spherical RoPE alone may suffice for your use case).
+- **Circular (periodic) RoPE** was also explored as a possible solution — making the width axis of the transformer's position encoding periodic so column 0 and column W-1 become adjacent in rotary phase. This was tested but didn't produce usable results; the cylindrical topology helped conceptually but the implementation wasn't effective without the spherical component I later found in the SpheRoPE paper.
+
+- **Per-step latent rolling** (`EquirectPerStepRoll`): rolling the latent by a per-sigma deterministic shift before each model forward, then unrolling the prediction. This forces every longitude to be generated as "interior" at some step and proved critical for seam continuity. **Note:** the `dual_average` mode (evaluating two opposite shifts per step) can introduce repeated geometry — twin subjects or mirrored buildings appearing roughly 180° apart. If you see this, try `random_per_step` mode instead, or disable the roll node entirely.
 
 The LoRA, circular VAE, and per-step roll together produced seamless equirectangular video that was already working in production. In a batch of 20 evaluation prompts, this setup produced good results but would occasionally (roughly 2 out of 20) lose the equirectangular projection shape. This instability is what SpheRoPE's method for spherical positional encoding helps resolve — it provides a persistent geometric signal that keeps the model's output structurally consistent across diverse prompts.
 
@@ -87,9 +90,9 @@ Modes:
 - `half_turn`: diagnostic mode using a constant half-width shift.
 - `feather_columns`: cross-fade the boundary columns of each step's prediction (2-4 is sensible).
 
-## SpheRoPE Spherical RoPE (separate custom node: `equirect_rope`)
+## SpheRoPE Spherical RoPE
 
-The spherical positional encoding described in the SpheRoPE paper (https://arxiv.org/abs/2606.32033) is implemented as a **separate custom node** (`EquirectPeriodicWRoPE` in the `equirect_rope/` directory). It monkeypatches `comfy.ldm.lightricks.model.generate_freqs` — the single entry point where LTX-2.3 computes all rotary position embedding angles — replacing the width-axis phase with a two-path spectral split:
+The spherical positional encoding described in the SpheRoPE paper (https://arxiv.org/abs/2606.32033) is implemented as the **EquirectSphericalRoPE** node. It monkeypatches `comfy.ldm.lightricks.model.generate_freqs` — the single entry point where LTX-2.3 computes all rotary position embedding angles — replacing the width-axis phase with a two-path spectral split:
 
 - **Path A** (high-frequency channels ≥ 10 cycles across the width): harmonic snapping, snapping the linear frequency to the nearest integer cycle count so the phase repeats exactly across the wrap.
 - **Path B** (low-frequency channels < 10 cycles): spherical Cartesian (X, Y) coordinates on the unit sphere. X = cos(lat)·cos(lon), Y = cos(lat)·sin(lon). At the poles (lat=±π/2), cos(lat)=0 so X=Y=0 for all longitudes, naturally encoding polar convergence.
@@ -130,29 +133,26 @@ cd ComfyUI/custom_nodes
 git clone https://github.com/Burgstall-labs/ComfyUI-Seamless-Equirectangular
 ```
 
-The `equirect_rope/` custom node (SpheRoPE spherical RoPE) is bundled alongside.
-
 Restart ComfyUI. The nodes appear under their respective categories:
 - `model_patches/equirect`
 - `latent/video/equirect`
 - `noise/equirect`
-- `360/seamless` (equirect_rope node)
 
 No extra runtime dependency is required beyond the torch runtime already used by ComfyUI.
 
 ## Recommended Pipeline
 
 ```
-UNETLoader → Equirect Spherical RoPE → LTX2_NAG → PerStepRoll → CFGGuider → SamplerCustomAdvanced
+UNETLoader → EquirectSphericalRoPE → LTX2_NAG → PerStepRoll → CFGGuider → SamplerCustomAdvanced
 ```
 
 With:
 - EquirectCircularVAE: enabled, decoder=True
 - EquirectWrappedNoise: enabled, radius=4
 - EquirectPerStepRoll: try `random_per_step` first (avoids the repeated-geometry issue); switch to `dual_average` if seam banding is visible and you don't see twin artifacts
-- Equirect Spherical RoPE: blend=1.0, threshold=10.0, r_scale=1.0
+- EquirectSphericalRoPE: blend=1.0, threshold=10.0, r_scale=1.0
 
-Your equirectangular LoRA (trained on zero-padded VAE) should be loaded — the SpheRoPE RoPE patch is not a replacement for the LoRA, which carries the essential equirectangular output knowledge that the frozen base model lacks.
+Your equirectangular LoRA should be loaded — none of these nodes replace the LoRA, which carries the essential equirectangular output knowledge that the frozen base model lacks.
 
 ## Tests
 
