@@ -2,7 +2,7 @@
 
 **ComfyUI-Seamless-Equirectangular** is a ComfyUI custom node pack by **Burgstall Labs** for seamless equirectangular, 360-degree, VR, and panoramic video generation with LTX-2.3. It provides training-free seam mitigation and geometry enhancement for equirectangular inference.
 
-This is the result of extensive experimentation: training a dedicated equirectangular LoRA, then developing circular VAE padding and per-step latent rolling to handle the seam — then implementing the spherical positional encoding and wrapped noise ideas from the SpheRoPE paper (https://arxiv.org/abs/2606.32033) on top of that foundation. The combined pipeline produces seamless 360° video that neither approach achieves alone.
+This is the result of extensive experimentation: training a dedicated equirectangular LoRA, then developing circular VAE padding, per-step latent rolling, and spherical phase remaster noise to handle the seam and pole convergence — then implementing the spherical positional encoding ideas from the SpheRoPE paper (https://arxiv.org/abs/2606.32033) on top of that foundation. The combined pipeline produces seamless 360° video that neither approach achieves alone.
 
 The LoRA is available on Hugging Face: [TheBurgstall/Seamless-Equirectangular-LTX2.3-LoRA](https://huggingface.co/TheBurgstall/Seamless-Equirectangular-LTX2.3-LoRA)
 
@@ -15,7 +15,7 @@ The LoRA is available on Hugging Face: [TheBurgstall/Seamless-Equirectangular-LT
 | **EquirectCircularVAE** | `VAE → VAE` | Patches VAE decoder convolutions to use circular padding along the width (longitude) axis. Fixes the decode-side seam caused by zero-padded convolutions at the 360° wrap boundary. |
 | **EquirectPerStepRoll** | `MODEL → MODEL` | Wraps the diffusion model so every denoising step runs on a W-rolled latent. Each step sees a different longitudinal shift, so no column is always at the model's processing boundary — forces content coherent across the wrap. Based on the Diffusion360 / PanoDiffusion circular shift method. |
 | **EquirectLatentSeamBlend** | `LATENT → LATENT` | Thin cross-fade of the W-edge latent columns. Cosmetic fallback — smooths the boundary band but does not make content wrap. Off by default. |
-| **EquirectWrappedNoise** | `NOISE → NOISE` | Spherical phase remaster on the initial noise latent. Encodes polar convergence into low-frequency phase, reducing stretching at the poles. Based on the SpheRoPE paper. |
+| **EquirectWrappedNoise** | `NOISE → NOISE` | Spherical phase remaster on the initial noise latent. Encodes polar convergence into low-frequency phase, reducing stretching at the poles. Original method developed during this project. |
 | **EquirectSphericalRoPE** | `MODEL → MODEL` | Spherical-aware width-axis RoPE with two-path spectral split (harmonic snapping + spherical coordinates). Based on the SpheRoPE paper. |
 
 ## History
@@ -42,7 +42,7 @@ The LoRA, circular VAE, and per-step roll together produced seamless equirectang
 
 ### Post-SpheRoPE integration
 
-After the SpheRoPE paper (https://arxiv.org/abs/2606.32033) was released, I implemented its spherical positional encoding ideas — the two-path spectral split (Path A for harmonic snapping at the seam, Path B for spherical Cartesian coordinates at the poles) and wrapped noise (spherical phase remaster on the initial noise latent).
+After the SpheRoPE paper (https://arxiv.org/abs/2606.32033) was released, I implemented its spherical positional encoding ideas — the two-path spectral split (Path A for harmonic snapping at the seam, Path B for spherical Cartesian coordinates at the poles). This complemented the wrapped noise and circular VAE methods I had already developed.
 
 In my testing, a partial implementation of SpheRoPE's methods on their own was not sufficient to produce fully seamless equirectangular output. However, combining their spherical positional encoding ideas with my existing equirectangular LoRA and pre-SpheRoPE findings produced excellent results:
 
@@ -50,7 +50,7 @@ In my testing, a partial implementation of SpheRoPE's methods on their own was n
 - My **per-step roll** handles the seam boundary more effectively than Path A alone, by ensuring no column always sits at the processing boundary.
 - SpheRoPE methodology for **Path B (spherical coordinates)** straightens building geometry and reduces polar stretching, improving overall structural quality.
 - My **circular VAE** ensures the decode doesn't reintroduce seam artifacts.
-- SpheRoPE methodology for **wrapped noise** gives a subtle but consistent improvement to polar coherence.
+- My **wrapped noise** gives a subtle but consistent improvement to polar coherence (original method, not from SpheRoPE).
 
 The combination of my LoRA-based pipeline with SpheRoPE's positional encoding ideas produces seamless equirectangular 360° video that neither approach achieves alone (in my testing, admittedly missing the tests with the original full SpheRoPE implementation).
 
@@ -101,7 +101,7 @@ Key parameters: `blend` (0=linear, 1=spherical), `path_b_threshold` (default 10.
 
 The node is idempotent and can be toggled at runtime.
 
-**License:** This nodepack is licensed under the PolyForm Noncommercial License 1.0.0 (https://polyformproject.org/licenses/noncommercial/1.0.0). Noncommercial use (research, academic, personal, hobbyist) is free. Commercial use requires a separate license — contact **howdy@theaiwrangler.com**. The spherical positional encoding and wrapped noise implementations are based on ideas from the SpheRoPE paper (https://arxiv.org/abs/2606.32033) by Or Hirshfeld, Lior Talker, and colleagues — see the LICENSE file for details.
+**License:** This nodepack is licensed under the PolyForm Noncommercial License 1.0.0 (https://polyformproject.org/licenses/noncommercial/1.0.0). Noncommercial use (research, academic, personal, hobbyist) is free. Commercial use requires a separate license — contact **howdy@theaiwrangler.com**. The spherical positional encoding implementation is based on ideas from the SpheRoPE paper (https://arxiv.org/abs/2606.32033) by Or Hirshfeld, Lior Talker, and colleagues — see the LICENSE file for details.
 
 ## Circular VAE Padding
 
@@ -109,9 +109,9 @@ The node is idempotent and can be toggled at runtime.
 
 Important caveat: ComfyUI caches VAEs by file. This node modifies the loaded VAE object in place, so every consumer of the same loaded VAE file in a run sees the same patched or restored state. The node resets to stock before applying its selected state, but true stock-vs-circular A/B testing needs separate runs or separate loaded VAE objects.
 
-## Wrapped Noise (SpheRoPE Spherical Phase Remaster)
+## Wrapped Noise (Spherical Phase Remaster)
 
-`EquirectWrappedNoise` wraps a NOISE generator and applies SpheRoPE's spherical phase remaster to the initial noise latent before denoising. The algorithm:
+`EquirectWrappedNoise` wraps a NOISE generator and applies a spherical phase remaster (original method, developed during this project) to the initial noise latent before denoising. The algorithm:
 
 1. Creates a "macro-structure" version by weighting each row toward its row mean, with strength alpha = 1 − cos(latitude) — zero at the equator, ~1 at the poles.
 2. Computes 2D FFT of both original and macro noise.
@@ -120,7 +120,7 @@ Important caveat: ComfyUI caches VAEs by file. This node modifies the loaded VAE
 
 This encodes polar convergence into the noise structure before denoising begins, providing a subtle but consistent improvement to pole quality.
 
-The `radius` parameter defaults to 4 for typical LTX-2.3 latent resolutions (20×40). SpheRoPE's default of 12 targets their 64×128 latent grid.
+The `radius` parameter defaults to 4 for typical LTX-2.3 latent resolutions (20×40). A higher value like 12 matches the 64×128 latent grid used by the SpheRoPE paper's position encoding experiments but is too broad for LTX's smaller latents.
 
 ## Installation
 

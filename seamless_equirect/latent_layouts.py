@@ -21,6 +21,19 @@ def video_shape_from_conditioning(c):
     return None
 
 
+class PlainImage4DLayout:
+    name = "plain_image_4d"
+
+    def detect(self, x, video_shape=None) -> bool:
+        return x.ndim == 4
+
+    def width(self, x, video_shape=None) -> int:
+        return int(x.shape[-1])
+
+    def roll(self, x, video_shape, shift: int):
+        return torch.roll(x, shifts=shift, dims=-1)
+
+
 class PlainVideo5DLayout:
     name = "plain_video_5d"
 
@@ -54,7 +67,7 @@ class LTXPackedAVLayout:
         return torch.cat([vid, x[:, :, n:]], dim=-1)
 
 
-_LAYOUTS = (PlainVideo5DLayout(), LTXPackedAVLayout())
+_LAYOUTS = (PlainVideo5DLayout(), LTXPackedAVLayout(), PlainImage4DLayout())
 
 
 def find_layout(x: torch.Tensor, video_shape=None):
