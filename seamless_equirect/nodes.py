@@ -85,6 +85,20 @@ def shifts_for_sigma(sigma_val: float, w: int, seed: int, mode: str):
     return [s, (s + w // 2 + jitter) % w]
 
 
+def run_percent(c, sigma_val: float):
+    """Fraction of the current sampler run completed, from the sigma schedule.
+
+    Returns None when the schedule isn't available (e.g. a sampler that doesn't
+    populate transformer_options["sample_sigmas"]).
+    """
+    sched = c.get("transformer_options", {}).get("sample_sigmas", None)
+    if sched is None or len(sched) < 2:
+        return None
+    sched = sched.detach().float().cpu()
+    idx = int((sched - sigma_val).abs().argmin().item())
+    return idx / (len(sched) - 1)
+
+
 def feather_model_io(x: torch.Tensor, video_shape, columns: int):
     """Cross-fade the video part's W-edge columns of a rolled model prediction."""
     if columns <= 0:
@@ -133,10 +147,18 @@ class EquirectPerStepRoll:
                     "tooltip": "Cross-fade this many latent columns of each step's prediction at "
                     "that step's processing boundary (free banding mitigation; 2-4 is sensible).",
                 }),
+                "start_percent": ("FLOAT", {
+                    "default": 0.0, "min": 0.0, "max": 1.0, "step": 0.05,
+                    "tooltip": "Hold off rolling for the first fraction of the run. Scene layout "
+                    "forms in the early steps; keeping the boundary at the true wrap edge there "
+                    "(where WrappedNoise correlates content) lets the panorama close structurally, "
+                    "then rolling kicks in to heal seam tone/texture. 0 = roll every step. "
+                    "0.2-0.3 is a sensible starting point against layout cuts in fast-motion scenes.",
+                }),
             },
         }
 
-    def patch(self, model, enabled, mode, seed, feather_columns=0):
+    def patch(self, model, enabled, mode, seed, feather_columns=0, start_percent=0.0):
         if not enabled:
             return (model,)
 
@@ -166,10 +188,18 @@ class EquirectPerStepRoll:
 
             if not logged["done"]:
                 logger.info(
-                    "EquirectPerStepRoll active: W=%d, mode=%s, seed=%d, feather=%d",
-                    w, mode, seed, feather_columns,
+                    "EquirectPerStepRoll active: W=%d, mode=%s, seed=%d, feather=%d, start_percent=%.2f",
+                    w, mode, seed, feather_columns, start_percent,
                 )
                 logged["done"] = True
+
+            # Layout phase: keep the boundary at the true wrap edge until
+            # start_percent of the run is done, so the panorama can close
+            # structurally before rolling starts relocating the boundary.
+            if start_percent > 0.0:
+                pct = run_percent(c, sigma_val)
+                if pct is not None and pct < start_percent:
+                    return apply_model(x, timestep, **c)
 
             mask = c.get("denoise_mask", None)
             out_sum = None
@@ -457,4 +487,14 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "EquirectWrappedNoise": "Equirect Wrapped Noise (spherical phase remaster)",
     "EquirectSphericalRoPE": "Equirect Spherical RoPE (SpheRoPE)",
 }
+
+# Merge in nodes from submodule files that ComfyUI's loader doesn't auto-discover
+for _module_name in ("soft_pole", "equirope", "equirope_cfg"):
+    try:
+        _mod = importlib.import_module(f".{_module_name}", __package__)
+        if hasattr(_mod, "NODE_CLASS_MAPPINGS"):
+            NODE_CLASS_MAPPINGS.update(getattr(_mod, "NODE_CLASS_MAPPINGS", {}))
+            NODE_DISPLAY_NAME_MAPPINGS.update(getattr(_mod, "NODE_DISPLAY_NAME_MAPPINGS", {}))
+    except Exception:
+        pass
 
