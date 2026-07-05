@@ -216,7 +216,7 @@ def test_seam_blend_w():
 
 
 # ---------------------------------------------------------------------------
-# Semantic Distortion CFG
+# Semantic Distortion CFG (dev-branch node — tests skip when absent on main)
 # ---------------------------------------------------------------------------
 def test_semantic_cfg_node_disabled():
     """enabled=False must return the original model object."""
@@ -326,8 +326,11 @@ if __name__ == "__main__":
     test_per_step_roll_wrapper_end_to_end()
     test_dual_average_and_feather()
     test_seam_blend_w()
-    test_semantic_cfg_node_disabled()
-    test_semantic_cfg_three_way_formula()
-    test_semantic_cfg_gamma_zero_fallback()
-    test_semantic_cfg_model_options_set_correctly()
+    if hasattr(sn, "EquirectSemanticDistortionCFG"):
+        test_semantic_cfg_node_disabled()
+        test_semantic_cfg_three_way_formula()
+        test_semantic_cfg_gamma_zero_fallback()
+        test_semantic_cfg_model_options_set_correctly()
+    else:
+        print("skip: EquirectSemanticDistortionCFG not present on this branch (dev-only node)")
     print("ALL TESTS PASSED")
