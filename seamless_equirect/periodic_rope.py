@@ -21,8 +21,13 @@ would produce wrong magnitudes and crash the GPU.
 Pure torch, no comfy/musubi imports.
 """
 
+import logging
 import math
+import time
+
 import torch
+
+logger = logging.getLogger("SeamlessEquirectangular.periodic_rope")
 
 # ---- module state (set by install/set_params) -------------------------------
 _ORIG = {}          # module id -> original generate_freqs (for uninstall)
@@ -31,6 +36,11 @@ _ALPHA = 1.0        # 0 = linear (identity), 1 = fully spherical
 _W_SCALE = 32.0     # W VAE spatial scale factor
 _SENTINEL = "_periodic_w_rope_installed"
 _HARM_CACHE = {}    # (K, W_count) -> cpu float tensor [K]
+
+# The monkeypatch is global module state: it survives node removal/bypass. Warn
+# on every sampling run so silent carry-over can't skew A/B comparisons.
+_WARN_INTERVAL = 60.0
+_last_active_warn = 0.0
 
 # SpheRoPE parameters
 _PATH_B_THRESHOLD = 10.0   # cycles threshold for Path B vs Path A
@@ -228,10 +238,25 @@ def build_freqs_periodic(indices, indices_grid, max_pos, use_middle_indices_grid
 # Wrapper and install
 # ---------------------------------------------------------------------------
 
+def _warn_active():
+    global _last_active_warn
+    now = time.monotonic()
+    if now - _last_active_warn >= _WARN_INTERVAL:
+        _last_active_warn = now
+        logger.warning(
+            "SpheRoPE global RoPE patch is ACTIVE (alpha=%.2f). It applies to "
+            "every LTX run in this ComfyUI session — bypassing or deleting the "
+            "node does NOT disable it. Run the node with enabled=False or "
+            "restart ComfyUI to restore stock RoPE.",
+            _ALPHA,
+        )
+
+
 def make_wrapper(orig_generate_freqs):
     def generate_freqs_periodic(indices, indices_grid, max_pos, use_middle_indices_grid):
         if not _ENABLED or indices_grid.shape[1] != 3:
             return orig_generate_freqs(indices, indices_grid, max_pos, use_middle_indices_grid)
+        _warn_active()
         return build_freqs_periodic(indices, indices_grid, max_pos, use_middle_indices_grid)
     generate_freqs_periodic._periodic_wrapper = True
     return generate_freqs_periodic
