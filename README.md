@@ -6,6 +6,8 @@ This is the result of extensive experimentation: training a dedicated equirectan
 
 The LoRA is available on Hugging Face: [TheBurgstall/Seamless-Equirectangular-LTX2.3-LoRA](https://huggingface.co/TheBurgstall/Seamless-Equirectangular-LTX2.3-LoRA)
 
+**Try it / see it live:** [360° gallery + interactive viewer](https://huggingface.co/spaces/TheBurgstall/360viewer) — sample generations below, drag to look around.
+
 **Keywords:** ComfyUI seamless equirectangular, LTX-2.3 360 video, SpheRoPE, circular VAE padding, per-step latent roll, panoramic video generation, Burgstall Labs.
 
 ## Nodes
@@ -147,6 +149,22 @@ This encodes polar convergence into the noise structure before denoising begins,
 
 The `radius` parameter defaults to 4 for typical LTX-2.3 latent resolutions (20×40). A higher value like 12 matches the 64×128 latent grid used by the SpheRoPE paper's position encoding experiments but is too broad for LTX's smaller latents.
 
+## Examples
+
+Three text-to-video generations from the pipeline above (LoRA + EquiRoPE +
+Geometric CFG + per-step roll + circular VAE + wrapped noise). Click a clip
+to open it in the interactive viewer — drag to look around. More clips,
+including the VR-outpaint side of the project, are in the
+[full gallery](https://huggingface.co/spaces/TheBurgstall/360viewer/blob/main/gallery.html).
+
+| | | |
+|---|---|---|
+| [![Resort pool courtyard](docs/media/t2v-pool-courtyard.gif)](https://theburgstall-360viewer.hf.space/index.html?url=https%3A%2F%2Fhuggingface.co%2Fspaces%2FTheBurgstall%2F360viewer%2Fresolve%2Fmain%2Fmedia%2Ft2v-pool-courtyard.mp4) | [![Jungle clearing after rain](docs/media/t2v-jungle-after-rain.gif)](https://theburgstall-360viewer.hf.space/index.html?url=https%3A%2F%2Fhuggingface.co%2Fspaces%2FTheBurgstall%2F360viewer%2Fresolve%2Fmain%2Fmedia%2Ft2v-jungle-after-rain.mp4) | [![Drone flight, jungle river at dawn](docs/media/t2v-jungle-drone-dawn.gif)](https://theburgstall-360viewer.hf.space/index.html?url=https%3A%2F%2Fhuggingface.co%2Fspaces%2FTheBurgstall%2F360viewer%2Fresolve%2Fmain%2Fmedia%2Ft2v-jungle-drone-dawn.mp4) |
+| Resort pool courtyard (stationary) | Jungle clearing after rain (stationary) | Drone flight, jungle river at dawn (fast motion) |
+
+The example workflow used for these:
+[`example_workflows/Burgstall-SEAMLESS-equirectangular-T2V.json`](example_workflows/Burgstall-SEAMLESS-equirectangular-T2V.json).
+
 ## Installation
 
 Clone into `ComfyUI/custom_nodes`:
@@ -196,3 +214,8 @@ The tests cover circular Conv2d/Conv3d patch/unpatch behavior, VAE encoder/decod
 ## Related Burgstall Labs Work
 
 Burgstall Labs develops practical open-source tools for 360-degree AI video, VR-outpainting, panoramic generation, and ComfyUI-based production workflows. ComfyUI-Seamless-Equirectangular provides the seam-inference and geometry-enhancement layer that complements projection, outpainting, and LoRA workflows for immersive video.
+
+- **[360° gallery + viewer](https://huggingface.co/spaces/TheBurgstall/360viewer)** — sample generations from this pack and from VR-Outpaint-Tools, viewable interactively; both example workflows are downloadable there too.
+- **[ComfyUI-VR-Outpaint-Tools](https://github.com/Burgstall-labs/ComfyUI-VR-Outpaint-Tools)** — outpaint a normal perspective video into a full 360° panorama (projection prep, camera estimation, outpaint finishing). Companion pipeline: same seam/pole techniques, applied to real footage instead of text-to-video.
+- **[ComfyUI-Domemaster-Outpaint](https://github.com/Burgstall-labs/ComfyUI-Domemaster-Outpaint)** — render an outpainted (or any equirectangular) panorama as a domemaster for fulldome / planetarium delivery, with tilted-venue presets.
+- **[Seamless-Equirectangular-LTX2.3-LoRA](https://huggingface.co/TheBurgstall/Seamless-Equirectangular-LTX2.3-LoRA)** — the LoRA this pack's nodes are built around.
