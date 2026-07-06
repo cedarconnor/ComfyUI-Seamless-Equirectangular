@@ -165,6 +165,23 @@ including the VR-outpaint side of the project, are in the
 The example workflow used for these:
 [`example_workflows/Burgstall-SEAMLESS-equirectangular-T2V.json`](example_workflows/Burgstall-SEAMLESS-equirectangular-T2V.json).
 
+### VR Outpaint (flat video → 360°)
+
+The same seam/pole techniques also apply to outpainting real footage into a
+full panorama, via the companion pack
+[**ComfyUI-VR-Outpaint-Tools**](https://github.com/Burgstall-labs/ComfyUI-VR-Outpaint-Tools):
+a normal perspective clip is projected onto the equirect canvas and the
+surrounding sphere is outpainted around it, keeping the original footage at
+full quality.
+
+| | | |
+|---|---|---|
+| [![Jungle clearing, outpainted](docs/media/outpaint-jungle-clearing.gif)](https://theburgstall-360viewer.static.hf.space/index.html?url=https%3A%2F%2Fhuggingface.co%2Fspaces%2FTheBurgstall%2F360viewer%2Fresolve%2Fmain%2Fmedia%2Foutpaint-jungle-clearing.mp4) | [![Covered market hall, outpainted](docs/media/outpaint-market-hall.gif)](https://theburgstall-360viewer.static.hf.space/index.html?url=https%3A%2F%2Fhuggingface.co%2Fspaces%2FTheBurgstall%2F360viewer%2Fresolve%2Fmain%2Fmedia%2Foutpaint-market-hall.mp4) | [![Skatepark run, outpainted](docs/media/outpaint-skatepark.gif)](https://theburgstall-360viewer.static.hf.space/index.html?url=https%3A%2F%2Fhuggingface.co%2Fspaces%2FTheBurgstall%2F360viewer%2Fresolve%2Fmain%2Fmedia%2Foutpaint-skatepark.mp4) |
+| Jungle clearing | Covered market hall | Skatepark run |
+
+Example workflow for these (requires ComfyUI-VR-Outpaint-Tools installed):
+[`example_workflows/Burgstall-SEAMLESS-VR-Outpaint.json`](example_workflows/Burgstall-SEAMLESS-VR-Outpaint.json).
+
 ## Installation
 
 Clone into `ComfyUI/custom_nodes`:
