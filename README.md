@@ -49,24 +49,26 @@ The LoRA, circular VAE, and per-step roll together produced seamless equirectang
 
 After the SpheRoPE paper (https://arxiv.org/abs/2606.32033) was released, I implemented its spherical positional encoding ideas — the two-path spectral split (Path A for harmonic snapping at the seam, Path B for spherical Cartesian coordinates at the poles). This complemented the wrapped noise and circular VAE methods I had already developed.
 
-In my testing, a partial implementation of SpheRoPE's methods on their own was not sufficient to produce fully seamless equirectangular output. However, combining their spherical positional encoding ideas with my existing equirectangular LoRA and pre-SpheRoPE findings produced excellent results:
+In my testing, this admittedly partial (and therefore in no way conclusive of the overall functionality of their method) implementation of SpheRoPE's methods on their own was not sufficient to produce fully seamless equirectangular output. However, combining their spherical positional encoding ideas with my existing equirectangular LoRA and pre-SpheRoPE findings produced promising results:
 
-- My **LoRA** provides the essential foundation — the model cannot produce text-to-video equirectangular output without it. Not even with my partial implementation of the SpheRoPE ideas. (Note: This is not to say the full implementation cannot do this, I have not had the opportunity to test the full original implementation yet.)
+- My **LoRA** provides the essential foundation — the model cannot produce text-to-video equirectangular output without it. Not even with my partial implementation of the SpheRoPE ideas. (Note: This is not to say the full implementation cannot do this, I have not had the opportunity to test the full original implementation yet. The original implementation which I modified to run on 32Gb VRAM that I did, didn't produce equirectangular either)
 - My **per-step roll** handles the seam boundary more effectively than Path A alone, by ensuring no column always sits at the processing boundary.
 - SpheRoPE methodology for **Path B (spherical coordinates)** straightens building geometry and reduces polar stretching, improving overall structural quality.
 - My **circular VAE** ensures the decode doesn't reintroduce seam artifacts.
-- My **wrapped noise** gives a subtle but consistent improvement to polar coherence (original method, not from SpheRoPE).
+- My **wrapped noise** gives a subtle but consistent improvement to polar coherence.
 
-The combination of my LoRA-based pipeline with SpheRoPE's positional encoding ideas produces seamless equirectangular 360° video that neither approach achieves alone (in my testing, admittedly missing the tests with the original full SpheRoPE implementation).
+The combination of my LoRA-based pipeline with positional encoding produces seamless equirectangular 360° video that neither approach achieves alone.
 
 I was unable to get SpheRoPE's **semantic distortion CFG** (the three-way guidance term) working reliably due to conflicts with TiledDiffusion's monkeypatching of ComfyUI's `calc_cond_batch`. The rest of their described methodologies integrate cleanly.
 
-### EquiRoPE and the division-of-labor findings (July 2026)
+### EquiRoPE and the findings
 
-A controlled test ladder (same seeds, one variable per run) sharpened the picture of what each layer actually contributes:
+Based on the ideas presented by the SpheRoPE paper, another approach was developed and tested. EquiRoPE modifies the horizontal RoPE coordinate near the equirectangular poles: for low-frequency channels, (x) is replaced by (x' = x \cdot s(\phi)), where (s(\phi)\approx |\cos(\phi)|^\gamma) near the selected pole(s). This contracts longitude positions toward co-location as latitude (\phi) approaches (\pm90^\circ), while high-frequency channels retain standard RoPE coordinates to preserve LoRA compatibility.
+
+With this, a controlled test ladder (same seeds, one variable per run) sharpened the picture of what each layer actually contributes:
 
 - **LoRA + per-step roll + circular VAE alone produces seamless output** — the wrap-edge difference is statistically indistinguishable from any interior column pair. Position-encoding patches are refinements, not the backbone.
-- Without the LoRA, no inference-time patch produces equirectangular output at all: RoPE modifications are geometric *consistency* constraints, not a content prior.
+- Without the LoRA, no inference-time patch in this nodepack produces equirectangular output at all: RoPE modifications are geometric *consistency* constraints, not a content prior.
 - EquiRoPE with the classic `|cos(latitude)|` profile cleaned up nadir melt but bent long horizontals (rooflines) at mid-latitudes — the cos profile compresses positions ~30% already at 45°. The `pole_gamma` gate (default 3.0) keeps mid-latitudes at ~0.95–1.0 while still collapsing the pole rows; `pole_side=bottom` removes the cost entirely for outdoor scenes, where the zenith is just sky.
 - In fast-panning scenes, per-step rolling during the early layout-forming steps let the panorama fail to close structurally — a hard cut between two different buildings, frozen at a latent column. `start_percent` (0.2–0.3) holds the boundary at the true wrap edge until the layout is settled, then rolls to heal seam tone.
 
@@ -120,7 +122,6 @@ The node is idempotent and can be toggled at runtime.
 
 **Status:** validated on slow scenes. Under fast camera motion it currently produces severe artifacts (scattered debris, duplicated content) — use EquiRoPE there.
 
-**License:** This nodepack is licensed under the PolyForm Noncommercial License 1.0.0 (https://polyformproject.org/licenses/noncommercial/1.0.0). Noncommercial use (research, academic, personal, hobbyist) is free. Commercial use requires a separate license — contact **howdy@theaiwrangler.com**. The spherical positional encoding implementation is based on ideas from the SpheRoPE paper (https://arxiv.org/abs/2606.32033) by Or Hirshfeld, Lior Talker, and colleagues — see the LICENSE file for details.
 
 ## EquiRoPE (Latitude-Scaled RoPE) and Geometric CFG
 
@@ -236,3 +237,6 @@ Burgstall Labs develops practical open-source tools for 360-degree AI video, VR-
 - **[ComfyUI-VR-Outpaint-Tools](https://github.com/Burgstall-labs/ComfyUI-VR-Outpaint-Tools)** — outpaint a normal perspective video into a full 360° panorama (projection prep, camera estimation, outpaint finishing). Companion pipeline: same seam/pole techniques, applied to real footage instead of text-to-video.
 - **[ComfyUI-Domemaster-Outpaint](https://github.com/Burgstall-labs/ComfyUI-Domemaster-Outpaint)** — render an outpainted (or any equirectangular) panorama as a domemaster for fulldome / planetarium delivery, with tilted-venue presets.
 - **[Seamless-Equirectangular-LTX2.3-LoRA](https://huggingface.co/TheBurgstall/Seamless-Equirectangular-LTX2.3-LoRA)** — the LoRA this pack's nodes are built around.
+
+
+**License:** This nodepack is licensed under the PolyForm Noncommercial License 1.0.0 (https://polyformproject.org/licenses/noncommercial/1.0.0). Noncommercial use (research, academic, personal, hobbyist) is free. Commercial use requires a separate license — contact **howdy@theaiwrangler.com**. The spherical positional encoding implementation is based on ideas from the SpheRoPE paper (https://arxiv.org/abs/2606.32033) by Or Hirshfeld, Lior Talker, and colleagues — see the LICENSE file for details.
