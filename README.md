@@ -154,7 +154,7 @@ The `radius` parameter defaults to 4 for typical LTX-2.3 latent resolutions (20�
 
 Three text-to-video generations from the pipeline above (LoRA + EquiRoPE +
 Geometric CFG + per-step roll + circular VAE + wrapped noise). Click a clip
-to open it in the interactive viewer — drag to look around. More clips,
+to open it in the interactive viewer (by ProGamerGov: https://github.com/ProGamerGov/html-360-viewer) — drag to look around. More clips,
 including the VR-outpaint side of the project, are in the
 [full gallery](https://huggingface.co/spaces/TheBurgstall/360viewer/blob/main/gallery.html).
 
@@ -233,7 +233,6 @@ The tests cover circular Conv2d/Conv3d patch/unpatch behavior, VAE encoder/decod
 
 Burgstall Labs develops practical open-source tools for 360-degree AI video, VR-outpainting, panoramic generation, and ComfyUI-based production workflows. ComfyUI-Seamless-Equirectangular provides the seam-inference and geometry-enhancement layer that complements projection, outpainting, and LoRA workflows for immersive video.
 
-- **[360° gallery + viewer](https://huggingface.co/spaces/TheBurgstall/360viewer)** — sample generations from this pack and from VR-Outpaint-Tools, viewable interactively; both example workflows are downloadable there too.
 - **[ComfyUI-VR-Outpaint-Tools](https://github.com/Burgstall-labs/ComfyUI-VR-Outpaint-Tools)** — outpaint a normal perspective video into a full 360° panorama (projection prep, camera estimation, outpaint finishing). Companion pipeline: same seam/pole techniques, applied to real footage instead of text-to-video.
 - **[ComfyUI-Domemaster-Outpaint](https://github.com/Burgstall-labs/ComfyUI-Domemaster-Outpaint)** — render an outpainted (or any equirectangular) panorama as a domemaster for fulldome / planetarium delivery, with tilted-venue presets.
 - **[Seamless-Equirectangular-LTX2.3-LoRA](https://huggingface.co/TheBurgstall/Seamless-Equirectangular-LTX2.3-LoRA)** — the LoRA this pack's nodes are built around.
