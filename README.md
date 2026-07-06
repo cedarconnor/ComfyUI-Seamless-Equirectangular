@@ -159,7 +159,7 @@ including the VR-outpaint side of the project, are in the
 
 | | | |
 |---|---|---|
-| [![Resort pool courtyard](docs/media/t2v-pool-courtyard.gif)](https://theburgstall-360viewer.hf.space/index.html?url=https%3A%2F%2Fhuggingface.co%2Fspaces%2FTheBurgstall%2F360viewer%2Fresolve%2Fmain%2Fmedia%2Ft2v-pool-courtyard.mp4) | [![Jungle clearing after rain](docs/media/t2v-jungle-after-rain.gif)](https://theburgstall-360viewer.hf.space/index.html?url=https%3A%2F%2Fhuggingface.co%2Fspaces%2FTheBurgstall%2F360viewer%2Fresolve%2Fmain%2Fmedia%2Ft2v-jungle-after-rain.mp4) | [![Drone flight, jungle river at dawn](docs/media/t2v-jungle-drone-dawn.gif)](https://theburgstall-360viewer.hf.space/index.html?url=https%3A%2F%2Fhuggingface.co%2Fspaces%2FTheBurgstall%2F360viewer%2Fresolve%2Fmain%2Fmedia%2Ft2v-jungle-drone-dawn.mp4) |
+| [![Resort pool courtyard](docs/media/t2v-pool-courtyard.gif)](https://theburgstall-360viewer.static.hf.space/index.html?url=https%3A%2F%2Fhuggingface.co%2Fspaces%2FTheBurgstall%2F360viewer%2Fresolve%2Fmain%2Fmedia%2Ft2v-pool-courtyard.mp4) | [![Jungle clearing after rain](docs/media/t2v-jungle-after-rain.gif)](https://theburgstall-360viewer.static.hf.space/index.html?url=https%3A%2F%2Fhuggingface.co%2Fspaces%2FTheBurgstall%2F360viewer%2Fresolve%2Fmain%2Fmedia%2Ft2v-jungle-after-rain.mp4) | [![Drone flight, jungle river at dawn](docs/media/t2v-jungle-drone-dawn.gif)](https://theburgstall-360viewer.static.hf.space/index.html?url=https%3A%2F%2Fhuggingface.co%2Fspaces%2FTheBurgstall%2F360viewer%2Fresolve%2Fmain%2Fmedia%2Ft2v-jungle-drone-dawn.mp4) |
 | Resort pool courtyard (stationary) | Jungle clearing after rain (stationary) | Drone flight, jungle river at dawn (fast motion) |
 
 The example workflow used for these:
