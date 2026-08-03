@@ -165,6 +165,26 @@ class EquirectPerStepRoll:
         m = model.clone()
         logged = {"done": False}
 
+        diffusion_model = None
+        if hasattr(model, "get_model_object"):
+            diffusion_model = model.get_model_object("diffusion_model")
+        if diffusion_model is None and hasattr(model, "model"):
+            diffusion_model = model.model
+        if diffusion_model is None and hasattr(model, "diffusion_model"):
+            diffusion_model = model.diffusion_model
+
+        is_minimax_h3 = False
+        width_patch_multiple = 1
+        if diffusion_model is not None:
+            if (
+                diffusion_model.__class__.__name__ == "MiniMaxH3Model"
+                or getattr(diffusion_model, "is_minimax_h3", False)
+            ):
+                is_minimax_h3 = True
+            patch_size = getattr(diffusion_model, "patch_size", None)
+            if patch_size is not None and len(patch_size) >= 3:
+                width_patch_multiple = int(patch_size[-1])
+
         def wrapper(apply_model, args):
             x = args["input"]
             timestep = args["timestep"]
@@ -175,7 +195,11 @@ class EquirectPerStepRoll:
             w = layout.width(x, video_shape) if layout is not None else 0
 
             sigma_val = float(timestep.flatten()[0])
-            shifts = shifts_for_sigma(sigma_val, w, seed, mode)
+            if is_minimax_h3:
+                from .minimax_h3 import shifts_for_sigma as h3_shifts_for_sigma
+                shifts = h3_shifts_for_sigma(sigma_val, w, seed, mode, width_patch_multiple)
+            else:
+                shifts = shifts_for_sigma(sigma_val, w, seed, mode)
 
             if w <= 1 or layout is None:
                 if not logged["done"]:
@@ -205,9 +229,17 @@ class EquirectPerStepRoll:
             out_sum = None
             for s in shifts:
                 cs = c
-                if isinstance(mask, torch.Tensor) and mask.ndim == 5 and s != 0:
-                    cs = dict(c)
-                    cs["denoise_mask"] = torch.roll(mask, shifts=s, dims=-1)
+                if is_minimax_h3:
+                    from .minimax_h3 import roll_minimax_h3_fl2va_conditioning
+                    cs = roll_minimax_h3_fl2va_conditioning(c, s, video_shape)
+
+                if isinstance(mask, torch.Tensor) and s != 0:
+                    rolled_mask = roll_model_io(mask, video_shape, s)
+                    if rolled_mask is not None:
+                        if cs is c:
+                            cs = dict(c)
+                        cs["denoise_mask"] = rolled_mask
+
                 out = apply_model(roll_model_io(x, video_shape, s), timestep, **cs)
                 out = feather_model_io(out, video_shape, feather_columns)
                 out = roll_model_io(out, video_shape, -s)
@@ -239,13 +271,22 @@ class EquirectCircularVAE:
     def patch(self, vae, patch_encoder, patch_decoder, enabled):
         model = vae.first_stage_model
         restored = unpatch_vae_circular(model)
+        is_h3_vae = (
+            model.__class__.__name__ == "MiniMaxH3VideoVAE"
+            or getattr(model, "is_minimax_h3_vae", False)
+        )
         if enabled and (patch_encoder or patch_decoder):
             patched = patch_vae_circular(model, encoder=patch_encoder, decoder=patch_decoder)
-            logger.info(
-                "EquirectCircularVAE: circular-W ENABLED (encoder=%s, decoder=%s) -- patched %d convs "
-                "(in place: affects every node using this loaded VAE file this run).",
-                patch_encoder, patch_decoder, patched,
-            )
+            if patched == 0 and is_h3_vae:
+                logger.warning(
+                    "EquirectCircularVAE: H3 uses a tiled ViT decoder; use Equirect MiniMax H3 Seamless VAE Decode."
+                )
+            else:
+                logger.info(
+                    "EquirectCircularVAE: circular-W ENABLED (encoder=%s, decoder=%s) -- patched %d convs "
+                    "(in place: affects every node using this loaded VAE file this run).",
+                    patch_encoder, patch_decoder, patched,
+                )
         else:
             logger.info("EquirectCircularVAE: stock padding (restored %d convs).", restored)
         return (vae,)
@@ -276,6 +317,30 @@ class EquirectLatentSeamBlend:
             out["samples"] = type(samples)(parts)
         else:
             out["samples"] = seam_blend_w(samples, blend_columns)
+        return (out,)
+
+
+class EquirectImageSeamBlend:
+    """Optional final pixel-space seam blend for the last one-pixel/shallow color discontinuity."""
+
+    CATEGORY = "image/equirect"
+    RETURN_TYPES = ("IMAGE",)
+    FUNCTION = "blend"
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "images": ("IMAGE",),
+                "blend_pixels": ("INT", {"default": 24, "min": 0, "max": 512}),
+            }
+        }
+
+    def blend(self, images, blend_pixels=24):
+        if blend_pixels <= 0:
+            return (images,)
+        x = images.movedim(-2, -1)
+        out = seam_blend_w(x, blend_pixels).movedim(-1, -2)
         return (out,)
 
 
@@ -380,6 +445,16 @@ class EquirectWrappedNoise:
         def wrapped_generate(latent):
             n = orig_generate(latent)
 
+            if getattr(n, "is_nested", False):
+                parts = list(n.unbind())
+                if len(parts) > 0 and parts[0].ndim == 5:
+                    vid = parts[0]
+                    B, C, T, H, W = vid.shape
+                    vid_flat = vid.permute(0, 2, 1, 3, 4).reshape(B * T, C, H, W)
+                    vid_remastered = _spherical_phase_remaster(vid_flat, radius=radius)
+                    parts[0] = vid_remastered.reshape(B, T, C, H, W).permute(0, 2, 1, 3, 4)
+                return type(n)(parts)
+
             if hasattr(n, 'tensors') and isinstance(n.tensors, list):
                 for i in range(len(n.tensors)):
                     t = n.tensors[i]
@@ -393,8 +468,10 @@ class EquirectWrappedNoise:
                         n.tensors[i] = _spherical_phase_remaster(t, radius=radius)
                 return n
             if n.ndim == 5:
-                for t in range(n.shape[2]):
-                    n[:, :, t, :, :] = _spherical_phase_remaster(n[:, :, t, :, :], radius=radius)
+                B, C, T, H, W = n.shape
+                vid_flat = n.permute(0, 2, 1, 3, 4).reshape(B * T, C, H, W)
+                vid_remastered = _spherical_phase_remaster(vid_flat, radius=radius)
+                n = vid_remastered.reshape(B, T, C, H, W).permute(0, 2, 1, 3, 4)
             elif n.ndim == 4:
                 n = _spherical_phase_remaster(n, radius=radius)
             else:
@@ -472,12 +549,15 @@ class EquirectSphericalRoPE:
         return (model,)
 
 
+from . import minimax_h3
+
 NODE_CLASS_MAPPINGS = {
     "EquirectPerStepRoll": EquirectPerStepRoll,
     "EquirectCircularVAE": EquirectCircularVAE,
     "EquirectLatentSeamBlend": EquirectLatentSeamBlend,
     "EquirectWrappedNoise": EquirectWrappedNoise,
     "EquirectSphericalRoPE": EquirectSphericalRoPE,
+    "EquirectImageSeamBlend": EquirectImageSeamBlend,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -486,7 +566,12 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "EquirectLatentSeamBlend": "Equirect Latent Seam Blend (fallback)",
     "EquirectWrappedNoise": "Equirect Wrapped Noise (spherical phase remaster)",
     "EquirectSphericalRoPE": "Equirect Spherical RoPE (SpheRoPE)",
+    "EquirectImageSeamBlend": "Equirect Image Seam Blend (final fallback)",
 }
+
+if hasattr(minimax_h3, "NODE_CLASS_MAPPINGS"):
+    NODE_CLASS_MAPPINGS.update(minimax_h3.NODE_CLASS_MAPPINGS)
+    NODE_DISPLAY_NAME_MAPPINGS.update(minimax_h3.NODE_DISPLAY_NAME_MAPPINGS)
 
 # Merge in nodes from submodule files that ComfyUI's loader doesn't auto-discover
 for _module_name in ("soft_pole", "equirope", "equirope_cfg"):
@@ -497,4 +582,3 @@ for _module_name in ("soft_pole", "equirope", "equirope_cfg"):
             NODE_DISPLAY_NAME_MAPPINGS.update(getattr(_mod, "NODE_DISPLAY_NAME_MAPPINGS", {}))
     except Exception:
         pass
-

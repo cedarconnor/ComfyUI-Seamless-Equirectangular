@@ -8,3 +8,6 @@ venv/
 
 # Research notes — internal analysis, memory, and design docs
 research_notes/
+
+# Local implementation handoff
+MINIMAX_H3_SEAMLESS_IMPLEMENTATION_PLAN.md

@@ -1,6 +1,6 @@
 # ComfyUI-Seamless-Equirectangular
 
-**ComfyUI-Seamless-Equirectangular** is a ComfyUI custom node pack by **Burgstall Labs** for seamless equirectangular, 360-degree, VR, and panoramic video generation with LTX-2.3. It provides training-free seam mitigation and geometry enhancement for equirectangular inference.
+**ComfyUI-Seamless-Equirectangular** is a ComfyUI custom node pack by **Burgstall Labs** for seamless equirectangular, 360-degree, VR, and panoramic video generation with LTX-2.3 and MiniMax H3. It provides training-free seam mitigation and geometry enhancement for equirectangular inference.
 
 This is the result of extensive experimentation: training a dedicated equirectangular LoRA, then developing circular VAE padding, per-step latent rolling, and spherical phase remaster noise to handle the seam and pole convergence — then implementing the spherical positional encoding ideas from the SpheRoPE paper (https://arxiv.org/abs/2606.32033) on top of that foundation. The combined pipeline produces seamless 360° video that neither approach achieves alone. Continued testing produced **EquiRoPE** — an original, architecturally distinct latitude-scaled RoPE with pole gating and hemisphere selection — plus a latitudinal geometric CFG, which now form the recommended refinement layer over the LoRA + roll + circular-VAE foundation.
 
@@ -10,18 +10,56 @@ The LoRA is available on Hugging Face: [TheBurgstall/Seamless-Equirectangular-LT
 
 **Keywords:** ComfyUI seamless equirectangular, LTX-2.3 360 video, SpheRoPE, circular VAE padding, per-step latent roll, panoramic video generation, Burgstall Labs.
 
+## News: MiniMax H3 Support
+
+MiniMax H3 seamless-equirectangular support is now available. The H3 path adds periodic width RoPE for the DiT, patch-aligned per-step rolling with FL2VA guide synchronization, nested video/audio latent handling, and dual-rotation video VAE decoding. Existing LTX nodes and workflows retain their original interfaces and model-specific behavior.
+
+The included [MiniMax H3 FL2VA example workflow](example_workflows/MiniMax-H3-SEAMLESS-FL2VA.json) follows a conservative progression:
+
+1. Start with a seamless 2:1 first-frame panorama and `EquirectMiniMaxH3VAEDecode` at one blend column.
+2. If the generated geometry does not remain equirectangular, enable `EquirectPerStepRoll`.
+3. Enable `EquirectWrappedNoise` next if additional pole or closure support is needed.
+4. Enable `EquirectMiniMaxH3RoPE` last, starting at `blend=0.5`.
+
+The stronger inference patches can introduce flashing points or morphing on some inputs, so the example leaves RoPE, wrapped noise, and per-step roll disabled initially. A seamless first-frame panorama is important for I2V/FL2VA results. The example uses VideoHelperSuite for MP4 output and `comfyui-rtx-simple` for optional final upscaling; those extensions are workflow dependencies, not nodepack runtime dependencies.
+
 ## Nodes
 
 | Node | Type | What it does |
 |---|---|---|
-| **EquirectCircularVAE** | `VAE → VAE` | Patches VAE decoder convolutions to use circular padding along the width (longitude) axis. Fixes the decode-side seam caused by zero-padded convolutions at the 360° wrap boundary. |
-| **EquirectPerStepRoll** | `MODEL → MODEL` | Wraps the diffusion model so every denoising step runs on a W-rolled latent. Each step sees a different longitudinal shift, so no column is always at the model's processing boundary — forces content coherent across the wrap. Based on the Diffusion360 / PanoDiffusion circular shift method. `start_percent` holds the roll boundary at the true wrap edge during the early layout-forming steps — fixes structural closure failures (mismatched buildings at a frozen column) in fast-motion scenes. |
-| **EquirectLatentSeamBlend** | `LATENT → LATENT` | Thin cross-fade of the W-edge latent columns. Cosmetic fallback — smooths the boundary band but does not make content wrap. Off by default. |
-| **EquirectWrappedNoise** | `NOISE → NOISE` | Spherical phase remaster on the initial noise latent. Encodes polar convergence into low-frequency phase, reducing stretching at the poles. Original method developed during this project. |
-| **EquirectSphericalRoPE** | `MODEL → MODEL` | Spherical-aware width-axis RoPE with two-path spectral split (harmonic snapping + spherical coordinates). Based on the SpheRoPE paper. |
-| **EquiRoPE** | `MODEL → MODEL` | Original latitude-scaled width RoPE with spectral split: low-frequency (structure) channels get pole-gated `1−(1−\|cos lat\|)^γ` position scaling, high-frequency channels stay stock for LoRA compatibility. `pole_side` restricts the collapse to one hemisphere (`bottom` = nadir-only, keeps skylines straight). Architecturally distinct from SpheRoPE. |
-| **EquiRoPEGeometricCFG** | `MODEL → MODEL` | Latitude-dependent horizontal blur of the CFG delta — smooths polar artifacts without touching the equator. Handles LTX packed audio+video latents; exact no-op at cfg=1, so it's safe to feed every sampler stage. |
-| **EquirectSoftPoleConstraint** | `MODEL → MODEL` | Per-step polar row blend. Insurance against rare polar voids; usually unnecessary when noise + roll are active. |
+| **EquirectCircularVAE** | `VAE → VAE` | Patches VAE decoder convolutions to use circular padding along the width (longitude) axis. Fixes the decode-side seam for LTX VAEs. Warns if passed a tiled ViT VAE (such as MiniMax H3). |
+| **EquirectPerStepRoll** | `MODEL → MODEL` | Wraps the diffusion model so every denoising step runs on a W-rolled latent. Synchronizes FL2VA conditioning guides, masks, and patch-aligned shifts when used with MiniMax H3 models. |
+| **EquirectLatentSeamBlend** | `LATENT → LATENT` | Thin cross-fade of the W-edge latent columns. Cosmetic fallback — smooths the boundary band but does not make content wrap. Off by default. Supports nested A/V latents. |
+| **EquirectWrappedNoise** | `NOISE → NOISE` | Spherical phase remaster on the initial noise latent. Encodes polar convergence into low-frequency phase, reducing stretching at the poles. Supports 5D video and nested A/V noise. |
+| **EquirectSphericalRoPE** | `MODEL → MODEL` | Spherical-aware width-axis RoPE with two-path spectral split for LTX models. |
+| **EquiRoPE** | `MODEL → MODEL` | Original latitude-scaled width RoPE with spectral split for LTX models. |
+| **EquiRoPEGeometricCFG** | `MODEL → MODEL` | Latitude-dependent horizontal blur of the CFG delta for LTX models. |
+| **EquirectSoftPoleConstraint** | `MODEL → MODEL` | Per-step polar row blend. Insurance against rare polar voids. |
+| **EquirectMiniMaxH3RoPE** | `MODEL → MODEL` | Periodic width rotary position embeddings for MiniMax H3 DiT models. |
+| **EquirectMiniMaxH3VAEDecode** | `LATENT + VAE → IMAGE` | Dual-rotation seamless VAE decode for MiniMax H3 tiled ViT VAEs. |
+| **EquirectImageSeamBlend** | `IMAGE → IMAGE` | Final pixel-space seam cross-fade on IMAGE width axis. |
+
+## Model Compatibility
+
+| Mechanism | LTX | MiniMax H3 |
+|---|---:|---:|
+| Per-step roll | yes | yes, H3-aware guide synchronization |
+| Wrapped Noise | yes | yes, video member only |
+| Generic circular-conv VAE | yes | no |
+| LTX SphericalRoPE/EquiRoPE | yes | no |
+| H3 periodic DiT RoPE | no | yes |
+| H3 dual-rotation VAE decode | no | yes |
+| Latent seam blend | yes | yes |
+| Image seam blend | yes | yes |
+
+### MiniMax H3 Specifics
+
+- **H3 RoPE**: MiniMax H3 uses its own rotary position embeddings. Use `EquirectMiniMaxH3RoPE` for H3 DiT models.
+- **H3 VAE Decode**: The MiniMax H3 VAE uses a tiled ViT decoder rather than standard convolutions, so generic circular VAE padding does not patch any convs. Use `EquirectMiniMaxH3VAEDecode` which performs dual-rotation decode and composites around the true seam.
+- **FL2VA Keyframes**: `EquirectPerStepRoll` automatically rolls `cond_video_latents` in H3 FL2VA conditioning to stay coordinate-aligned with the target latent. Disconnect any mismatched (non-panorama) last keyframe images when testing FL2VA workflows.
+- **Roll Mode**: `random_per_step` with `start_percent=0.25` is recommended for H3. `dual_average` doubles model call count per step and can introduce repeated/mirrored structures.
+- **Example Workflow**: [`MiniMax-H3-SEAMLESS-FL2VA.json`](example_workflows/MiniMax-H3-SEAMLESS-FL2VA.json)
+
 
 ## History
 
@@ -196,6 +234,7 @@ Restart ComfyUI. The nodes appear under their respective categories:
 - `model_patches/equirect`
 - `latent/video/equirect`
 - `noise/equirect`
+- `image/equirect`
 
 No extra runtime dependency is required beyond the torch runtime already used by ComfyUI.
 
@@ -224,10 +263,10 @@ In videos with a moving camera, expect some **morphing** of scene content as it 
 Run with the ComfyUI Python environment (so `comfy` is importable):
 
 ```bash
-PYTHONPATH=/path/to/ComfyUI python tests/test_seam_nodes.py
+/path/to/ComfyUI/venv/bin/python -m pytest -q
 ```
 
-The tests cover circular Conv2d/Conv3d patch/unpatch behavior, VAE encoder/decoder scoping, deterministic per-sigma shift generation, LTX packed audio/video latent rolling, per-step model wrapper round trips, dual_average behavior, and latent seam blending.
+The tests cover circular Conv2d/Conv3d patching, VAE scoping, deterministic shifts, LTX packed audio/video rolling, model-wrapper round trips, nested H3 video/audio handling, H3 RoPE patch lifecycle, and dual-rotation VAE decoding.
 
 ## Related Burgstall Labs Work
 
