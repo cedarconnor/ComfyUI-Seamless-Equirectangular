@@ -1,6 +1,6 @@
 # ComfyUI-Seamless-Equirectangular
 
-**ComfyUI-Seamless-Equirectangular** is a ComfyUI custom node pack by **Burgstall Labs** for seamless equirectangular, 360-degree, VR, and panoramic video generation with LTX-2.3 and MiniMax H3. It provides training-free seam mitigation and geometry enhancement for equirectangular inference.
+**ComfyUI-Seamless-Equirectangular** is a ComfyUI custom node pack by **Burgstall Labs** for seamless equirectangular, 360-degree, VR, and panoramic image or video generation with Krea2, LTX-2.3, and MiniMax H3. It provides training-free seam mitigation and geometry enhancement for equirectangular inference.
 
 This is the result of extensive experimentation: training a dedicated equirectangular LoRA, then developing circular VAE padding, per-step latent rolling, and spherical phase remaster noise to handle the seam and pole convergence — then implementing the spherical positional encoding ideas from the SpheRoPE paper (https://arxiv.org/abs/2606.32033) on top of that foundation. The combined pipeline produces seamless 360° video that neither approach achieves alone. Continued testing produced **EquiRoPE** — an original, architecturally distinct latitude-scaled RoPE with pole gating and hemisphere selection — plus a latitudinal geometric CFG, which now form the recommended refinement layer over the LoRA + roll + circular-VAE foundation.
 
@@ -8,7 +8,28 @@ The LoRA is available on Hugging Face: [TheBurgstall/Seamless-Equirectangular-LT
 
 **Try it / see it live:** [360° gallery + interactive viewer](https://huggingface.co/spaces/TheBurgstall/360viewer) — sample generations below, drag to look around.
 
-**Keywords:** ComfyUI seamless equirectangular, LTX-2.3 360 video, SpheRoPE, circular VAE padding, per-step latent roll, panoramic video generation, Burgstall Labs.
+**Keywords:** ComfyUI seamless equirectangular, Krea2 360 image, LTX-2.3 360 video, SpheRoPE, circular VAE padding, per-step latent roll, panoramic video generation, Burgstall Labs.
+
+## News: Krea2 Turbo Support
+
+Krea2 seamless-equirectangular image support is available for the local open-weight model. The Krea2 path adds patch-aligned per-step rolling, a Flux-compatible SpheRoPE spectral split, and circular decoder padding for the Qwen Image VAE. High-frequency longitude channels use periodic harmonic snapping for the seam, while low-frequency channels use spherical Cartesian coordinates for stronger global geometry. Text and reference-image RoPE stay stock.
+
+Open the official Krea2 Turbo subgraph and insert the nodes at these points:
+
+    MODEL: UNETLoader -> optional LoRA -> EquirectKrea2RoPE -> EquirectPerStepRoll -> BasicGuider/sampler
+    VAE:   VAELoader (qwen_image_vae) -> EquirectCircularVAE -> VAEDecode
+    IMAGE: VAEDecode -> optional EquirectImageSeamBlend -> SaveImage
+
+Recommended Turbo starting settings:
+
+1. Use `EquirectPerStepRoll` with `random_per_step`, `start_percent=0.0`, and `feather_columns=0`. Krea2 shifts are automatically aligned to its 2x2 latent patches.
+2. Enable `EquirectCircularVAE` with decoder on and encoder off.
+3. Add `EquirectKrea2RoPE` with `blend=0.5`, `geometry_blend=0.4`, `low_frequency_fraction=0.5`, and `sphere_scale=1.0`.
+4. Use latent or image seam blend only for a shallow residual edge. Wrapped noise is optional for pole coherence.
+
+Krea2 Turbo remains an eight-step, guidance-distilled workflow; no geometric CFG node is needed.
+
+For rigid interiors, raise `geometry_blend` gradually toward `0.5-0.6`. If walls, subjects, or composition become over-constrained, lower it before changing the seam `blend`. Keep `sphere_scale=1.0` initially; `low_frequency_fraction` is the stronger advanced control and should normally remain near `0.5`.
 
 ## News: MiniMax H3 Support
 
@@ -27,30 +48,41 @@ The stronger inference patches can introduce flashing points or morphing on some
 
 | Node | Type | What it does |
 |---|---|---|
-| **EquirectCircularVAE** | `VAE → VAE` | Patches VAE decoder convolutions to use circular padding along the width (longitude) axis. Fixes the decode-side seam for LTX VAEs. Warns if passed a tiled ViT VAE (such as MiniMax H3). |
-| **EquirectPerStepRoll** | `MODEL → MODEL` | Wraps the diffusion model so every denoising step runs on a W-rolled latent. Synchronizes FL2VA conditioning guides, masks, and patch-aligned shifts when used with MiniMax H3 models. |
+| **EquirectCircularVAE** | `VAE → VAE` | Patches convolutional VAE decoders, including Qwen Image and LTX, to use circular width padding. Warns for tiled ViT VAEs such as MiniMax H3. |
+| **EquirectPerStepRoll** | `MODEL → MODEL` | Runs every denoising step on a W-rolled latent. Uses patch-aligned shifts for Krea2 and MiniMax H3, and synchronizes H3 FL2VA guides. |
 | **EquirectLatentSeamBlend** | `LATENT → LATENT` | Thin cross-fade of the W-edge latent columns. Cosmetic fallback — smooths the boundary band but does not make content wrap. Off by default. Supports nested A/V latents. |
-| **EquirectWrappedNoise** | `NOISE → NOISE` | Spherical phase remaster on the initial noise latent. Encodes polar convergence into low-frequency phase, reducing stretching at the poles. Supports 5D video and nested A/V noise. |
+| **EquirectWrappedNoise** | `NOISE → NOISE` | Spherical phase remaster for 4D images, 5D video, and nested A/V noise. Optional pole-coherence refinement. |
 | **EquirectSphericalRoPE** | `MODEL → MODEL` | Spherical-aware width-axis RoPE with two-path spectral split for LTX models. |
 | **EquiRoPE** | `MODEL → MODEL` | Original latitude-scaled width RoPE with spectral split for LTX models. |
 | **EquiRoPEGeometricCFG** | `MODEL → MODEL` | Latitude-dependent horizontal blur of the CFG delta for LTX models. |
 | **EquirectSoftPoleConstraint** | `MODEL → MODEL` | Per-step polar row blend. Insurance against rare polar voids. |
+| **EquirectKrea2RoPE** | `MODEL → MODEL` | Krea2 SpheRoPE: periodic high-frequency longitude plus spherical low-frequency geometry, preserving stock text and reference-image positions. |
 | **EquirectMiniMaxH3RoPE** | `MODEL → MODEL` | Periodic width rotary position embeddings for MiniMax H3 DiT models. |
 | **EquirectMiniMaxH3VAEDecode** | `LATENT + VAE → IMAGE` | Dual-rotation seamless VAE decode for MiniMax H3 tiled ViT VAEs. |
 | **EquirectImageSeamBlend** | `IMAGE → IMAGE` | Final pixel-space seam cross-fade on IMAGE width axis. |
 
 ## Model Compatibility
 
-| Mechanism | LTX | MiniMax H3 |
-|---|---:|---:|
-| Per-step roll | yes | yes, H3-aware guide synchronization |
-| Wrapped Noise | yes | yes, video member only |
-| Generic circular-conv VAE | yes | no |
-| LTX SphericalRoPE/EquiRoPE | yes | no |
-| H3 periodic DiT RoPE | no | yes |
-| H3 dual-rotation VAE decode | no | yes |
-| Latent seam blend | yes | yes |
-| Image seam blend | yes | yes |
+| Mechanism | Krea2 | LTX | MiniMax H3 |
+|---|---:|---:|---:|
+| Per-step roll | yes, patch-aligned | yes | yes, patch-aligned with guide synchronization |
+| Wrapped Noise | yes, 4D image | yes | yes, video member only |
+| Generic circular-conv VAE | yes, Qwen Image | yes | no |
+| Krea2 SpheRoPE geometry + seam | yes | no | no |
+| LTX SphericalRoPE/EquiRoPE | no | yes | no |
+| H3 periodic DiT RoPE | no | no | yes |
+| H3 dual-rotation VAE decode | no | no | yes |
+| Latent seam blend | yes | yes | yes |
+| Image seam blend | yes | yes | yes |
+
+### Krea2 Specifics
+
+- **Krea2 RoPE**: Use EquirectKrea2RoPE only with the local open-weight Krea2 model. Its high-frequency path harmonically closes longitude, and its low-frequency spherical path strengthens panoramic geometry. Text and reference-image positions remain stock.
+- **Geometry tuning**: Start with geometry_blend 0.4, low_frequency_fraction 0.5, and sphere_scale 1.0. Raise geometry_blend first when architectural lines need more structure; lower it if the original Krea2 composition degrades.
+- **Qwen Image VAE**: EquirectCircularVAE supports its convolutional decoder. Enable decoder only for text-to-image.
+- **Roll mode**: Start with random_per_step, start_percent 0.0, and no feathering. Shifts are quantized to Krea2 latent patch boundaries.
+- **Fallbacks**: Use one or two latent columns or a narrow pixel blend only for residual color or tone discontinuity; these do not repair mismatched objects.
+- **Turbo guidance**: Keep the official eight-step CFG-disabled sampling path. The Krea2 workflow does not use EquiRoPEGeometricCFG.
 
 ### MiniMax H3 Specifics
 
@@ -173,6 +205,8 @@ The node is idempotent and can be toggled at runtime.
 
 `EquirectCircularVAE` patches loaded VAE convolution modules so width padding is circular while height and time remain non-periodic. The implementation wraps convolution forwards rather than replacing model classes, preserving ComfyUI's weight-casting and offload paths.
 
+Current ComfyUI LTX decoders can emit empty temporal chunks during memory-efficient VAE decoding. The circular patch preserves the original spatial dimensions for those chunks, preventing residual-branch mismatches such as `236` versus `240`. Restart ComfyUI after updating this nodepack so the repaired patch is applied to a clean VAE instance.
+
 Important caveat: ComfyUI caches VAEs by file. This node modifies the loaded VAE object in place, so every consumer of the same loaded VAE file in a run sees the same patched or restored state. The node resets to stock before applying its selected state, but true stock-vs-circular A/B testing needs separate runs or separate loaded VAE objects.
 
 ## Wrapped Noise (Spherical Phase Remaster)
@@ -266,7 +300,7 @@ Run with the ComfyUI Python environment (so `comfy` is importable):
 /path/to/ComfyUI/venv/bin/python -m pytest -q
 ```
 
-The tests cover circular Conv2d/Conv3d patching, VAE scoping, deterministic shifts, LTX packed audio/video rolling, model-wrapper round trips, nested H3 video/audio handling, H3 RoPE patch lifecycle, and dual-rotation VAE decoding.
+The tests cover circular Conv2d/Conv3d patching, Qwen-style VAE decoding, deterministic and patch-aligned shifts, Krea2 4D image nodes and spherical/periodic RoPE isolation, LTX packed audio/video rolling, nested H3 video/audio handling, H3 RoPE lifecycle, and dual-rotation VAE decoding.
 
 ## Related Burgstall Labs Work
 
