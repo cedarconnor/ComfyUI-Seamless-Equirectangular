@@ -1,4 +1,4 @@
-"""360 equirect seam nodes for LTX-2.x and compatible latent layouts.
+"""360 equirect seam nodes for Krea2, LTX-2.x, and compatible latent layouts.
 Copyright (C) 2026  Burgstall Labs
 Licensed under the PolyForm Noncommercial License 1.0.0.
 https://polyformproject.org/licenses/noncommercial/1.0.0
@@ -6,7 +6,7 @@ https://polyformproject.org/licenses/noncommercial/1.0.0
 Tools for equirectangular 360 video generation:
 
 - EquirectCircularVAE: circular-W conv padding on the loaded VAE decoder.
-  Fixes the seam that zero-padded VAE convs create at the longitude wrap.
+  Fixes the seam that zero-padded convolutional VAE decoders create at the longitude wrap.
 
 - EquirectPerStepRoll: per-step circular latent roll during denoising.
   Every model call sees a W-rolled latent so no column is always at the
@@ -36,6 +36,7 @@ import torch
 import comfy.ldm.lightricks.model as _ltx_model
 
 from .circular_conv import patch_vae_circular, seam_blend_w, unpatch_vae_circular
+from . import krea2
 from .latent_layouts import find_layout, roll_model_io, video_shape_from_conditioning
 
 # Load the vendored periodic_rope module
@@ -66,23 +67,36 @@ def shift_for_sigma(sigma_val: float, w: int, seed: int, mode: str) -> int:
     return int(frac * w) % w
 
 
-def shifts_for_sigma(sigma_val: float, w: int, seed: int, mode: str):
+def _quantize_roll_shift(shift: int, w: int, multiple: int) -> int:
+    if w <= 1:
+        return 0
+    shift = int(shift) % w
+    if multiple <= 1:
+        return shift
+    return int((round(shift / multiple) * multiple) % w)
+
+
+def shifts_for_sigma(sigma_val: float, w: int, seed: int, mode: str, multiple: int = 1):
     """All shifts to evaluate for one step.
 
     dual_average pairs the base shift with a roughly-opposite second shift. The
     half-turn offset is JITTERED (+/-W/8, per-sigma deterministic) rather than exact:
     a fixed +W/2 pairing imposes the model's compositional biases at two longitudes
-    exactly 180 deg apart on every step, which the iterative process amplifies into
-    twin subjects / mirrored architecture. Jitter keeps the two boundaries far apart
-    (separation within [3W/8, 5W/8], so banding is still cancelled) while preventing
-    any fixed cross-longitude correlation from accumulating.
+    exactly 180 degrees apart on every step, which the iterative process amplifies into
+    twin subjects or mirrored architecture. Jitter keeps the boundaries far apart
+    without a fixed cross-longitude correlation.
     """
     base_mode = "random_per_step" if mode == "dual_average" else mode
-    s = shift_for_sigma(sigma_val, w, seed, base_mode)
+    raw_s = shift_for_sigma(sigma_val, w, seed, base_mode)
+    s = _quantize_roll_shift(raw_s, w, multiple)
     if mode != "dual_average" or w <= 1:
         return [s]
     jitter = shift_for_sigma(sigma_val, max(w // 4, 1), seed + 101, "random_per_step") - w // 8
-    return [s, (s + w // 2 + jitter) % w]
+    raw_s2 = (raw_s + w // 2 + jitter) % w
+    s2 = _quantize_roll_shift(raw_s2, w, multiple)
+    if multiple > 1 and s2 == s:
+        s2 = (s + multiple) % w
+    return [s, s2]
 
 
 def run_percent(c, sigma_val: float):
@@ -174,6 +188,7 @@ class EquirectPerStepRoll:
             diffusion_model = model.diffusion_model
 
         is_minimax_h3 = False
+        is_krea2 = False
         width_patch_multiple = 1
         if diffusion_model is not None:
             if (
@@ -184,6 +199,9 @@ class EquirectPerStepRoll:
             patch_size = getattr(diffusion_model, "patch_size", None)
             if patch_size is not None and len(patch_size) >= 3:
                 width_patch_multiple = int(patch_size[-1])
+            if krea2.is_krea2_model(diffusion_model):
+                is_krea2 = True
+                width_patch_multiple = max(1, int(diffusion_model.patch))
 
         def wrapper(apply_model, args):
             x = args["input"]
@@ -198,6 +216,10 @@ class EquirectPerStepRoll:
             if is_minimax_h3:
                 from .minimax_h3 import shifts_for_sigma as h3_shifts_for_sigma
                 shifts = h3_shifts_for_sigma(sigma_val, w, seed, mode, width_patch_multiple)
+            elif is_krea2:
+                shifts = shifts_for_sigma(
+                    sigma_val, w, seed, mode, multiple=width_patch_multiple
+                )
             else:
                 shifts = shifts_for_sigma(sigma_val, w, seed, mode)
 
@@ -572,6 +594,10 @@ NODE_DISPLAY_NAME_MAPPINGS = {
 if hasattr(minimax_h3, "NODE_CLASS_MAPPINGS"):
     NODE_CLASS_MAPPINGS.update(minimax_h3.NODE_CLASS_MAPPINGS)
     NODE_DISPLAY_NAME_MAPPINGS.update(minimax_h3.NODE_DISPLAY_NAME_MAPPINGS)
+
+if hasattr(krea2, "NODE_CLASS_MAPPINGS"):
+    NODE_CLASS_MAPPINGS.update(krea2.NODE_CLASS_MAPPINGS)
+    NODE_DISPLAY_NAME_MAPPINGS.update(krea2.NODE_DISPLAY_NAME_MAPPINGS)
 
 # Merge in nodes from submodule files that ComfyUI's loader doesn't auto-discover
 for _module_name in ("soft_pole", "equirope", "equirope_cfg"):

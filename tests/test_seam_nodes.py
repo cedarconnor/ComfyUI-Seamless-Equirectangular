@@ -68,6 +68,34 @@ def test_patch_vae_walk_scoping():
     print("ok: patch_vae_circular encoder/decoder scoping + unpatch count")
 
 
+def test_ltx_empty_chunk_shape_preserved():
+    class CausalConv3d(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.out_channels = 4
+            self.conv = torch.nn.Conv3d(4, 4, 3, padding=(0, 1, 1), padding_mode="reflect")
+
+        def _empty_output(self, x):
+            h = (x.shape[3] + 2 * self.conv.padding[1] - self.conv.kernel_size[1]) // self.conv.stride[1] + 1
+            w = (x.shape[4] + 2 * self.conv.padding[2] - self.conv.kernel_size[2]) // self.conv.stride[2] + 1
+            return x.new_empty((x.shape[0], self.out_channels, 0, h, w))
+
+    class FakeVAE(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.decoder = torch.nn.ModuleList([CausalConv3d(), CausalConv3d()])
+
+    vae = FakeVAE()
+    x = torch.empty(1, 4, 0, 120, 240)
+    assert cc.patch_vae_circular(vae, encoder=False, decoder=True) == 2
+    for conv in vae.decoder:
+        x = conv._empty_output(x)
+    assert x.shape[-2:] == (120, 240), f"LTX empty chunk shrank to {x.shape[-2:]}"
+    assert cc.unpatch_vae_circular(vae) == 2
+    assert all("_empty_output" not in conv.__dict__ for conv in vae.decoder)
+    print("ok: LTX empty chunk shape preserved through circular residual convs")
+
+
 # ---------------------------------------------------------------------------
 # per-step roll helpers
 # ---------------------------------------------------------------------------
@@ -333,6 +361,7 @@ def test_semantic_cfg_model_options_set_correctly():
 if __name__ == "__main__":
     test_circular_conv_patch_unpatch()
     test_patch_vae_walk_scoping()
+    test_ltx_empty_chunk_shape_preserved()
     test_shift_for_sigma()
     test_roll_model_io_5d_and_packed()
     test_per_step_roll_wrapper_end_to_end()

@@ -6,12 +6,10 @@ longitude wrap and produces a visible seam in the generated panorama. The fix is
 pad the VAE convolutions *circularly along width (longitude)* while keeping height
 (the poles -- not periodic) and time padded as before.
 
-We do NOT modify comfy core. Instead this module copies the relevant padding logic
-from comfy's LTX VAE convs (comfy/ldm/lightricks/vae/{causal_conv3d,conv_nd_factory,
-dual_conv3d}.py) and applies it to an already-loaded VAE at runtime by wrapping each
-conv leaf's forward so the input is circular-padded on W before the (zero-padded)
-convolution runs. Wrapping forward -- rather than replacing it -- preserves comfy's
-weight-casting / fp8 / offload paths in comfy.ops.disable_weight_init.Conv{2,3}d.
+This does not modify ComfyUI core. It wraps convolution leaves in an already-loaded
+VAE, including LTX and Qwen Image/Wan-style decoders, so inputs are circular-padded
+on W before convolution. Wrapping forward rather than replacing model classes
+preserves ComfyUI weight-casting, quantization, and offload paths.
 
 The width amount we pre-pad equals the conv's original W padding, and we zero that
 conv's W padding so the height/time padding it does internally is unchanged. Net
@@ -23,6 +21,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 _SENTINEL = "_equirect_circular_patched"
+_EMPTY_OUTPUT_SENTINEL = "_equirect_circular_empty_output_patched"
 
 
 # ---------------------------------------------------------------------------
@@ -103,6 +102,44 @@ def _unpatch_conv_leaf(conv: nn.Module) -> bool:
     return True
 
 
+def _is_causalconv3d(module: nn.Module) -> bool:
+    return type(module).__name__ == "CausalConv3d" and hasattr(module, "_empty_output")
+
+
+def _patch_causalconv3d_empty_output(module: nn.Module) -> bool:
+    if getattr(module, _EMPTY_OUTPUT_SENTINEL, False):
+        return False
+    conv = module.conv
+    if not getattr(conv, _SENTINEL, False):
+        return False
+
+    orig_empty_output = module._empty_output
+    _, ph, pw = conv._equirect_orig_padding
+
+    def circular_empty_output(x):
+        shape = list(x.shape)
+        shape[-2] += 2 * ph
+        shape[-1] += 2 * pw
+        return orig_empty_output(x.new_empty(shape))
+
+    module._equirect_orig_empty_output = orig_empty_output
+    module._empty_output = circular_empty_output
+    setattr(module, _EMPTY_OUTPUT_SENTINEL, True)
+    return True
+
+
+def _unpatch_causalconv3d_empty_output(module: nn.Module) -> bool:
+    if not getattr(module, _EMPTY_OUTPUT_SENTINEL, False):
+        return False
+    if "_empty_output" in module.__dict__:
+        del module.__dict__["_empty_output"]
+    else:
+        module._empty_output = module._equirect_orig_empty_output
+    del module._equirect_orig_empty_output
+    delattr(module, _EMPTY_OUTPUT_SENTINEL)
+    return True
+
+
 # ---------------------------------------------------------------------------
 # DualConv3d patching (the dims==(2,1) factorized-conv VAE variant)
 # ---------------------------------------------------------------------------
@@ -167,21 +204,27 @@ def patch_vae_circular(vae_model: nn.Module, encoder: bool = True, decoder: bool
     Idempotent: already-patched convs are skipped. Pass the underlying module
     (vae.first_stage_model), not the comfy VAE wrapper.
     """
+    modules = [(name, module) for name, module in vae_model.named_modules() if _in_scope(name, encoder, decoder)]
     patched = 0
-    for name, module in vae_model.named_modules():
-        if not _in_scope(name, encoder, decoder):
-            continue
+    for _, module in modules:
         if isinstance(module, (nn.Conv2d, nn.Conv3d)):
             patched += _patch_conv_leaf(module)
         elif _is_dualconv3d(module):
             patched += _patch_dualconv3d(module)
+    for _, module in modules:
+        if _is_causalconv3d(module):
+            _patch_causalconv3d_empty_output(module)
     return patched
 
 
 def unpatch_vae_circular(vae_model: nn.Module) -> int:
     """Reverse patch_vae_circular. Returns #convs restored. Safe to call always."""
+    modules = list(vae_model.modules())
+    for module in modules:
+        if _is_causalconv3d(module):
+            _unpatch_causalconv3d_empty_output(module)
     restored = 0
-    for _, module in vae_model.named_modules():
+    for module in modules:
         if isinstance(module, (nn.Conv2d, nn.Conv3d)):
             restored += _unpatch_conv_leaf(module)
         elif _is_dualconv3d(module):
