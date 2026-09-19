@@ -71,3 +71,52 @@ A candidate passes when:
 
 Select the best output, even if the selected workflow has the cross-version
 seamless LoRA disabled.
+
+## First-Matrix Result
+
+The unmasked matrix rendered successfully but did not meet the seam threshold.
+The best dual-LoRA candidate used seamless-LoRA strength 0.2:
+
+- Ripple-only wrap/interior ratio: 1.62.
+- Ripple + seamless 0.2 ratio: 1.47.
+- Colored first-frame input ratio: 22.89.
+- Gray source-video median ratio: 1.64.
+
+Ripple preserved the colored couch and source motion across all frames. The
+remaining output discontinuity tracks the source video's discontinuity, showing
+that strong guide attention prevents the seam stack from replacing the
+contradictory boundary.
+
+## Approved Masked-Guide Follow-up
+
+Add an `EquirectGuideAttentionMask` node that outputs a pixel-space mask with:
+
+- Value 1.0 over the interior.
+- Value 0.0 at both longitude edges.
+- A cosine transition across a configurable seam width.
+- Output shape `(frames, height, width)` for direct use by
+  `LTXAddVideoICLoRAGuideAdvanced`.
+
+Extend `EquirectPerStepRoll` to synchronize Ripple attention masks with each
+latent shift. For every `guide_attention_entries` item containing a
+`pixel_mask`, copy the conditioning payload and circularly roll the mask's width
+axis by:
+
+```python
+pixel_shift = round(latent_shift * pixel_mask_width / latent_video_width)
+```
+
+Do not mutate the original conditioning dictionaries or mask tensors. Entries
+without masks remain unchanged.
+
+Test:
+
+1. Existing unmasked seamless-LoRA 0.2 baseline.
+2. Seamless-LoRA 0.2 with 32-pixel edge exclusion.
+3. Seamless-LoRA 0.2 with 64-pixel edge exclusion.
+4. Seamless-LoRA 0.2 with 128-pixel edge exclusion.
+
+All other workflow settings and acceptance criteria remain unchanged. If no
+masked dual-LoRA candidate passes, repeat only the best mask width with the
+seamless LoRA disabled to distinguish cross-version LoRA interference from
+guide-boundary interference.
