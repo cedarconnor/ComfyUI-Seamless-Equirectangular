@@ -124,3 +124,91 @@ strength.
 
 If the winner closes the seam but weakens Ripple fidelity, duplicate only that
 workflow with `start_percent=0.25`, render, and compare it against the winner.
+
+---
+
+### Task 4: Add synchronized Ripple guide masks
+
+**Files:**
+- Create: `seamless_equirect/ripple.py`
+- Modify: `seamless_equirect/nodes.py`
+- Create: `tests/test_ripple.py`
+
+**Interfaces:**
+- `EquirectGuideAttentionMask.create(width, height, frames, seam_width, edge_strength)`
+  returns a ComfyUI `MASK`.
+- `roll_ltx_guide_attention_masks(conditioning, latent_shift, latent_width)`
+  returns unchanged conditioning when no masks need rolling; otherwise returns
+  an immutable shallow copy containing proportionally rolled mask tensors.
+
+- [ ] **Step 1: Write failing tests**
+
+Cover mask shape, zero-strength edges, unit-strength interior, left/right
+symmetry, cosine monotonicity, proportional mask rolling, immutable
+conditioning updates, and no-op behavior for missing masks or zero shift.
+
+- [ ] **Step 2: Run tests and confirm failure**
+
+Expected: import failure because `seamless_equirect/ripple.py` does not exist.
+
+- [ ] **Step 3: Implement the pure helpers and node**
+
+Build the feather with a half-cosine from `edge_strength` to 1.0. Copy only the
+conditioning dictionary, entries list, and entry dictionaries that change.
+Use `torch.roll(..., dims=-1)` without modifying source tensors.
+
+- [ ] **Step 4: Integrate with `EquirectPerStepRoll`**
+
+For every shift, call the helper before invoking the diffusion model. Preserve
+the existing MiniMax H3 transformation and denoise-mask roll behavior.
+
+- [ ] **Step 5: Register the node**
+
+Register `EquirectGuideAttentionMask` through the package's dynamic module
+loader and verify its display name.
+
+- [ ] **Step 6: Run focused tests**
+
+Expected: `python tests/test_ripple.py` passes.
+
+### Task 5: Build and render the masked-guide matrix
+
+**Files:**
+- Create: `user/default/workflows/build_ripple_masked_ltx25_matrix.py`
+- Create: `user/default/workflows/ripple-masked-ltx25/*.json`
+
+- [ ] **Step 1: Create static graph assertions**
+
+Require `LTXAddVideoICLoRAGuideAdvanced`, the new mask node, seamless-LoRA
+strength 0.2, synchronized per-step roll, and mask widths 32, 64, and 128.
+
+- [ ] **Step 2: Build three masked workflows**
+
+Keep all settings identical to the existing 0.2 baseline except the guide node
+and edge-exclusion width.
+
+- [ ] **Step 3: Validate and render**
+
+Require zero ComfyUI validation errors and 33 raw/rolled frames plus both MP4s
+for every width.
+
+### Task 6: Evaluate masked conditioning
+
+**Files:**
+- Create: `user/default/workflows/analyze_ripple_masked_ltx25.py`
+- Produce: `output/ripple-masked-ltx25/metrics.json`
+- Produce: `output/ripple-masked-ltx25/comparison.png`
+
+- [ ] **Step 1: Measure all frames**
+
+Use the same wrap/interior metrics as the unmasked matrix.
+
+- [ ] **Step 2: Inspect flat, rolled-center, and temporal comparisons**
+
+Reject blur stripes, duplicated geometry, missing couch, or failed color
+propagation.
+
+- [ ] **Step 3: Select or diagnose**
+
+Choose the best passing mask width. If every masked dual-LoRA candidate fails,
+repeat only the best width with the seamless LoRA disabled.
