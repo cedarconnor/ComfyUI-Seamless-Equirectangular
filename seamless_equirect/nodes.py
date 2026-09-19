@@ -600,7 +600,7 @@ if hasattr(krea2, "NODE_CLASS_MAPPINGS"):
     NODE_DISPLAY_NAME_MAPPINGS.update(krea2.NODE_DISPLAY_NAME_MAPPINGS)
 
 # Merge in nodes from submodule files that ComfyUI's loader doesn't auto-discover
-for _module_name in ("soft_pole", "equirope", "equirope_cfg"):
+for _module_name in ("soft_pole", "equirope", "equirope_cfg", "ltx25"):
     try:
         _mod = importlib.import_module(f".{_module_name}", __package__)
         if hasattr(_mod, "NODE_CLASS_MAPPINGS"):
