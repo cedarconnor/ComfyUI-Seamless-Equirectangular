@@ -38,6 +38,7 @@ import comfy.ldm.lightricks.model as _ltx_model
 from .circular_conv import patch_vae_circular, seam_blend_w, unpatch_vae_circular
 from . import krea2
 from .latent_layouts import find_layout, roll_model_io, video_shape_from_conditioning
+from .ripple import roll_ltx_guide_attention_masks
 
 # Load the vendored periodic_rope module
 _spec = importlib.util.spec_from_file_location(
@@ -254,6 +255,8 @@ class EquirectPerStepRoll:
                 if is_minimax_h3:
                     from .minimax_h3 import roll_minimax_h3_fl2va_conditioning
                     cs = roll_minimax_h3_fl2va_conditioning(c, s, video_shape)
+
+                cs = roll_ltx_guide_attention_masks(cs, s, w)
 
                 if isinstance(mask, torch.Tensor) and s != 0:
                     rolled_mask = roll_model_io(mask, video_shape, s)
@@ -600,7 +603,7 @@ if hasattr(krea2, "NODE_CLASS_MAPPINGS"):
     NODE_DISPLAY_NAME_MAPPINGS.update(krea2.NODE_DISPLAY_NAME_MAPPINGS)
 
 # Merge in nodes from submodule files that ComfyUI's loader doesn't auto-discover
-for _module_name in ("soft_pole", "equirope", "equirope_cfg", "ltx25"):
+for _module_name in ("soft_pole", "equirope", "equirope_cfg", "ltx25", "ripple"):
     try:
         _mod = importlib.import_module(f".{_module_name}", __package__)
         if hasattr(_mod, "NODE_CLASS_MAPPINGS"):
