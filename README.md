@@ -1,6 +1,6 @@
 # ComfyUI-Seamless-Equirectangular
 
-**ComfyUI-Seamless-Equirectangular** is a ComfyUI custom node pack by **Burgstall Labs** for seamless equirectangular, 360-degree, VR, and panoramic image or video generation with Krea2, LTX-2.3, and MiniMax H3. It provides training-free seam mitigation and geometry enhancement for equirectangular inference.
+**ComfyUI-Seamless-Equirectangular** is a ComfyUI custom node pack by **Burgstall Labs** for seamless equirectangular, 360-degree, VR, and panoramic image or video generation with Krea2, LTX-2.3, LTX-2.5, and MiniMax H3. It provides training-free seam mitigation and geometry enhancement for equirectangular inference.
 
 This is the result of extensive experimentation: training a dedicated equirectangular LoRA, then developing circular VAE padding, per-step latent rolling, and spherical phase remaster noise to handle the seam and pole convergence — then implementing the spherical positional encoding ideas from the SpheRoPE paper (https://arxiv.org/abs/2606.32033) on top of that foundation. The combined pipeline produces seamless 360° video that neither approach achieves alone. Continued testing produced **EquiRoPE** — an original, architecturally distinct latitude-scaled RoPE with pole gating and hemisphere selection — plus a latitudinal geometric CFG, which now form the recommended refinement layer over the LoRA + roll + circular-VAE foundation.
 
@@ -9,6 +9,23 @@ The LoRA is available on Hugging Face: [TheBurgstall/Seamless-Equirectangular-LT
 **Try it / see it live:** [360° gallery + interactive viewer](https://huggingface.co/spaces/TheBurgstall/360viewer) — sample generations below, drag to look around.
 
 **Keywords:** ComfyUI seamless equirectangular, Krea2 360 image, LTX-2.3 360 video, SpheRoPE, circular VAE padding, per-step latent roll, panoramic video generation, Burgstall Labs.
+
+## LTX 2.5 support and artist workflows
+
+LTX 2.5 uses its native video VAE through **EquirectLTX25VAEDecode**. This node decodes the original and half-rotated video latents, then composites the rotated decode around the longitude boundary. Start with `blend_columns=1`. Use this decoder for LTX 2.5 rather than assuming generic circular convolution padding covers its neighborhood-attention VAE. Dual rotation requires two VAE decodes.
+
+Two ready-to-load ComfyUI workflows are included:
+
+| Workflow | Required input | Conditioning |
+|---|---|---|
+| [Ripple playblast](example_workflows/ltx25/Ripple_Playblast_LTX25_360.json) | Gray 2:1 equirectangular video plus a textured look frame aligned to its first frame | LTX 2.5 Ripple at 1.35; no panorama LoRA |
+| [First-frame camera move](example_workflows/ltx25/FirstFrame_CameraMove_LTX25_360.json) | One textured, seamless 2:1 panorama plus a camera-move prompt | Companion panorama LoRA at 0.20 |
+
+See the [setup and model list](example_workflows/ltx25/README.md). Both graphs use EquiRoPE and the native 2.5 decoder, with per-step rolling and wrapped noise omitted. The companion panorama LoRA is **2.3-trained**: its execution on 2.5 was tested, but it is not a dedicated 2.5 adapter. An existing equirectangular guide can make the panorama LoRA optional; the older text-to-video findings below do not establish that every conditioned workflow requires it.
+
+**Validation:** on September 20, 2026, both UI graphs round-tripped to the tested API inputs and rendered 1024x512, 65-frame, 24fps clips using the 2.5 distilled model, eight Euler/simple steps and CFG 1. Runtime was approximately 87 seconds for Ripple and 51 seconds for first-frame generation on the test machine. Eight comparison renders informed these defaults. These are preview-resolution results, not 4K qualification or a guarantee of artifact-free output: floor/ceiling deformation, texture swimming and geometry drift remain possible. Negative prompts and geometric CFG have no CFG effect at CFG 1.
+
+`EquirectGuideAttentionMask` is available for optional Ripple seam-release experiments. Per-step rolling synchronizes its pixel masks with the latent shift. The shipped artist presets do not use this mask; it is not a universal quality improvement. `EquirectPerStepRoll` also accepts an optional `end_percent` (default 1.0) to stop rolling before late detail steps, alongside `start_percent`.
 
 ## News: Krea2 Turbo Support
 
@@ -58,6 +75,8 @@ The stronger inference patches can introduce flashing points or morphing on some
 | **EquirectSoftPoleConstraint** | `MODEL → MODEL` | Per-step polar row blend. Insurance against rare polar voids. |
 | **EquirectKrea2RoPE** | `MODEL → MODEL` | Krea2 SpheRoPE: periodic high-frequency longitude plus spherical low-frequency geometry, preserving stock text and reference-image positions. |
 | **EquirectMiniMaxH3RoPE** | `MODEL → MODEL` | Periodic width rotary position embeddings for MiniMax H3 DiT models. |
+| **EquirectLTX25VAEDecode** | `LATENT + VAE → IMAGE` | Native LTX 2.5 dual-rotation decode with boundary compositing. |
+| **EquirectGuideAttentionMask** | `width/height/frames → MASK` | Optional periodic seam-release mask for Ripple guides; synchronized by per-step rolling. |
 | **EquirectMiniMaxH3VAEDecode** | `LATENT + VAE → IMAGE` | Dual-rotation seamless VAE decode for MiniMax H3 tiled ViT VAEs. |
 | **EquirectImageSeamBlend** | `IMAGE → IMAGE` | Final pixel-space seam cross-fade on IMAGE width axis. |
 
@@ -67,10 +86,11 @@ The stronger inference patches can introduce flashing points or morphing on some
 |---|---:|---:|---:|
 | Per-step roll | yes, patch-aligned | yes | yes, patch-aligned with guide synchronization |
 | Wrapped Noise | yes, 4D image | yes | yes, video member only |
-| Generic circular-conv VAE | yes, Qwen Image | yes | no |
+| Generic circular-conv VAE | yes, Qwen Image | LTX 2.3; use native decoder for 2.5 | no |
 | Krea2 SpheRoPE geometry + seam | yes | no | no |
 | LTX SphericalRoPE/EquiRoPE | no | yes | no |
 | H3 periodic DiT RoPE | no | no | yes |
+| LTX 2.5 dual-rotation VAE decode | no | LTX 2.5 only | no |
 | H3 dual-rotation VAE decode | no | no | yes |
 | Latent seam blend | yes | yes | yes |
 | Image seam blend | yes | yes | yes |
@@ -272,7 +292,7 @@ Restart ComfyUI. The nodes appear under their respective categories:
 
 No extra runtime dependency is required beyond the torch runtime already used by ComfyUI.
 
-## Recommended Pipeline
+## LTX 2.3 Text-to-Video Pipeline
 
 ```
 UNETLoader → LoraLoaderModelOnly → EquiRoPE → EquiRoPEGeometricCFG → LTX2_NAG → EquirectPerStepRoll → CFGGuider (cfg>1) → SamplerCustomAdvanced
@@ -286,11 +306,13 @@ With:
 - EquiRoPEGeometricCFG: radius=3, strength=3.0, pole_side=bottom
 - EquirectSphericalRoPE: disabled (see status note above)
 
-Your equirectangular LoRA should be loaded — none of these nodes replace the LoRA, which carries the essential equirectangular output knowledge that the frozen base model lacks.
+For this LTX 2.3 text-to-video pipeline, load the companion equirectangular LoRA. For conditioned LTX 2.5 workflows, use the separate presets above.
 
 ## Known Limitations
 
 In videos with a moving camera, expect some **morphing** of scene content as it translates across longitudes, and occasional **polar voiding** at the nadir/zenith. For the latter, `EquirectSoftPoleConstraint` is worth testing as a mitigation — it blends the polar rows toward coherence each step and is cheap insurance, though it showed no measurable effect when the poles were already clean.
+
+The installed ComfyUI MiniMax H3 API currently rejects the `frame_count` argument used by this pack’s `PackedLayout` construction. H3 RoPE is not qualified on that API; this limitation is separate from the tested LTX 2.5 paths.
 
 ## Tests
 
@@ -312,3 +334,5 @@ Burgstall Labs develops practical open-source tools for 360-degree AI video, VR-
 
 
 **License:** This nodepack is licensed under the PolyForm Noncommercial License 1.0.0 (https://polyformproject.org/licenses/noncommercial/1.0.0). Noncommercial use (research, academic, personal, hobbyist) is free. Commercial use requires a separate license — contact **howdy@theaiwrangler.com**. The spherical positional encoding implementation is based on ideas from the SpheRoPE paper (https://arxiv.org/abs/2606.32033) by Or Hirshfeld, Lior Talker, and colleagues — see the LICENSE file for details.
+
+Release verification (October 16, 2026): focused LTX 2.5/Ripple/seam tests **18 passed, 4 skipped**. Full suite **35 passed, 4 skipped, 1 failed**, with the MiniMax H3 `PackedLayout.frame_count` compatibility failure described above. The skipped checks are not claimed as passing. Render results above remain the September validation; no new render qualification is implied by this release.

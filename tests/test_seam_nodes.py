@@ -182,6 +182,66 @@ def test_per_step_roll_wrapper_end_to_end():
     print("ok: EquirectPerStepRoll wrapper end-to-end (roll seen by model, exact round trip)")
 
 
+def test_per_step_roll_stops_after_end_percent():
+    assert "end_percent" in sn.EquirectPerStepRoll.INPUT_TYPES()["optional"]
+
+    class StubModel:
+        def clone(self):
+            return self
+
+        def set_model_unet_function_wrapper(self, wrapper):
+            self.wrapper = wrapper
+
+    stub = StubModel()
+    sn.EquirectPerStepRoll().patch(
+        stub,
+        enabled=True,
+        mode="random_per_step",
+        seed=7,
+        start_percent=0.0,
+        end_percent=0.5,
+    )
+
+    vshape = torch.Size([1, 8, 3, 5, 7])
+    video = torch.randn(*vshape)
+    audio = torch.randn(1, 1, 13)
+    packed = torch.cat([video.reshape(1, 1, -1), audio], dim=-1)
+    schedule = torch.tensor([1.0, 0.75, 0.5, 0.25, 0.0])
+    conditioning = {
+        "latent_shapes": [vshape, torch.Size([1, 1, 13])],
+        "transformer_options": {"sample_sigmas": schedule},
+    }
+
+    seen = []
+
+    def identity(x, timestep, **kwargs):
+        seen.append(x.clone())
+        return x
+
+    stub.wrapper(
+        identity,
+        {
+            "input": packed,
+            "timestep": torch.tensor([0.75]),
+            "c": conditioning,
+            "cond_or_uncond": [0],
+        },
+    )
+    assert not torch.equal(seen[-1], packed), "early step was not rolled"
+
+    stub.wrapper(
+        identity,
+        {
+            "input": packed,
+            "timestep": torch.tensor([0.25]),
+            "c": conditioning,
+            "cond_or_uncond": [0],
+        },
+    )
+    assert torch.equal(seen[-1], packed), "late step rolled past end_percent"
+    print("ok: per-step roll end_percent limits rolling to early denoise steps")
+
+
 def test_dual_average_and_feather():
     class StubModel:
         def clone(self):
@@ -365,6 +425,7 @@ if __name__ == "__main__":
     test_shift_for_sigma()
     test_roll_model_io_5d_and_packed()
     test_per_step_roll_wrapper_end_to_end()
+    test_per_step_roll_stops_after_end_percent()
     test_dual_average_and_feather()
     test_seam_blend_w()
     if hasattr(sn, "EquirectSemanticDistortionCFG"):
