@@ -1,0 +1,10 @@
+{
+  "max_pixel_difference": 0.0,
+  "mean_pixel_difference": 0.0,
+  "shape": [
+    512,
+    1024,
+    3
+  ],
+  "case": "standalone runner stock vs initial native stock"
+}

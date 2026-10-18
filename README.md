@@ -66,6 +66,25 @@ The older [MiniMax H3 FL2VA UI example](example_workflows/MiniMax-H3-SEAMLESS-FL
 
 [API examples](example_workflows/seam_diagnosis_20261018/README.md) cover Klein 9B distilled (four steps, CFG 1) and Klein base 9B FP8 (20 steps, CFG 4, geometric guidance 3). These require the separate [ComfyUI-SpheRoPE pack](https://github.com/cedarconnor/ComfyUI-SpheRoPE); they are not native FLUX nodes in this pack. Both produced 1024x512 images with spherical width encoding and circular VAE decoding. Radial pole distortion remains. The base comparison changed both RoPE and guidance, so their individual effects are not isolated. Full FLUX.2-dev and its Mistral encoder were not installed or tested. FLUX outputs here are images, not videos.
 
+## Latest native comparison and LTX 2.3 first-frame workflow
+
+**For the tested LTX 2.3 ERP first-frame case, start with [ltx23_firstframe_stockrope.json](example_workflows/native_reference_20261018/ltx23_firstframe_stockrope.json).** This saved API graph keeps ordinary positional encoding, circular latent upscaling and circular VAE decoding. It uses no panorama LoRA; the distilled refinement LoRA is still required. Update both this pack and [ComfyUI-SpheRoPE](https://github.com/cedarconnor/ComfyUI-SpheRoPE), then restart ComfyUI. See the [input/model setup and controls](example_workflows/native_reference_20261018/README.md#ltx-23-two-stage-transfer).
+
+| Tested LTX 2.3 API graph | Frames | Mean boundary ratio | Visual finding |
+|---|---:|---:|---|
+| [First-frame, stock RoPE — preferred for this sample](example_workflows/native_reference_20261018/ltx23_firstframe_stockrope.json) | 33 | 0.506 | Continuous sampled join; pronounced floor pinch absent |
+| [First-frame, spherical RoPE](example_workflows/native_reference_20261018/ltx23_firstframe.json) | 33 | 0.528 | Continuous sampled join; dark floor-pole pinch |
+| [First-frame, geometry guidance disabled](example_workflows/native_reference_20261018/ltx23_firstframe_gamma0.json) | 33 | 0.524 | Floor artifact persists |
+| [Two-stage text-to-video](example_workflows/native_reference_20261018/ltx23_two_stage.json) | 17 | 0.684 | Continuous sampled join; severe floor swirling |
+
+All four completed through MCP at 1024x512 after the companion circular-upscaler fix. That node now uses ComfyUI's managed upscaler API; its suite passes **124 tests**. The first-frame controls use the same image, seed and sampling schedule. Disabling spherical RoPE helped this short, fixed-camera case; disabling geometry guidance alone did not. This is one image and seed over 1.375 seconds, with residual texture/lighting drift. Boundary ratios measure edge continuity, not correct poles or temporal stability. These API graphs are separate from the ready-to-load LTX 2.5 UI workflows above.
+
+[Watch the preferred first-frame result](docs/media/native-2026-10-18/ltx23_comfy_i2v_stockrope.mp4).
+
+The original SpheRoPE also rendered FLUX.1 images and LTX 2.3 video outside ComfyUI using existing local weights. Its full LTX method reduced the tested boundary jump by about 87%, but text-to-video poles remained distorted; native first-frame conditioning preserved the room better. Six Klein follow-up jobs found no meaningful benefit from increasing decoder padding from 8 to 18 columns, and inconsistent benefit from delayed guidance. The native comparison does not qualify LTX 2.5, H3, full FLUX.2-dev, moving cameras, gray-guide video or 4K. The established LTX 2.5 artist defaults remain unchanged.
+
+See the [full report, previews and execution evidence](docs/NATIVE_SPHEROPE_COMPARISON_2026-10-18.md), [all ten follow-up API graphs](example_workflows/native_reference_20261018/README.md), [standalone LTX runner](scripts/compare_native_ltx.py) and [FLUX runner](scripts/compare_native_spherope.py).
+
 ## Nodes
 
 | Node | Type | What it does |

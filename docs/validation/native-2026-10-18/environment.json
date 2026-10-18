@@ -1,0 +1,19 @@
+{
+  "python": "3.11.9 (tags/v3.11.9:de54cf5, Apr  2 2024, 10:12:12) [MSC v.1938 64 bit (AMD64)]",
+  "torch": "2.5.1+cu121",
+  "cuda": "12.1",
+  "diffusers": "0.37.1",
+  "transformers": "4.56.2",
+  "accelerate": "1.10.1",
+  "upstream_commit": "a40a86b49c25dbd4d0191591f28a0d5baf0c4ca4",
+  "model_path": "E:/models/diffusers",
+  "height": 512,
+  "width": 1024,
+  "steps": 28,
+  "seed": 80084,
+  "embedded_guidance": 3.5,
+  "real_cfg": 3.5,
+  "erp_gamma": 6,
+  "no_cfg_until_timestep": 2,
+  "circular_pad_latent_columns": 18
+}

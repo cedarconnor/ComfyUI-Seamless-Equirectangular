@@ -1,0 +1,306 @@
+{
+  "1": {
+    "class_type": "UNETLoader",
+    "inputs": {
+      "unet_name": "FLUX\\flux-2-klein-base-9b-fp8.safetensors",
+      "weight_dtype": "default"
+    }
+  },
+  "2": {
+    "class_type": "CLIPLoader",
+    "inputs": {
+      "clip_name": "qwen_3_8b.safetensors",
+      "type": "flux2",
+      "device": "default"
+    }
+  },
+  "3": {
+    "class_type": "VAELoader",
+    "inputs": {
+      "vae_name": "flux2-vae.safetensors"
+    }
+  },
+  "4": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "text": "A serene 360 degree equirectangular panorama of a misty forest clearing at golden hour, soft volumetric sunlight through tall pines, gentle drifting fog, seamless 2:1 equirectangular projection, level horizon",
+      "clip": [
+        "2",
+        0
+      ]
+    }
+  },
+  "5": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "text": "text, watermark, worst quality, blurry, distorted, seam, visible edge",
+      "clip": [
+        "2",
+        0
+      ]
+    }
+  },
+  "6": {
+    "class_type": "SpheRoPEApplySphericalRoPEFlux",
+    "inputs": {
+      "model": [
+        "1",
+        0
+      ],
+      "scale": 2.0
+    }
+  },
+  "7": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "text": "A serene 360 degree equirectangular panorama of a misty forest clearing at golden hour, soft volumetric sunlight through tall pines, gentle drifting fog, seamless 2:1 equirectangular projection, level horizon True 2:1 equirectangular projection, physically coherent spherical geometry, seamless horizontal wrap at 0/360 degrees, correct zenith and nadir convergence, one continuous surrounding environment, no rectangular edge discontinuity. Fixed nodal camera. The environment remains rigid and stable over time. Only subtle atmospheric or lighting variation is permitted. No background drift, no terrain morphing, no architectural deformation, no camera shake or rotation.",
+      "clip": [
+        "2",
+        0
+      ]
+    }
+  },
+  "8": {
+    "class_type": "SpheRoPEERPGuider",
+    "inputs": {
+      "model": [
+        "6",
+        0
+      ],
+      "positive": [
+        "4",
+        0
+      ],
+      "negative": [
+        "5",
+        0
+      ],
+      "geometry": [
+        "7",
+        0
+      ],
+      "cfg": 4,
+      "erp_gamma": 3.0
+    }
+  },
+  "9": {
+    "class_type": "RandomNoise",
+    "inputs": {
+      "noise_seed": 80084
+    }
+  },
+  "10": {
+    "class_type": "KSamplerSelect",
+    "inputs": {
+      "sampler_name": "euler"
+    }
+  },
+  "11": {
+    "class_type": "BasicScheduler",
+    "inputs": {
+      "model": [
+        "6",
+        0
+      ],
+      "scheduler": "simple",
+      "steps": 20,
+      "denoise": 1.0
+    }
+  },
+  "12": {
+    "class_type": "EmptySD3LatentImage",
+    "inputs": {
+      "width": 1024,
+      "height": 512,
+      "batch_size": 1
+    }
+  },
+  "13": {
+    "class_type": "SamplerCustomAdvanced",
+    "inputs": {
+      "noise": [
+        "953",
+        0
+      ],
+      "guider": [
+        "8",
+        0
+      ],
+      "sampler": [
+        "10",
+        0
+      ],
+      "sigmas": [
+        "950",
+        1
+      ],
+      "latent_image": [
+        "952",
+        0
+      ]
+    }
+  },
+  "14": {
+    "class_type": "SpheRoPELatentDiagnostics",
+    "inputs": {
+      "samples": [
+        "13",
+        0
+      ],
+      "pole_rows": 1
+    }
+  },
+  "15": {
+    "class_type": "SpheRoPECircularVAEDecodeFlux",
+    "inputs": {
+      "samples": [
+        "13",
+        0
+      ],
+      "vae": [
+        "3",
+        0
+      ],
+      "pad_w": 8
+    }
+  },
+  "16": {
+    "class_type": "SpheRoPEFrameDiagnostics",
+    "inputs": {
+      "images": [
+        "15",
+        0
+      ],
+      "seam_width_k": 1,
+      "pole_rows": 1
+    }
+  },
+  "17": {
+    "class_type": "PreviewAny",
+    "inputs": {
+      "source": [
+        "14",
+        0
+      ]
+    }
+  },
+  "18": {
+    "class_type": "PreviewAny",
+    "inputs": {
+      "source": [
+        "16",
+        0
+      ]
+    }
+  },
+  "19": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "images": [
+        "15",
+        0
+      ],
+      "filename_prefix": "native-reference-20261018/klein_base_split_control/pad8"
+    }
+  },
+  "900": {
+    "class_type": "SpheRoPECircularVAEDecodeFlux",
+    "inputs": {
+      "samples": [
+        "13",
+        0
+      ],
+      "vae": [
+        "3",
+        0
+      ],
+      "pad_w": 0
+    }
+  },
+  "901": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "images": [
+        "900",
+        0
+      ],
+      "filename_prefix": "native-reference-20261018/klein_base_split_control/pad0"
+    }
+  },
+  "902": {
+    "class_type": "SpheRoPECircularVAEDecodeFlux",
+    "inputs": {
+      "samples": [
+        "13",
+        0
+      ],
+      "vae": [
+        "3",
+        0
+      ],
+      "pad_w": 18
+    }
+  },
+  "903": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "images": [
+        "902",
+        0
+      ],
+      "filename_prefix": "native-reference-20261018/klein_base_split_control/pad18"
+    }
+  },
+  "950": {
+    "class_type": "SplitSigmas",
+    "inputs": {
+      "sigmas": [
+        "11",
+        0
+      ],
+      "step": 2
+    }
+  },
+  "951": {
+    "class_type": "BasicGuider",
+    "inputs": {
+      "model": [
+        "6",
+        0
+      ],
+      "conditioning": [
+        "4",
+        0
+      ]
+    }
+  },
+  "952": {
+    "class_type": "SamplerCustomAdvanced",
+    "inputs": {
+      "noise": [
+        "9",
+        0
+      ],
+      "guider": [
+        "8",
+        0
+      ],
+      "sampler": [
+        "10",
+        0
+      ],
+      "sigmas": [
+        "950",
+        0
+      ],
+      "latent_image": [
+        "12",
+        0
+      ]
+    }
+  },
+  "953": {
+    "class_type": "DisableNoise",
+    "inputs": {}
+  }
+}

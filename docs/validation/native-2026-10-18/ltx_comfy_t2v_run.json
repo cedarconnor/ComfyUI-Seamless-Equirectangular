@@ -1,0 +1,488 @@
+{
+  "prompt_id": "0da90b11-275f-4f24-9444-a3d5da0287ff",
+  "status": {
+    "status_str": "success",
+    "completed": true,
+    "messages": [
+      [
+        "execution_start",
+        {
+          "prompt_id": "0da90b11-275f-4f24-9444-a3d5da0287ff",
+          "timestamp": 1792354313503
+        }
+      ],
+      [
+        "execution_cached",
+        {
+          "nodes": [],
+          "prompt_id": "0da90b11-275f-4f24-9444-a3d5da0287ff",
+          "timestamp": 1792354313511
+        }
+      ],
+      [
+        "execution_success",
+        {
+          "prompt_id": "0da90b11-275f-4f24-9444-a3d5da0287ff",
+          "timestamp": 1792354403420
+        }
+      ]
+    ]
+  },
+  "outputs": [
+    {
+      "filename": "full_00001_.png",
+      "subfolder": "native-ltx-comparison-20261018\\two_stage",
+      "type": "output",
+      "metadata": {
+        "kind": "image",
+        "width": 1024,
+        "height": 512
+      }
+    },
+    {
+      "filename": "full_00002_.png",
+      "subfolder": "native-ltx-comparison-20261018\\two_stage",
+      "type": "output",
+      "metadata": {
+        "kind": "image",
+        "width": 1024,
+        "height": 512
+      }
+    },
+    {
+      "filename": "full_00003_.png",
+      "subfolder": "native-ltx-comparison-20261018\\two_stage",
+      "type": "output",
+      "metadata": {
+        "kind": "image",
+        "width": 1024,
+        "height": 512
+      }
+    },
+    {
+      "filename": "full_00004_.png",
+      "subfolder": "native-ltx-comparison-20261018\\two_stage",
+      "type": "output",
+      "metadata": {
+        "kind": "image",
+        "width": 1024,
+        "height": 512
+      }
+    },
+    {
+      "filename": "full_00005_.png",
+      "subfolder": "native-ltx-comparison-20261018\\two_stage",
+      "type": "output",
+      "metadata": {
+        "kind": "image",
+        "width": 1024,
+        "height": 512
+      }
+    },
+    {
+      "filename": "full_00006_.png",
+      "subfolder": "native-ltx-comparison-20261018\\two_stage",
+      "type": "output",
+      "metadata": {
+        "kind": "image",
+        "width": 1024,
+        "height": 512
+      }
+    },
+    {
+      "filename": "full_00007_.png",
+      "subfolder": "native-ltx-comparison-20261018\\two_stage",
+      "type": "output",
+      "metadata": {
+        "kind": "image",
+        "width": 1024,
+        "height": 512
+      }
+    },
+    {
+      "filename": "full_00008_.png",
+      "subfolder": "native-ltx-comparison-20261018\\two_stage",
+      "type": "output",
+      "metadata": {
+        "kind": "image",
+        "width": 1024,
+        "height": 512
+      }
+    },
+    {
+      "filename": "full_00009_.png",
+      "subfolder": "native-ltx-comparison-20261018\\two_stage",
+      "type": "output",
+      "metadata": {
+        "kind": "image",
+        "width": 1024,
+        "height": 512
+      }
+    },
+    {
+      "filename": "full_00010_.png",
+      "subfolder": "native-ltx-comparison-20261018\\two_stage",
+      "type": "output",
+      "metadata": {
+        "kind": "image",
+        "width": 1024,
+        "height": 512
+      }
+    },
+    {
+      "filename": "full_00011_.png",
+      "subfolder": "native-ltx-comparison-20261018\\two_stage",
+      "type": "output",
+      "metadata": {
+        "kind": "image",
+        "width": 1024,
+        "height": 512
+      }
+    },
+    {
+      "filename": "full_00012_.png",
+      "subfolder": "native-ltx-comparison-20261018\\two_stage",
+      "type": "output",
+      "metadata": {
+        "kind": "image",
+        "width": 1024,
+        "height": 512
+      }
+    },
+    {
+      "filename": "full_00013_.png",
+      "subfolder": "native-ltx-comparison-20261018\\two_stage",
+      "type": "output",
+      "metadata": {
+        "kind": "image",
+        "width": 1024,
+        "height": 512
+      }
+    },
+    {
+      "filename": "full_00014_.png",
+      "subfolder": "native-ltx-comparison-20261018\\two_stage",
+      "type": "output",
+      "metadata": {
+        "kind": "image",
+        "width": 1024,
+        "height": 512
+      }
+    },
+    {
+      "filename": "full_00015_.png",
+      "subfolder": "native-ltx-comparison-20261018\\two_stage",
+      "type": "output",
+      "metadata": {
+        "kind": "image",
+        "width": 1024,
+        "height": 512
+      }
+    },
+    {
+      "filename": "full_00016_.png",
+      "subfolder": "native-ltx-comparison-20261018\\two_stage",
+      "type": "output",
+      "metadata": {
+        "kind": "image",
+        "width": 1024,
+        "height": 512
+      }
+    },
+    {
+      "filename": "full_00017_.png",
+      "subfolder": "native-ltx-comparison-20261018\\two_stage",
+      "type": "output",
+      "metadata": {
+        "kind": "image",
+        "width": 1024,
+        "height": 512
+      }
+    }
+  ],
+  "workflow": {
+    "1": {
+      "class_type": "CheckpointLoaderSimple",
+      "inputs": {
+        "ckpt_name": "ltx-2.3-22b-dev-fp8.safetensors"
+      }
+    },
+    "2": {
+      "class_type": "LoraLoaderModelOnly",
+      "inputs": {
+        "model": [
+          "1",
+          0
+        ],
+        "lora_name": "ltx-2.3-22b-distilled-lora-384.safetensors",
+        "strength_model": 0.8
+      }
+    },
+    "3": {
+      "class_type": "LTXAVTextEncoderLoader",
+      "inputs": {
+        "text_encoder": "gemma_3_12B_it.safetensors",
+        "ckpt_name": "ltx-2.3-22b-dev-fp8.safetensors",
+        "device": "default"
+      }
+    },
+    "4": {
+      "class_type": "CLIPTextEncode",
+      "inputs": {
+        "text": "A modern sunlit living room with cream walls, warm oak floorboards, a gray fabric sofa, low wooden coffee table, tall windows with sheer curtains, a floor lamp and potted plants, realistic architectural photography. A stationary camera, subtle light changes.",
+        "clip": [
+          "3",
+          0
+        ]
+      }
+    },
+    "5": {
+      "class_type": "CLIPTextEncode",
+      "inputs": {
+        "text": "blurry, out of focus, overexposed, underexposed, low contrast, washed out colors, excessive noise, grainy texture, poor lighting, building movement, wall warping, ground shifting, surface drift, structural deformation, architecture bending, terrain morphing, camera movement, camera shake, panning, rotation, dolly, zoom, temporal flicker, frame jump, brightness pulsing, color shifting, shadow popping, text, watermark, logo, signature, letters, words, writing, graffiti",
+        "clip": [
+          "3",
+          0
+        ]
+      }
+    },
+    "6": {
+      "class_type": "LTXVConditioning",
+      "inputs": {
+        "positive": [
+          "4",
+          0
+        ],
+        "negative": [
+          "5",
+          0
+        ],
+        "frame_rate": 24.0
+      }
+    },
+    "8": {
+      "class_type": "CLIPTextEncode",
+      "inputs": {
+        "text": "A modern sunlit living room with cream walls, warm oak floorboards, a gray fabric sofa, low wooden coffee table, tall windows with sheer curtains, a floor lamp and potted plants, realistic architectural photography. A stationary camera, subtle light changes.. True 2:1 equirectangular projection, proper zenith/nadir pole geometry, seamless 360\u00b0 horizontal wrap. Rigidly locked static tripod camera at a fixed nodal point. All geometry is permanently static: buildings, terrain, walls, floors, ceilings, roads, vegetation trunks, rocks, and all man-made structures maintain absolute pixel-locked positions across every frame. Zero structural deformation, zero background warping, zero surface drift. Only permitted motion: faint atmospheric haze, subtle light caustic shifts, microscopic dust particles. Flawless inter-frame coherence.",
+        "clip": [
+          "3",
+          0
+        ]
+      }
+    },
+    "10": {
+      "class_type": "LTXVConditioning",
+      "inputs": {
+        "positive": [
+          "8",
+          0
+        ],
+        "negative": [
+          "5",
+          0
+        ],
+        "frame_rate": 24.0
+      }
+    },
+    "11": {
+      "class_type": "SpheRoPEERPGuider",
+      "inputs": {
+        "model": [
+          "7",
+          0
+        ],
+        "positive": [
+          "6",
+          0
+        ],
+        "negative": [
+          "6",
+          1
+        ],
+        "geometry": [
+          "10",
+          0
+        ],
+        "cfg": 3.0,
+        "erp_gamma": 3.0
+      }
+    },
+    "12": {
+      "class_type": "RandomNoise",
+      "inputs": {
+        "noise_seed": 80084
+      }
+    },
+    "14": {
+      "class_type": "KSamplerSelect",
+      "inputs": {
+        "sampler_name": "euler"
+      }
+    },
+    "15": {
+      "class_type": "ManualSigmas",
+      "inputs": {
+        "sigmas": "0.9999999403953552, 0.9949570298194885, 0.9896030426025391, 0.9839084148406982, 0.9778395891189575, 0.9713582396507263, 0.9644210338592529, 0.9569781422615051, 0.9489720463752747, 0.9403364062309265, 0.9309937953948975, 0.9208537936210632, 0.9098098278045654, 0.8977352380752563, 0.8844786882400513, 0.8698580265045166, 0.8536507487297058, 0.8355841040611267, 0.8153185844421387, 0.7924267053604126, 0.7663628458976746, 0.7364180088043213, 0.7016562223434448, 0.6608133316040039, 0.6121406555175781, 0.5531478524208069, 0.48016369342803955, 0.3875408172607422, 0.26612043380737305, 0.10000002384185791, 0.0"
+      }
+    },
+    "16": {
+      "class_type": "EmptyLTXVLatentVideo",
+      "inputs": {
+        "width": 512,
+        "height": 256,
+        "length": 17,
+        "batch_size": 1
+      }
+    },
+    "17": {
+      "class_type": "SamplerCustomAdvanced",
+      "inputs": {
+        "noise": [
+          "12",
+          0
+        ],
+        "guider": [
+          "11",
+          0
+        ],
+        "sampler": [
+          "14",
+          0
+        ],
+        "sigmas": [
+          "15",
+          0
+        ],
+        "latent_image": [
+          "16",
+          0
+        ]
+      }
+    },
+    "7": {
+      "class_type": "EquirectSphericalRoPE",
+      "inputs": {
+        "model": [
+          "1",
+          0
+        ],
+        "enabled": true,
+        "blend": 1.0,
+        "path_b_threshold": 10.0,
+        "r_scale": 1.0
+      }
+    },
+    "30": {
+      "class_type": "LatentUpscaleModelLoader",
+      "inputs": {
+        "model_name": "ltx-2.3-spatial-upscaler-x2-1.1.safetensors"
+      }
+    },
+    "31": {
+      "class_type": "SpheRoPECircularUpscale",
+      "inputs": {
+        "samples": [
+          "17",
+          0
+        ],
+        "upscale_model": [
+          "30",
+          0
+        ],
+        "vae": [
+          "1",
+          2
+        ],
+        "pad_w": 4
+      }
+    },
+    "32": {
+      "class_type": "EquirectSphericalRoPE",
+      "inputs": {
+        "model": [
+          "2",
+          0
+        ],
+        "enabled": true,
+        "blend": 1.0,
+        "path_b_threshold": 10.0,
+        "r_scale": 1.0
+      }
+    },
+    "33": {
+      "class_type": "BasicGuider",
+      "inputs": {
+        "model": [
+          "32",
+          0
+        ],
+        "conditioning": [
+          "6",
+          0
+        ]
+      }
+    },
+    "34": {
+      "class_type": "ManualSigmas",
+      "inputs": {
+        "sigmas": "0.909375, 0.725, 0.421875, 0.0"
+      }
+    },
+    "35": {
+      "class_type": "RandomNoise",
+      "inputs": {
+        "noise_seed": 80084
+      }
+    },
+    "36": {
+      "class_type": "SamplerCustomAdvanced",
+      "inputs": {
+        "noise": [
+          "35",
+          0
+        ],
+        "guider": [
+          "33",
+          0
+        ],
+        "sampler": [
+          "14",
+          0
+        ],
+        "sigmas": [
+          "34",
+          0
+        ],
+        "latent_image": [
+          "31",
+          0
+        ]
+      }
+    },
+    "37": {
+      "class_type": "SpheRoPECircularVAEDecode",
+      "inputs": {
+        "samples": [
+          "36",
+          0
+        ],
+        "vae": [
+          "1",
+          2
+        ],
+        "pad_w": 4,
+        "target_width": 1024
+      }
+    },
+    "38": {
+      "class_type": "SaveImage",
+      "inputs": {
+        "images": [
+          "37",
+          0
+        ],
+        "filename_prefix": "native-ltx-comparison-20261018/two_stage/full"
+      }
+    }
+  }
+}

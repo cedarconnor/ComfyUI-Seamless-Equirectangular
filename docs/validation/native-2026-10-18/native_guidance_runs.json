@@ -1,0 +1,16 @@
+[
+  {
+    "name": "full_gamma0",
+    "seconds": 68.75655939999888,
+    "rope": true,
+    "circular": true,
+    "semantic_cfg": true
+  },
+  {
+    "name": "full_forest",
+    "seconds": 60.24554239999998,
+    "rope": true,
+    "circular": true,
+    "semantic_cfg": true
+  }
+]

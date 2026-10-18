@@ -1,0 +1,23 @@
+[
+  {
+    "name": "stock",
+    "seconds": 39.98232310000003,
+    "rope": false,
+    "circular": false,
+    "semantic_cfg": false
+  },
+  {
+    "name": "circular_only",
+    "seconds": 30.173459800000273,
+    "rope": false,
+    "circular": true,
+    "semantic_cfg": false
+  },
+  {
+    "name": "rope_circular",
+    "seconds": 29.546844700000293,
+    "rope": true,
+    "circular": true,
+    "semantic_cfg": false
+  }
+]

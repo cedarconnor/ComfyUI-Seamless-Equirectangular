@@ -1,0 +1,4 @@
+{
+  "PromptEncoder": "PromptEncoder.__call__() got an unexpected keyword argument 'streaming_prefetch_count'",
+  "DiffusionStage": "DiffusionStage.__call__() got an unexpected keyword argument 'streaming_prefetch_count'"
+}

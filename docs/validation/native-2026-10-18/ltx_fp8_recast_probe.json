@@ -1,0 +1,23 @@
+[
+  {
+    "key": "model.diffusion_model.transformer_blocks.10.attn1.to_q.weight",
+    "scale": 0.00128173828125,
+    "weight_std": 0.03527197986841202,
+    "recast_relative_rmse": 0.03208610415458679,
+    "zero_fraction": 0.04375946521759033
+  },
+  {
+    "key": "model.diffusion_model.transformer_blocks.10.attn2.to_q.weight",
+    "scale": 0.00135040283203125,
+    "weight_std": 0.021611465141177177,
+    "recast_relative_rmse": 0.03376847505569458,
+    "zero_fraction": 0.07031399011611938
+  },
+  {
+    "key": "model.diffusion_model.transformer_blocks.10.audio_attn1.to_q.weight",
+    "scale": 0.00121307373046875,
+    "weight_std": 0.039841290563344955,
+    "recast_relative_rmse": 0.025003891438245773,
+    "zero_fraction": 0.024152517318725586
+  }
+]

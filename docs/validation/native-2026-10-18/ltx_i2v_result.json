@@ -1,0 +1,55 @@
+{
+  "gemma_shapes_matched": 1066,
+  "tokenizer_parity": true,
+  "weights_downloaded": false,
+  "torch": "2.8.0+cu128",
+  "checkpoint": "E:\\models\\checkpoints\\ltx-2.3-22b-dev-fp8.safetensors",
+  "gemma": "E:\\models\\text_encoders\\gemma_3_12B_it.safetensors",
+  "commits": {
+    "spherope": "a40a86b49c25dbd4d0191591f28a0d5baf0c4ca4",
+    "ltx": "780984275fd47128b02bef9b5c085404276866ee"
+  },
+  "quantization": "native fp8_cast policy with checkpoint scale folding",
+  "disable_triton_fusion": true,
+  "parameters": {
+    "prompt": "A 360-degree view of the supplied living room. Preserve the room layout, furniture, wooden floor and ceiling. Fixed camera; subtle sunlight variation.",
+    "seed": 80084,
+    "width": 1024,
+    "height": 512,
+    "num_frames": 33,
+    "num_inference_steps": 30,
+    "enable_wrapped_noise": false,
+    "enable_sfc_rope": true,
+    "enable_circular_decoding": true,
+    "enable_semantic_distortion_cfg": true,
+    "semantic_distortion_gamma": 3.0,
+    "enhance_prompt": false,
+    "images": [
+      [
+        "C:\\Users\\Cedar\\Documents\\LTX\\ComfyUI\\ComfyUI\\input\\Living_Room_01_Couch_color_firstframe.png",
+        0,
+        1.0,
+        33
+      ]
+    ]
+  },
+  "seconds": 141.67139339447021,
+  "decoded_shape": [
+    33,
+    512,
+    1024,
+    3
+  ],
+  "peak_allocated_gb": 26.3110016,
+  "temporal_tiling": {
+    "size": 32,
+    "overlap": 16
+  },
+  "guidance": {
+    "video_cfg": 3.0,
+    "audio_cfg": 7.0,
+    "stg": 0.0,
+    "rescale": 0.0,
+    "modality": 1.0
+  }
+}

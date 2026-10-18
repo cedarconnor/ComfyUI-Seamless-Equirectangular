@@ -1,0 +1,14 @@
+{
+  "loader_type": "ModelPatcher",
+  "device": "cpu",
+  "shape": [
+    1,
+    128,
+    1,
+    4,
+    8
+  ],
+  "core_padded_reference_max_error": 0.0,
+  "noise_mask_preserved": true,
+  "finite": true
+}

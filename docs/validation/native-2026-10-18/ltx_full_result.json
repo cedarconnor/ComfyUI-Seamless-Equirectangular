@@ -1,0 +1,27 @@
+{
+  "gemma_shapes_matched": 1066,
+  "tokenizer_parity": true,
+  "weights_downloaded": false,
+  "torch": "2.8.0+cu128",
+  "checkpoint": "E:\\models\\checkpoints\\ltx-2.3-22b-dev-fp8.safetensors",
+  "gemma": "E:\\models\\text_encoders\\gemma_3_12B_it.safetensors",
+  "commits": {
+    "spherope": "a40a86b49c25dbd4d0191591f28a0d5baf0c4ca4",
+    "ltx": "780984275fd47128b02bef9b5c085404276866ee"
+  },
+  "quantization": "native fp8_cast policy with checkpoint scale folding",
+  "disable_triton_fusion": true,
+  "decoded_shape": [
+    17,
+    512,
+    1024,
+    3
+  ],
+  "export_recovered_from_saved_tensors": true,
+  "case": "full",
+  "seed": 80084,
+  "steps": 30,
+  "geometry_gamma": 3,
+  "video_cfg": 3,
+  "audio_cfg": 7
+}

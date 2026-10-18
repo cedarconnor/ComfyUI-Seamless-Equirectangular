@@ -1,0 +1,25 @@
+{
+  "focused_before": {
+    "failed": 2,
+    "passed": 4
+  },
+  "focused_after": {
+    "passed": 6
+  },
+  "suite_after": {
+    "passed": 124
+  },
+  "runtime_gpu_workflows": {
+    "text_to_video": {
+      "status": "success",
+      "frames": 17,
+      "prompt_id": "0da90b11-275f-4f24-9444-a3d5da0287ff"
+    },
+    "first_frame": {
+      "status": "success",
+      "frames": 33,
+      "prompt_id": "79eed79b-8862-48e7-87a0-e64ac178cce2"
+    }
+  },
+  "preexisting_rope_edit_preserved": true
+}

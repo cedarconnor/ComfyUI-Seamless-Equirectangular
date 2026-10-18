@@ -1,0 +1,60 @@
+{
+  "flux2": [
+    {
+      "H": 16,
+      "W": 32,
+      "cos_max_error": 0.0,
+      "sin_max_error": 0.0
+    },
+    {
+      "H": 32,
+      "W": 64,
+      "cos_max_error": 0.0,
+      "sin_max_error": 0.0
+    },
+    {
+      "H": 64,
+      "W": 128,
+      "cos_max_error": 0.0,
+      "sin_max_error": 0.0
+    }
+  ],
+  "ltx": [
+    {
+      "H": 16,
+      "W": 32,
+      "frequencies": 682,
+      "max_angle_error": 0.0
+    },
+    {
+      "H": 16,
+      "W": 32,
+      "frequencies": 1024,
+      "max_angle_error": 0.0
+    },
+    {
+      "H": 32,
+      "W": 64,
+      "frequencies": 682,
+      "max_angle_error": 0.0
+    },
+    {
+      "H": 32,
+      "W": 64,
+      "frequencies": 1024,
+      "max_angle_error": 0.0
+    },
+    {
+      "H": 64,
+      "W": 128,
+      "frequencies": 682,
+      "max_angle_error": 0.0
+    },
+    {
+      "H": 64,
+      "W": 128,
+      "frequencies": 1024,
+      "max_angle_error": 0.0
+    }
+  ]
+}

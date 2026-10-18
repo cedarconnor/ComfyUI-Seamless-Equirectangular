@@ -1,0 +1,32 @@
+{
+  "native_flux1_circular_only": {
+    "edge_ratio": 13.019032217937552,
+    "edge_mae_255": 34.069010416666664,
+    "median_column_mae_255": 2.616861979166667
+  },
+  "native_flux1_full": {
+    "edge_ratio": 0.555510893158614,
+    "edge_mae_255": 2.2493489583333335,
+    "median_column_mae_255": 4.049153645833334
+  },
+  "native_flux1_full_forest": {
+    "edge_ratio": 0.8839479392624728,
+    "edge_mae_255": 6.3671875,
+    "median_column_mae_255": 7.203125
+  },
+  "native_flux1_full_gamma0": {
+    "edge_ratio": 2.649634423060762,
+    "edge_mae_255": 10.263020833333334,
+    "median_column_mae_255": 3.873372395833333
+  },
+  "native_flux1_rope_circular": {
+    "edge_ratio": 1.6646004733461062,
+    "edge_mae_255": 4.807942708333333,
+    "median_column_mae_255": 2.8883463541666665
+  },
+  "native_flux1_stock": {
+    "edge_ratio": 44.34100575431573,
+    "edge_mae_255": 115.384765625,
+    "median_column_mae_255": 2.602213541666667
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "t2v": {
+    "prompt_id": "0489659b-2fe4-4879-b891-2141a8607628",
+    "node": "31",
+    "node_type": "SpheRoPECircularUpscale",
+    "error": "'ModelPatcherDynamic' object has no attribute 'parameters'\n",
+    "traceback": [
+      "  File \"C:\\Users\\Cedar\\Documents\\LTX\\ComfyUI\\ComfyUI\\execution.py\", line 548, in execute\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n",
+      "  File \"C:\\Users\\Cedar\\Documents\\LTX\\ComfyUI\\ComfyUI\\execution.py\", line 353, in get_output_data\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n",
+      "  File \"C:\\Users\\Cedar\\Documents\\LTX\\ComfyUI\\ComfyUI\\execution.py\", line 327, in _async_map_node_over_list\n    await process_inputs(input_dict, i)\n",
+      "  File \"C:\\Users\\Cedar\\Documents\\LTX\\ComfyUI\\ComfyUI\\execution.py\", line 315, in process_inputs\n    result = f(**inputs)\n             ^^^^^^^^^^^\n",
+      "  File \"C:\\Users\\Cedar\\Documents\\LTX\\ComfyUI\\ComfyUI\\custom_nodes\\ComfyUI-SpheRoPE\\spherope\\nodes\\node_circular.py\", line 53, in upscale\n    model_dtype = next(upscale_model.parameters()).dtype\n                       ^^^^^^^^^^^^^^^^^^^^^^^^\n"
+    ]
+  },
+  "i2v": {
+    "prompt_id": "ed4b0cb8-8ce5-40e4-b896-2b42bbbdef5b",
+    "node": "31",
+    "node_type": "SpheRoPECircularUpscale",
+    "error": "'ModelPatcherDynamic' object has no attribute 'parameters'\n",
+    "traceback": [
+      "  File \"C:\\Users\\Cedar\\Documents\\LTX\\ComfyUI\\ComfyUI\\execution.py\", line 548, in execute\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n",
+      "  File \"C:\\Users\\Cedar\\Documents\\LTX\\ComfyUI\\ComfyUI\\execution.py\", line 353, in get_output_data\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n",
+      "  File \"C:\\Users\\Cedar\\Documents\\LTX\\ComfyUI\\ComfyUI\\execution.py\", line 327, in _async_map_node_over_list\n    await process_inputs(input_dict, i)\n",
+      "  File \"C:\\Users\\Cedar\\Documents\\LTX\\ComfyUI\\ComfyUI\\execution.py\", line 315, in process_inputs\n    result = f(**inputs)\n             ^^^^^^^^^^^\n",
+      "  File \"C:\\Users\\Cedar\\Documents\\LTX\\ComfyUI\\ComfyUI\\custom_nodes\\ComfyUI-SpheRoPE\\spherope\\nodes\\node_circular.py\", line 53, in upscale\n    model_dtype = next(upscale_model.parameters()).dtype\n                       ^^^^^^^^^^^^^^^^^^^^^^^^\n"
+    ]
+  }
+}

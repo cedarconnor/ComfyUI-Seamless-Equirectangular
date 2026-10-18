@@ -1,0 +1,82 @@
+{
+  "klein/pad0_00001_.png": {
+    "edge_ratio": 2.354616317339338,
+    "edge_mae_255": 22.124348958333332
+  },
+  "klein/pad18_00001_.png": {
+    "edge_ratio": 0.836153036153036,
+    "edge_mae_255": 7.754557291666667
+  },
+  "klein/pad8_00001_.png": {
+    "edge_ratio": 0.8375567190226877,
+    "edge_mae_255": 7.811197916666667
+  },
+  "klein_base/pad0_00001_.png": {
+    "edge_ratio": 2.797321737791973,
+    "edge_mae_255": 23.663411458333332
+  },
+  "klein_base/pad18_00001_.png": {
+    "edge_ratio": 0.8978229655787962,
+    "edge_mae_255": 7.53125
+  },
+  "klein_base/pad8_00001_.png": {
+    "edge_ratio": 0.8959314119493245,
+    "edge_mae_255": 7.619791666666667
+  },
+  "klein_base_seed80085/pad0_00001_.png": {
+    "edge_ratio": 2.1310279732280764,
+    "edge_mae_255": 16.168619791666668
+  },
+  "klein_base_seed80085/pad18_00001_.png": {
+    "edge_ratio": 1.034303082935302,
+    "edge_mae_255": 7.75390625
+  },
+  "klein_base_seed80085/pad8_00001_.png": {
+    "edge_ratio": 1.0360961983326786,
+    "edge_mae_255": 7.727213541666667
+  },
+  "klein_base_split_control/pad0_00001_.png": {
+    "edge_ratio": 2.7480381597168795,
+    "edge_mae_255": 23.254557291666668
+  },
+  "klein_base_split_control/pad18_00001_.png": {
+    "edge_ratio": 0.8996218765836355,
+    "edge_mae_255": 7.512369791666667
+  },
+  "klein_base_split_control/pad8_00001_.png": {
+    "edge_ratio": 0.8967870562073461,
+    "edge_mae_255": 7.613932291666667
+  },
+  "klein_base_warmup2/pad0_00001_.png": {
+    "edge_ratio": 3.065910945081369,
+    "edge_mae_255": 23.242838541666668
+  },
+  "klein_base_warmup2/pad18_00001_.png": {
+    "edge_ratio": 0.9357292759706191,
+    "edge_mae_255": 6.966796875
+  },
+  "klein_base_warmup2/pad8_00001_.png": {
+    "edge_ratio": 0.935777453421482,
+    "edge_mae_255": 7.095703125
+  },
+  "klein_base_warmup2_seed80085/pad0_00001_.png": {
+    "edge_ratio": 2.315087499440541,
+    "edge_mae_255": 16.837890625
+  },
+  "klein_base_warmup2_seed80085/pad18_00001_.png": {
+    "edge_ratio": 1.1755245069410125,
+    "edge_mae_255": 8.517578125
+  },
+  "klein_base_warmup2_seed80085/pad8_00001_.png": {
+    "edge_ratio": 1.1774573812114617,
+    "edge_mae_255": 8.453776041666666
+  },
+  "split_control_vs_unsplit": {
+    "max_pixel_difference": 63.0,
+    "mean_pixel_difference": 0.4797566731770833
+  },
+  "warmup2_vs_split_control": {
+    "max_pixel_difference": 194.0,
+    "mean_pixel_difference": 40.82337443033854
+  }
+}
