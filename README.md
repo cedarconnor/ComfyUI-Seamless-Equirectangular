@@ -87,6 +87,40 @@ The original SpheRoPE also rendered FLUX.1 images and LTX 2.3 video outside Comf
 
 See the [full report, previews and execution evidence](docs/NATIVE_SPHEROPE_COMPARISON_2026-10-18.md), [all ten follow-up API graphs](example_workflows/native_reference_20261018/README.md), [standalone LTX runner](scripts/compare_native_ltx.py) and [FLUX runner](scripts/compare_native_spherope.py).
 
+## Recent stills and video samples
+
+These are actual outputs from the October 18 tests, with no panorama LoRA. Click an animated preview for its full-resolution MP4. The loops are reduced to 640 pixels wide at 12 fps for the README; the linked videos are 1024x512 at 24 fps. These short, mostly stationary clips demonstrate the tested behavior, including the remaining artifacts.
+
+| LTX 2.3: ERP first-frame input | LTX 2.3: text-to-video comparison |
+|---|---|
+| [![Animated first-frame living-room panorama](docs/media/native-2026-10-18/ltx23_integrated_firstframe.gif)](docs/media/native-2026-10-18/ltx23_integrated_firstframe.mp4) | [![Animated text-to-video living-room panorama](docs/media/native-2026-10-18/ltx23_comfy_t2v.gif)](docs/media/native-2026-10-18/ltx23_comfy_t2v.mp4) |
+| **33 frames / 1.375 s.** Integrated pack only; stock RoPE, circular upscale/decode. Continuous sampled join and no pronounced floor pinch; minor texture/lighting drift remains. | **17 frames / 0.708 s.** Spherical RoPE and geometry guidance. Continuous sampled join, but severe floor swirling remains. This render predates node-name integration. |
+| [MP4](docs/media/native-2026-10-18/ltx23_integrated_firstframe.mp4) · [Saved first-frame workflow](example_workflows/native_reference_20261018/ltx23_firstframe_stockrope.json) | [MP4](docs/media/native-2026-10-18/ltx23_comfy_t2v.mp4) · [Current text-to-video workflow](example_workflows/native_reference_20261018/ltx23_two_stage.json) |
+
+### Full panorama stills
+
+| LTX 2.3 first-frame result — frame 16 | FLUX.2 Klein 9B distilled — forest |
+|---|---|
+| ![Full 2:1 living-room panorama from the integrated first-frame run](docs/media/native-2026-10-18/ltx23_integrated_firstframe_still.png) | ![Full 2:1 forest panorama from the integrated Klein run](docs/media/native-2026-10-18/klein_integrated_forest.png) |
+| Exact lossless frame from the video above. The supplied ERP image anchors the room; this is image-to-video, not a text-only generation. | Integrated pack only; four steps, spherical width encoding, eight-column circular decode. Radial pole distortion remains. [Saved Klein workflow](example_workflows/native_reference_20261018/klein_decode_padding.json). |
+
+<details>
+<summary>Inspect the longitude join, ceiling and floor in perspective</summary>
+
+Columns show the join, zenith and nadir; rows show the first, middle and final frames. These views expose pole defects that are difficult to judge in a flat equirectangular image.
+
+**Integrated first-frame result:**
+
+![First-frame result: join, ceiling and floor across three frames](docs/media/native-2026-10-18/ltx23_integrated_firstframe.jpg)
+
+**Text-to-video comparison — the nadir swirl is still visible:**
+
+![Text-to-video result: continuous join but distorted floor pole](docs/media/native-2026-10-18/ltx23_comfy_t2v.jpg)
+
+</details>
+
+See the [comparison report and runtime evidence](docs/NATIVE_SPHEROPE_COMPARISON_2026-10-18.md) for settings and limitations. The [older gallery below](#examples) uses different workflows and LoRA settings.
+
 ## Nodes
 
 | Node | Type | What it does |
