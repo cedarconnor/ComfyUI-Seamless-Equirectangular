@@ -83,7 +83,7 @@
     }
   },
   "11": {
-    "class_type": "SpheRoPEERPGuider",
+    "class_type": "EquirectERPGuider",
     "inputs": {
       "model": [
         "7",
@@ -177,7 +177,7 @@
     }
   },
   "31": {
-    "class_type": "SpheRoPECircularUpscale",
+    "class_type": "EquirectCircularUpscale",
     "inputs": {
       "samples": [
         "17",
@@ -258,7 +258,7 @@
     }
   },
   "37": {
-    "class_type": "SpheRoPECircularVAEDecode",
+    "class_type": "EquirectCircularVAEDecodeLTX",
     "inputs": {
       "samples": [
         "36",

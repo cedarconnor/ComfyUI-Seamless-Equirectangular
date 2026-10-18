@@ -40,6 +40,7 @@ from .latent_layouts import find_layout, roll_model_io, video_shape_from_conditi
 from .ripple import roll_ltx_guide_attention_masks
 from .ltx_rope_patch import patch_ltx_rope
 from . import periodic_rope as _periodic_rope
+from . import erp_nodes
 
 logger = logging.getLogger("SeamlessEquirectangular.seam")
 
@@ -602,6 +603,9 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "EquirectSphericalRoPE": "Equirect Spherical RoPE (SpheRoPE)",
     "EquirectImageSeamBlend": "Equirect Image Seam Blend (final fallback)",
 }
+
+NODE_CLASS_MAPPINGS.update(erp_nodes.NODE_CLASS_MAPPINGS)
+NODE_DISPLAY_NAME_MAPPINGS.update(erp_nodes.NODE_DISPLAY_NAME_MAPPINGS)
 
 if hasattr(minimax_h3, "NODE_CLASS_MAPPINGS"):
     NODE_CLASS_MAPPINGS.update(minimax_h3.NODE_CLASS_MAPPINGS)

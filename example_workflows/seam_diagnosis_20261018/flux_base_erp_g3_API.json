@@ -41,7 +41,7 @@
     }
   },
   "6": {
-    "class_type": "SpheRoPEApplySphericalRoPEFlux",
+    "class_type": "EquirectSphericalRoPEFlux",
     "inputs": {
       "model": [
         "1",
@@ -61,7 +61,7 @@
     }
   },
   "8": {
-    "class_type": "SpheRoPEERPGuider",
+    "class_type": "EquirectERPGuider",
     "inputs": {
       "model": [
         "6",
@@ -141,7 +141,7 @@
     }
   },
   "14": {
-    "class_type": "SpheRoPELatentDiagnostics",
+    "class_type": "EquirectLatentDiagnostics",
     "inputs": {
       "samples": [
         "13",
@@ -151,7 +151,7 @@
     }
   },
   "15": {
-    "class_type": "SpheRoPECircularVAEDecodeFlux",
+    "class_type": "EquirectCircularVAEDecodeFlux",
     "inputs": {
       "samples": [
         "13",
@@ -165,7 +165,7 @@
     }
   },
   "16": {
-    "class_type": "SpheRoPEFrameDiagnostics",
+    "class_type": "EquirectFrameDiagnostics",
     "inputs": {
       "images": [
         "15",

@@ -1,0 +1,517 @@
+{
+  "server_argv": [
+    "main.py",
+    "--windows-standalone-build",
+    "--port",
+    "8189",
+    "--disable-all-custom-nodes",
+    "--whitelist-custom-nodes",
+    "ComfyUI-Seamless-Equirectangular",
+    "--disable-auto-launch"
+  ],
+  "comfyui_version": "0.39.0",
+  "torch_version": "2.12.0+cu130",
+  "companion_node_classes": [],
+  "integrated_nodes": [
+    "EquirectCircularUpscale",
+    "EquirectCircularVAEDecodeFlux",
+    "EquirectCircularVAEDecodeLTX",
+    "EquirectERPGuider",
+    "EquirectSphericalRoPEFlux",
+    "EquirectLatentDiagnostics",
+    "EquirectFrameDiagnostics"
+  ],
+  "tests": {
+    "passed": 116,
+    "skipped": 4
+  },
+  "runs": {
+    "ltx": {
+      "prompt_id": "4de87335-6574-4fb2-b1f9-f4dd210fbd32",
+      "number": 0,
+      "node_errors": {},
+      "workflow": "example_workflows\\native_reference_20261018\\ltx23_firstframe_stockrope.json",
+      "sha256": "d1b49456008878412e78488d79f2a9844b04cc2fed8ebf7eeac132e4bbfa206d",
+      "registered_graphs": [
+        "example_workflows\\native_reference_20261018\\klein_base_decode_padding.json",
+        "example_workflows\\native_reference_20261018\\klein_base_seed80085.json",
+        "example_workflows\\native_reference_20261018\\klein_base_split_control.json",
+        "example_workflows\\native_reference_20261018\\klein_base_warmup2.json",
+        "example_workflows\\native_reference_20261018\\klein_base_warmup2_seed80085.json",
+        "example_workflows\\native_reference_20261018\\klein_decode_padding.json",
+        "example_workflows\\native_reference_20261018\\ltx23_firstframe.json",
+        "example_workflows\\native_reference_20261018\\ltx23_firstframe_gamma0.json",
+        "example_workflows\\native_reference_20261018\\ltx23_firstframe_stockrope.json",
+        "example_workflows\\native_reference_20261018\\ltx23_two_stage.json"
+      ],
+      "companion_nodes": [],
+      "status": {
+        "status_str": "success",
+        "completed": true,
+        "messages": [
+          [
+            "execution_start",
+            {
+              "prompt_id": "4de87335-6574-4fb2-b1f9-f4dd210fbd32",
+              "timestamp": 1792355967899
+            }
+          ],
+          [
+            "execution_cached",
+            {
+              "nodes": [],
+              "prompt_id": "4de87335-6574-4fb2-b1f9-f4dd210fbd32",
+              "timestamp": 1792355967920
+            }
+          ],
+          [
+            "execution_success",
+            {
+              "prompt_id": "4de87335-6574-4fb2-b1f9-f4dd210fbd32",
+              "timestamp": 1792356053430
+            }
+          ]
+        ]
+      },
+      "outputs": {
+        "38": {
+          "images": [
+            {
+              "filename": "full_00034_.png",
+              "subfolder": "native-ltx-comparison-20261018\\firstframe_stockrope",
+              "type": "output",
+              "metadata": {
+                "kind": "image",
+                "width": 1024,
+                "height": 512
+              }
+            },
+            {
+              "filename": "full_00035_.png",
+              "subfolder": "native-ltx-comparison-20261018\\firstframe_stockrope",
+              "type": "output",
+              "metadata": {
+                "kind": "image",
+                "width": 1024,
+                "height": 512
+              }
+            },
+            {
+              "filename": "full_00036_.png",
+              "subfolder": "native-ltx-comparison-20261018\\firstframe_stockrope",
+              "type": "output",
+              "metadata": {
+                "kind": "image",
+                "width": 1024,
+                "height": 512
+              }
+            },
+            {
+              "filename": "full_00037_.png",
+              "subfolder": "native-ltx-comparison-20261018\\firstframe_stockrope",
+              "type": "output",
+              "metadata": {
+                "kind": "image",
+                "width": 1024,
+                "height": 512
+              }
+            },
+            {
+              "filename": "full_00038_.png",
+              "subfolder": "native-ltx-comparison-20261018\\firstframe_stockrope",
+              "type": "output",
+              "metadata": {
+                "kind": "image",
+                "width": 1024,
+                "height": 512
+              }
+            },
+            {
+              "filename": "full_00039_.png",
+              "subfolder": "native-ltx-comparison-20261018\\firstframe_stockrope",
+              "type": "output",
+              "metadata": {
+                "kind": "image",
+                "width": 1024,
+                "height": 512
+              }
+            },
+            {
+              "filename": "full_00040_.png",
+              "subfolder": "native-ltx-comparison-20261018\\firstframe_stockrope",
+              "type": "output",
+              "metadata": {
+                "kind": "image",
+                "width": 1024,
+                "height": 512
+              }
+            },
+            {
+              "filename": "full_00041_.png",
+              "subfolder": "native-ltx-comparison-20261018\\firstframe_stockrope",
+              "type": "output",
+              "metadata": {
+                "kind": "image",
+                "width": 1024,
+                "height": 512
+              }
+            },
+            {
+              "filename": "full_00042_.png",
+              "subfolder": "native-ltx-comparison-20261018\\firstframe_stockrope",
+              "type": "output",
+              "metadata": {
+                "kind": "image",
+                "width": 1024,
+                "height": 512
+              }
+            },
+            {
+              "filename": "full_00043_.png",
+              "subfolder": "native-ltx-comparison-20261018\\firstframe_stockrope",
+              "type": "output",
+              "metadata": {
+                "kind": "image",
+                "width": 1024,
+                "height": 512
+              }
+            },
+            {
+              "filename": "full_00044_.png",
+              "subfolder": "native-ltx-comparison-20261018\\firstframe_stockrope",
+              "type": "output",
+              "metadata": {
+                "kind": "image",
+                "width": 1024,
+                "height": 512
+              }
+            },
+            {
+              "filename": "full_00045_.png",
+              "subfolder": "native-ltx-comparison-20261018\\firstframe_stockrope",
+              "type": "output",
+              "metadata": {
+                "kind": "image",
+                "width": 1024,
+                "height": 512
+              }
+            },
+            {
+              "filename": "full_00046_.png",
+              "subfolder": "native-ltx-comparison-20261018\\firstframe_stockrope",
+              "type": "output",
+              "metadata": {
+                "kind": "image",
+                "width": 1024,
+                "height": 512
+              }
+            },
+            {
+              "filename": "full_00047_.png",
+              "subfolder": "native-ltx-comparison-20261018\\firstframe_stockrope",
+              "type": "output",
+              "metadata": {
+                "kind": "image",
+                "width": 1024,
+                "height": 512
+              }
+            },
+            {
+              "filename": "full_00048_.png",
+              "subfolder": "native-ltx-comparison-20261018\\firstframe_stockrope",
+              "type": "output",
+              "metadata": {
+                "kind": "image",
+                "width": 1024,
+                "height": 512
+              }
+            },
+            {
+              "filename": "full_00049_.png",
+              "subfolder": "native-ltx-comparison-20261018\\firstframe_stockrope",
+              "type": "output",
+              "metadata": {
+                "kind": "image",
+                "width": 1024,
+                "height": 512
+              }
+            },
+            {
+              "filename": "full_00050_.png",
+              "subfolder": "native-ltx-comparison-20261018\\firstframe_stockrope",
+              "type": "output",
+              "metadata": {
+                "kind": "image",
+                "width": 1024,
+                "height": 512
+              }
+            },
+            {
+              "filename": "full_00051_.png",
+              "subfolder": "native-ltx-comparison-20261018\\firstframe_stockrope",
+              "type": "output",
+              "metadata": {
+                "kind": "image",
+                "width": 1024,
+                "height": 512
+              }
+            },
+            {
+              "filename": "full_00052_.png",
+              "subfolder": "native-ltx-comparison-20261018\\firstframe_stockrope",
+              "type": "output",
+              "metadata": {
+                "kind": "image",
+                "width": 1024,
+                "height": 512
+              }
+            },
+            {
+              "filename": "full_00053_.png",
+              "subfolder": "native-ltx-comparison-20261018\\firstframe_stockrope",
+              "type": "output",
+              "metadata": {
+                "kind": "image",
+                "width": 1024,
+                "height": 512
+              }
+            },
+            {
+              "filename": "full_00054_.png",
+              "subfolder": "native-ltx-comparison-20261018\\firstframe_stockrope",
+              "type": "output",
+              "metadata": {
+                "kind": "image",
+                "width": 1024,
+                "height": 512
+              }
+            },
+            {
+              "filename": "full_00055_.png",
+              "subfolder": "native-ltx-comparison-20261018\\firstframe_stockrope",
+              "type": "output",
+              "metadata": {
+                "kind": "image",
+                "width": 1024,
+                "height": 512
+              }
+            },
+            {
+              "filename": "full_00056_.png",
+              "subfolder": "native-ltx-comparison-20261018\\firstframe_stockrope",
+              "type": "output",
+              "metadata": {
+                "kind": "image",
+                "width": 1024,
+                "height": 512
+              }
+            },
+            {
+              "filename": "full_00057_.png",
+              "subfolder": "native-ltx-comparison-20261018\\firstframe_stockrope",
+              "type": "output",
+              "metadata": {
+                "kind": "image",
+                "width": 1024,
+                "height": 512
+              }
+            },
+            {
+              "filename": "full_00058_.png",
+              "subfolder": "native-ltx-comparison-20261018\\firstframe_stockrope",
+              "type": "output",
+              "metadata": {
+                "kind": "image",
+                "width": 1024,
+                "height": 512
+              }
+            },
+            {
+              "filename": "full_00059_.png",
+              "subfolder": "native-ltx-comparison-20261018\\firstframe_stockrope",
+              "type": "output",
+              "metadata": {
+                "kind": "image",
+                "width": 1024,
+                "height": 512
+              }
+            },
+            {
+              "filename": "full_00060_.png",
+              "subfolder": "native-ltx-comparison-20261018\\firstframe_stockrope",
+              "type": "output",
+              "metadata": {
+                "kind": "image",
+                "width": 1024,
+                "height": 512
+              }
+            },
+            {
+              "filename": "full_00061_.png",
+              "subfolder": "native-ltx-comparison-20261018\\firstframe_stockrope",
+              "type": "output",
+              "metadata": {
+                "kind": "image",
+                "width": 1024,
+                "height": 512
+              }
+            },
+            {
+              "filename": "full_00062_.png",
+              "subfolder": "native-ltx-comparison-20261018\\firstframe_stockrope",
+              "type": "output",
+              "metadata": {
+                "kind": "image",
+                "width": 1024,
+                "height": 512
+              }
+            },
+            {
+              "filename": "full_00063_.png",
+              "subfolder": "native-ltx-comparison-20261018\\firstframe_stockrope",
+              "type": "output",
+              "metadata": {
+                "kind": "image",
+                "width": 1024,
+                "height": 512
+              }
+            },
+            {
+              "filename": "full_00064_.png",
+              "subfolder": "native-ltx-comparison-20261018\\firstframe_stockrope",
+              "type": "output",
+              "metadata": {
+                "kind": "image",
+                "width": 1024,
+                "height": 512
+              }
+            },
+            {
+              "filename": "full_00065_.png",
+              "subfolder": "native-ltx-comparison-20261018\\firstframe_stockrope",
+              "type": "output",
+              "metadata": {
+                "kind": "image",
+                "width": 1024,
+                "height": 512
+              }
+            },
+            {
+              "filename": "full_00066_.png",
+              "subfolder": "native-ltx-comparison-20261018\\firstframe_stockrope",
+              "type": "output",
+              "metadata": {
+                "kind": "image",
+                "width": 1024,
+                "height": 512
+              }
+            }
+          ]
+        }
+      }
+    },
+    "klein": {
+      "prompt_id": "dcd6790e-1caa-4d53-bc3d-f8186ab5324d",
+      "number": 1,
+      "node_errors": {},
+      "workflow": "example_workflows\\native_reference_20261018\\klein_decode_padding.json",
+      "sha256": "ec8c1e2f5c11c2721aaad06ccfac173955c9aa7ccf4189413fdf6acccf0587c9",
+      "status": {
+        "status_str": "success",
+        "completed": true,
+        "messages": [
+          [
+            "execution_start",
+            {
+              "prompt_id": "dcd6790e-1caa-4d53-bc3d-f8186ab5324d",
+              "timestamp": 1792356053730
+            }
+          ],
+          [
+            "execution_cached",
+            {
+              "nodes": [
+                "8",
+                "9"
+              ],
+              "prompt_id": "dcd6790e-1caa-4d53-bc3d-f8186ab5324d",
+              "timestamp": 1792356053734
+            }
+          ],
+          [
+            "execution_success",
+            {
+              "prompt_id": "dcd6790e-1caa-4d53-bc3d-f8186ab5324d",
+              "timestamp": 1792356063386
+            }
+          ]
+        ]
+      },
+      "outputs": {
+        "18": {
+          "images": [
+            {
+              "filename": "pad8_00002_.png",
+              "subfolder": "native-reference-20261018\\klein",
+              "type": "output",
+              "metadata": {
+                "kind": "image",
+                "width": 1024,
+                "height": 512
+              }
+            }
+          ]
+        },
+        "17": {
+          "text": [
+            "{\n  \"seam_mae\": 0.030533,\n  \"seam_correlation\": 0.984935,\n  \"temporal_seam_std\": 0.0,\n  \"pole_top_var\": 4.1e-05,\n  \"pole_bottom_var\": 0.000644\n}"
+          ]
+        },
+        "903": {
+          "images": [
+            {
+              "filename": "pad18_00002_.png",
+              "subfolder": "native-reference-20261018\\klein",
+              "type": "output",
+              "metadata": {
+                "kind": "image",
+                "width": 1024,
+                "height": 512
+              }
+            }
+          ]
+        },
+        "16": {
+          "text": [
+            "{\n  \"d_col0_col1\": 0.763552,\n  \"d_col0_colWm1\": 0.80751,\n  \"d_col1_col2\": 0.768483,\n  \"pole_top_var\": 0.144193,\n  \"pole_bottom_var\": 0.176756\n}"
+          ]
+        },
+        "901": {
+          "images": [
+            {
+              "filename": "pad0_00002_.png",
+              "subfolder": "native-reference-20261018\\klein",
+              "type": "output",
+              "metadata": {
+                "kind": "image",
+                "width": 1024,
+                "height": 512
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  "ltx_pixel_comparison": {
+    "frames": 33,
+    "max_pixel_difference": 135,
+    "mean_absolute_pixel_difference": 0.9150390047015566,
+    "baseline_prompt_id": "a8d6fe19-42f6-4fee-83e5-b7c0298edc09"
+  },
+  "ltx_boundary_metrics": {
+    "edge_ratio_mean": 0.5114573709892504,
+    "edge_ratio_max": 0.5629987716674805,
+    "edge_mae_255_mean": 0.6864938392783656
+  }
+}

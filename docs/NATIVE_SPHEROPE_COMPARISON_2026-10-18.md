@@ -2,6 +2,41 @@
 
 Standalone FLUX.1-dev images and native LTX 2.3 video now render through the original SpheRoPE implementation outside ComfyUI, using existing local weights. The full method reduces the tested left/right boundary jump, but the generated pole views still contain substantial distortion. This establishes that the remaining problem is not confined to ComfyUI. It does not transfer automatically to LTX 2.5, H3 or Klein.
 
+## Integrated Seamless-Equirectangular delivery
+
+The circular-upscaler fix, LTX/image circular decoders, three-way ERP guider,
+FLUX.2 spherical width patch and diagnostics are now included directly in this
+repository. Existing model-owned LTX RoPE, cache-isolation and H3 fixes remain
+here. The saved native-reference and Klein screening graphs now use distinct
+`Equirect` node names; they do not need ComfyUI-SpheRoPE. Other workflow-specific
+extensions (such as VideoHelperSuite in the older H3/LTX 2.5 graphs) are unchanged.
+Historical execution records below preserve the original companion node names.
+Only class names changed in the migrated API graphs; all inputs stayed unchanged.
+
+An isolated ComfyUI 0.39.0 server was launched with
+`--disable-all-custom-nodes --whitelist-custom-nodes ComfyUI-Seamless-Equirectangular`.
+It registered all seven integrated nodes and **zero SpheRoPE node classes**.
+Both the recommended 33-frame LTX first-frame graph and the Klein decoder-padding
+graph completed there, including the latent/frame diagnostic outputs. All ten
+native-reference graphs resolve their node classes in this isolated installation.
+The combined test suite passes **116 tests, with 4 skipped**.
+
+The integrated LTX result has mean boundary ratio **0.511**, maximum **0.563**,
+and mean edge jump **0.686/255**. The inspected first/middle/final views retain
+the continuous join and avoid the pronounced nadir pinch. It is not pixel-identical
+to the earlier companion-backed run: mean absolute difference is **0.915/255**,
+maximum **135** across 33 frames. No cause for that cross-process difference was
+isolated, so this establishes independent execution and similar sampled quality,
+not bitwise render parity.
+
+[Recommended integrated workflow](../example_workflows/native_reference_20261018/ltx23_firstframe_stockrope.json),
+[integrated preview](media/native-2026-10-18/ltx23_integrated_firstframe.mp4),
+[runtime evidence and workflow hashes](validation/native-2026-10-18/integrated_pack_runtime.json),
+[per-frame metrics](validation/native-2026-10-18/integrated_ltx_metrics.json),
+[source attribution](../THIRD_PARTY_NOTICES.md).
+
+![Integrated first-frame join and poles](media/native-2026-10-18/ltx23_integrated_firstframe.jpg)
+
 ## Standalone setup
 
 - Original [orhir/SpheRoPE](https://github.com/orhir/SpheRoPE) commit `a40a86b49c25dbd4d0191591f28a0d5baf0c4ca4`; tracked source remained unchanged.
