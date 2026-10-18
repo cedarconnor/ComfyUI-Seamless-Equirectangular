@@ -23,6 +23,7 @@ replacing the encoding function with spherical Cartesian coordinates.
 import logging
 import math
 import time
+from functools import partial
 
 import torch
 
@@ -99,7 +100,9 @@ def _normalize_positions(pos):
     return (pos - min_val) / denom  # [B, N], [0, 1]
 
 
-def build_freqs_equirope(indices, indices_grid, max_pos, use_middle_indices_grid):
+def build_freqs_equirope(indices, indices_grid, max_pos, use_middle_indices_grid,
+                        *, blend=None, epsilon=None, threshold=None,
+                        pole_gamma=None, pole_side=None):
     """Replacement for generate_freqs with spectral-split EquiRoPE latitude scaling.
 
     Low-frequency channels (cycles < threshold) get |cos(lat)|-scaled positions.
@@ -114,6 +117,11 @@ def build_freqs_equirope(indices, indices_grid, max_pos, use_middle_indices_grid
     Returns:
         [B, N, 3K] flattened tensor, same as stock generate_freqs.
     """
+    blend = _BLEND if blend is None else blend
+    epsilon = _EPS if epsilon is None else epsilon
+    threshold = _THRESHOLD if threshold is None else threshold
+    pole_gamma = _POLE_GAMMA if pole_gamma is None else pole_gamma
+    pole_side = _POLE_SIDE if pole_side is None else pole_side
     g = _collapse_grid(indices_grid, use_middle_indices_grid)  # [B, 3, N]
     indices = indices.to(device=g.device)
     K = indices.shape[-1]
@@ -122,7 +130,7 @@ def build_freqs_equirope(indices, indices_grid, max_pos, use_middle_indices_grid
     frac = torch.stack([g[:, i] / max_pos[i] for i in range(3)], dim=-1)  # [B, N, 3]
     A = indices * (frac.unsqueeze(-1) * 2.0 - 1.0)  # [B, N, 3, K]
 
-    if _BLEND == 0.0:
+    if blend == 0.0:
         return A.transpose(-1, -2).flatten(2)
 
     # ---- Compute latitude from normalized latent row index ----
@@ -133,12 +141,12 @@ def build_freqs_equirope(indices, indices_grid, max_pos, use_middle_indices_grid
     # gamma keeps mid-latitudes at ~1 (straight long horizontals) and only
     # collapses the rows near the poles.
     cos_lat = torch.abs(torch.cos(lat))
-    scale = (1.0 - (1.0 - cos_lat) ** _POLE_GAMMA).clamp(min=_EPS)  # [B, N]
+    scale = (1.0 - (1.0 - cos_lat) ** pole_gamma).clamp(min=epsilon)  # [B, N]
 
     # Hemisphere gating: lat is -pi/2 at the top rows (zenith), +pi/2 at the
     # bottom rows (nadir). The excluded side keeps stock positions (scale 1).
-    if _POLE_SIDE != "both":
-        keep = (lat > 0.0) if _POLE_SIDE == "bottom" else (lat < 0.0)
+    if pole_side != "both":
+        keep = (lat > 0.0) if pole_side == "bottom" else (lat < 0.0)
         scale = torch.where(keep, scale, torch.ones_like(scale))
 
     # ---- Spectral split via dynamic phase span ----
@@ -149,7 +157,7 @@ def build_freqs_equirope(indices, indices_grid, max_pos, use_middle_indices_grid
     cycles = (width_span * indices) / (2.0 * math.pi)   # [K]
 
     # Channel mask: True = low-frequency channels to EquiRoPE-scale
-    scale_mask = (cycles < _THRESHOLD)  # [K]
+    scale_mask = (cycles < threshold)  # [K]
 
     # ---- EquiRoPE symmetric scaling on low-frequency channels ----
     w_center = (w_frac.amax(dim=-1, keepdim=True) + w_frac.amin(dim=-1, keepdim=True)) / 2.0  # [B, 1]
@@ -158,9 +166,9 @@ def build_freqs_equirope(indices, indices_grid, max_pos, use_middle_indices_grid
     A_scaled = indices * (w_frac_scaled.unsqueeze(-1) * 2.0 - 1.0)  # [B, N, K]
 
     # Blend
-    if _BLEND < 1.0:
+    if blend < 1.0:
         A_lin = A[:, :, 2, :]  # stock linear width angles
-        A_scaled = (1.0 - _BLEND) * A_lin + _BLEND * A_scaled
+        A_scaled = (1.0 - blend) * A_lin + blend * A_scaled
 
     # Apply mask: latitude-scaled for low-freq, stock for high-freq
     A_hat = A.clone()
@@ -219,7 +227,7 @@ def uninstall(model_module):
 
 
 class EquiRoPE:
-    """Monkeypatches the LTX-2.3 transformer's RoPE with EquiRoPE
+    """Patches the connected LTX transformer's RoPE with EquiRoPE
     latitude scaling for the width (longitude) axis.
 
     EquiRoPE scales each token's width position by a pole-gated latitude
@@ -279,11 +287,12 @@ class EquiRoPE:
 
     def patch(self, model, enabled, blend, epsilon=0.01, threshold=10.0,
               pole_gamma=3.0, pole_side="both"):
-        from comfy.ldm.lightricks import model as _ltx_model
+        from .ltx_rope_patch import patch_ltx_rope
 
-        install(_ltx_model)
-        set_params(
-            enabled=bool(enabled),
+        if not enabled or blend == 0:
+            return (model,)
+        builder = partial(
+            build_freqs_equirope,
             blend=float(blend),
             epsilon=float(epsilon),
             threshold=float(threshold),
@@ -296,7 +305,7 @@ class EquiRoPE:
             "pole_side=%s (W-axis: %s latitude scaling)",
             enabled, blend, epsilon, threshold, pole_gamma, pole_side, mode,
         )
-        return (model,)
+        return (patch_ltx_rope(model, builder),)
 
 
 NODE_CLASS_MAPPINGS = {

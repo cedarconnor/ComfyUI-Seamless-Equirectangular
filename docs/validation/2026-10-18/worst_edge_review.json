@@ -1,0 +1,8 @@
+{
+  "case": "ripple_stock_nolora_65f",
+  "frame": 10,
+  "edge_ratio": 16.708742141723633,
+  "finding": "A bright window edge crosses the longitude boundary; the large jump is not by itself a discontinuity. Verified on a native-resolution half-rolled 96-pixel strip.",
+  "artifact": "worst_edge_strip.png",
+  "metric_limit": "Mean boundary gradient divided by median interior gradient can flag legitimate scene edges. Inspect broader structure and poles independently."
+}

@@ -1,0 +1,122 @@
+{
+  "firstframe_spherical_nolora_65f": {
+    "dual": {
+      "frames": 65,
+      "mean_ratio": 0.7672619636242206,
+      "max_ratio": 0.9624736905097961
+    },
+    "stock": {
+      "frames": 65,
+      "mean_ratio": 11.860730992830717,
+      "max_ratio": 15.840949058532715
+    }
+  },
+  "firstframe_stock_nolora_1536_seed80085": {
+    "dual": {
+      "frames": 33,
+      "mean_ratio": 0.5554302497343584,
+      "max_ratio": 1.1015806198120117
+    },
+    "stock": {
+      "frames": 33,
+      "mean_ratio": 10.72847168373339,
+      "max_ratio": 19.557008743286133
+    }
+  },
+  "firstframe_stock_nolora_65f": {
+    "dual": {
+      "frames": 65,
+      "mean_ratio": 0.5951344100328592,
+      "max_ratio": 0.952971339225769
+    },
+    "stock": {
+      "frames": 65,
+      "mean_ratio": 8.643536567687988,
+      "max_ratio": 9.909196853637695
+    }
+  },
+  "h3_canny_rope_56f": {
+    "dual": {
+      "frames": 56,
+      "mean_ratio": 1.7735162675380707,
+      "max_ratio": 9.641060829162598
+    },
+    "stock": {
+      "frames": 56,
+      "mean_ratio": 4.60115476165499,
+      "max_ratio": 19.792375564575195
+    }
+  },
+  "h3_rope_56f": {
+    "dual": {
+      "frames": 56,
+      "mean_ratio": 1.3978821273360933,
+      "max_ratio": 1.5070643424987793
+    },
+    "stock": {
+      "frames": 56,
+      "mean_ratio": 8.335918264729637,
+      "max_ratio": 9.929449081420898
+    }
+  },
+  "ripple_earlyroll_65f": {
+    "dual": {
+      "frames": 65,
+      "mean_ratio": 1.4280388433199662,
+      "max_ratio": 6.701303958892822
+    },
+    "stock": {
+      "frames": 65,
+      "mean_ratio": 16.177321947537937,
+      "max_ratio": 44.124778747558594
+    }
+  },
+  "ripple_mask_earlyroll_65f": {
+    "dual": {
+      "frames": 65,
+      "mean_ratio": 1.5801820319432478,
+      "max_ratio": 16.218660354614258
+    },
+    "stock": {
+      "frames": 65,
+      "mean_ratio": 15.793794265160194,
+      "max_ratio": 42.357295989990234
+    }
+  },
+  "ripple_spherical_nolora_65f": {
+    "dual": {
+      "frames": 65,
+      "mean_ratio": 1.1375726534770085,
+      "max_ratio": 17.045242309570312
+    },
+    "stock": {
+      "frames": 65,
+      "mean_ratio": 13.505858949514536,
+      "max_ratio": 43.84710693359375
+    }
+  },
+  "ripple_stock_nolora_1536_seed80085": {
+    "dual": {
+      "frames": 33,
+      "mean_ratio": 2.143424201192278,
+      "max_ratio": 20.865121841430664
+    },
+    "stock": {
+      "frames": 33,
+      "mean_ratio": 14.387217940706195,
+      "max_ratio": 40.32703399658203
+    }
+  },
+  "ripple_stock_nolora_65f": {
+    "dual": {
+      "frames": 65,
+      "mean_ratio": 1.341324688379581,
+      "max_ratio": 16.708742141723633
+    },
+    "stock": {
+      "frames": 65,
+      "mean_ratio": 15.160606274237999,
+      "max_ratio": 39.3923225402832
+    }
+  }
+}

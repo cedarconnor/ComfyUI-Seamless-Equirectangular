@@ -1,0 +1,14 @@
+{
+  "frames": 65,
+  "cached_frames": 65,
+  "max_pixel_difference": 0,
+  "mean_pixel_difference": 0.0,
+  "sampler_was_cached": false,
+  "model_nodes_cached": {
+    "1501": true,
+    "1950": true,
+    "1951": true
+  },
+  "spherical_vs_stock_mean_pixel_difference": 9.690158491868239,
+  "spherical_vs_stock_max_pixel_difference": 252
+}

@@ -228,7 +228,6 @@ class EquirectMiniMaxH3RoPE:
                     audio_t,
                     keyframes=minimax_payload.get("keyframes") if minimax_payload else None,
                     refs=minimax_payload.get("refs") if minimax_payload else None,
-                    frame_count=minimax_payload.get("frame_count") if minimax_payload else None,
                 )
 
             table = build_h3_rope_rotation_table(diffusion_model, layout, device, dtype, blend, W_patches=W_patches)

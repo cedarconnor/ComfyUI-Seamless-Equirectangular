@@ -18,7 +18,7 @@ Tools for equirectangular 360 video generation:
 - EquirectWrappedNoise: spherical phase remaster on the initial noise
   latent, encoding polar convergence to reduce stretching at the poles.
 
-- EquirectSphericalRoPE: monkeypatches the LTX-2.3 transformer's position
+- EquirectSphericalRoPE: patches the connected LTX transformer's position
   encoding with a two-path spectral split (harmonic snapping for seam,
   spherical coordinates for poles). Based on ideas from the SpheRoPE
   paper (https://arxiv.org/abs/2606.32033).
@@ -27,25 +27,19 @@ This module intentionally imports no comfy internals so its helpers are
 unit-testable standalone.
 """
 
-import importlib.util
+import importlib
+from functools import partial
 import logging
 import math
-import os
 
 import torch
-import comfy.ldm.lightricks.model as _ltx_model
 
 from .circular_conv import patch_vae_circular, seam_blend_w, unpatch_vae_circular
 from . import krea2
 from .latent_layouts import find_layout, roll_model_io, video_shape_from_conditioning
 from .ripple import roll_ltx_guide_attention_masks
-
-# Load the vendored periodic_rope module
-_spec = importlib.util.spec_from_file_location(
-    "equirect_periodic_rope", os.path.join(os.path.dirname(__file__), "periodic_rope.py")
-)
-_periodic_rope = importlib.util.module_from_spec(_spec)
-_spec.loader.exec_module(_periodic_rope)
+from .ltx_rope_patch import patch_ltx_rope
+from . import periodic_rope as _periodic_rope
 
 logger = logging.getLogger("SeamlessEquirectangular.seam")
 
@@ -542,7 +536,7 @@ def _resolve_w_scale(model):
 
 
 class EquirectSphericalRoPE:
-    """Monkeypatches the LTX-2.3 transformer's RoPE with a spherical-aware
+    """Patches the connected LTX transformer's RoPE with a spherical-aware
     two-path spectral split for the width (longitude) axis.
 
     Path A (high-frequency channels, >= threshold cycles): harmonic snapping
@@ -569,23 +563,24 @@ class EquirectSphericalRoPE:
             "optional": {
                 "path_b_threshold": ("FLOAT", {"default": 10.0, "min": 0.0, "max": 100.0, "step": 0.5,
                                                 "tooltip": "Cycle threshold for Path A vs Path B. "
-                                                "Lower = more spherical channels."}),
+                                                "Higher = more spherical channels."}),
                 "r_scale": ("FLOAT", {"default": 1.0, "min": 0.1, "max": 10.0, "step": 0.1,
                                        "tooltip": "Spherical coordinate magnitude."}),
             },
         }
 
     def patch(self, model, enabled, blend, path_b_threshold=10.0, r_scale=1.0):
+        if not enabled or blend == 0:
+            return (model,)
         w_scale = _resolve_w_scale(model)
-        _periodic_rope.install(_ltx_model, w_scale=w_scale)
-        _periodic_rope.set_params(
-            enabled=bool(enabled), alpha=float(blend), w_scale=w_scale,
+        builder = partial(
+            _periodic_rope.build_freqs_periodic, alpha=float(blend), w_scale=w_scale,
             path_b_threshold=float(path_b_threshold), r_scale=float(r_scale),
         )
         mode = "spherical Path A+B" if enabled else "linear"
         print(f"[EquirectSphericalRoPE] enabled={enabled} blend={blend} "
               f"threshold={path_b_threshold} r_scale={r_scale} (W-axis: {mode})")
-        return (model,)
+        return (patch_ltx_rope(model, builder),)
 
 
 from . import minimax_h3

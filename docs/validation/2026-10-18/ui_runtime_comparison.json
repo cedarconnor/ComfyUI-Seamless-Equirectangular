@@ -1,0 +1,14 @@
+{
+  "ripple_stock_nolora": {
+    "reference_frames": 65,
+    "ui_frames": 65,
+    "max_difference": 0,
+    "mean_difference": 0.0
+  },
+  "firstframe_stock_nolora": {
+    "reference_frames": 65,
+    "ui_frames": 65,
+    "max_difference": 0,
+    "mean_difference": 0.0
+  }
+}

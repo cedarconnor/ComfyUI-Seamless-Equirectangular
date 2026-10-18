@@ -1,0 +1,433 @@
+{
+  "388": {
+    "inputs": {
+      "text": "blurry, low resolution, ugly, garbled mess, compression artifacts, glitch, stop motion, still image, pixelated, robotic voice, oversaturated, visible equirectangular seam, duplicate furniture, mirrored couch, blur stripe, discontinuous floorboards",
+      "clip": [
+        "1318",
+        0
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "Negative prompt (inactive at CFG 1)"
+    }
+  },
+  "563": {
+    "inputs": {
+      "positive": [
+        "814",
+        0
+      ],
+      "negative": [
+        "388",
+        0
+      ],
+      "frame_rate": [
+        "959",
+        0
+      ]
+    },
+    "class_type": "LTXVConditioning",
+    "_meta": {
+      "title": "LTXVConditioning"
+    }
+  },
+  "1257": {
+    "inputs": {
+      "frames_number": [
+        "937",
+        0
+      ],
+      "frame_rate": [
+        "936",
+        0
+      ],
+      "batch_size": 1,
+      "audio_vae": [
+        "448",
+        0
+      ]
+    },
+    "class_type": "LTXVEmptyLatentAudio",
+    "_meta": {
+      "title": "Empty LTXV Latent Audio"
+    }
+  },
+  "1259": {
+    "inputs": {
+      "video_latent": [
+        "1700",
+        2
+      ],
+      "audio_latent": [
+        "1257",
+        0
+      ]
+    },
+    "class_type": "LTXVConcatAVLatent",
+    "_meta": {
+      "title": "Concat AV Latent"
+    }
+  },
+  "445": {
+    "inputs": {
+      "blend_columns": 4,
+      "samples": [
+        "423",
+        0
+      ],
+      "vae": [
+        "822",
+        0
+      ]
+    },
+    "class_type": "EquirectLTX25VAEDecode",
+    "_meta": {
+      "title": "LTX 2.5 seam-aware decode"
+    }
+  },
+  "1269": {
+    "inputs": {
+      "noise": [
+        "1266",
+        0
+      ],
+      "guider": [
+        "1267",
+        0
+      ],
+      "sampler": [
+        "1265",
+        0
+      ],
+      "sigmas": [
+        "1319",
+        0
+      ],
+      "latent_image": [
+        "1259",
+        0
+      ]
+    },
+    "class_type": "SamplerCustomAdvanced",
+    "_meta": {
+      "title": "SamplerCustomAdvanced"
+    }
+  },
+  "1318": {
+    "inputs": {
+      "clip_name": "gemma4-12b-with-proj-ltx-2.5-bf16.safetensors",
+      "type": "ltxv",
+      "device": "default"
+    },
+    "class_type": "CLIPLoader",
+    "_meta": {
+      "title": "Load CLIP"
+    }
+  },
+  "448": {
+    "inputs": {
+      "vae_name": "ltx-2.5-audio-vae-bf16.safetensors"
+    },
+    "class_type": "VAELoader",
+    "_meta": {
+      "title": "Load VAE"
+    }
+  },
+  "822": {
+    "inputs": {
+      "vae_name": "ltx-2.5-video-vae-bf16.safetensors"
+    },
+    "class_type": "VAELoader",
+    "_meta": {
+      "title": "Load VAE"
+    }
+  },
+  "1265": {
+    "inputs": {
+      "sampler_name": "euler"
+    },
+    "class_type": "KSamplerSelect",
+    "_meta": {
+      "title": "KSamplerSelect"
+    }
+  },
+  "821": {
+    "inputs": {
+      "unet_name": "ltx-2.5-22b-distilled-transformer-bf16.safetensors",
+      "weight_dtype": "default"
+    },
+    "class_type": "UNETLoader",
+    "_meta": {
+      "title": "Load Diffusion Model"
+    }
+  },
+  "1266": {
+    "inputs": {
+      "noise_seed": 80084
+    },
+    "class_type": "RandomNoise",
+    "_meta": {
+      "title": "SEED - fixed for repeatability"
+    }
+  },
+  "1319": {
+    "inputs": {
+      "scheduler": "simple",
+      "steps": 8,
+      "denoise": 1.0,
+      "model": [
+        "1951",
+        0
+      ]
+    },
+    "class_type": "BasicScheduler",
+    "_meta": {
+      "title": "DISTILLED - eight steps"
+    }
+  },
+  "936": {
+    "inputs": {
+      "value": 24
+    },
+    "class_type": "INTConstant",
+    "_meta": {
+      "title": "FPS - shared across graph"
+    }
+  },
+  "935": {
+    "inputs": {
+      "value": 512
+    },
+    "class_type": "INTConstant",
+    "_meta": {
+      "title": "HEIGHT - half the width"
+    }
+  },
+  "933": {
+    "inputs": {
+      "value": 1024
+    },
+    "class_type": "INTConstant",
+    "_meta": {
+      "title": "WIDTH - keep 2:1 ratio"
+    }
+  },
+  "814": {
+    "inputs": {
+      "text": "Equirectangular 360-degree panoramic video. Preserve the reference room, blue fabric couch, yellow cushion, wood floor, lighting and all object identities. The camera slowly dollies forward a short distance toward the couch, at constant eye height with a level horizon and steady speed. Natural subtle parallax, stable solid furniture, continuous spherical environment, consistent ceiling and floor, continuous left-right wrap. No cuts.",
+      "clip": [
+        "1318",
+        0
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "ARTIST PROMPT - scene and camera"
+    }
+  },
+  "1304": {
+    "inputs": {
+      "image": "Living_Room_01_Couch_color_firstframe.png"
+    },
+    "class_type": "LoadImage",
+    "_meta": {
+      "title": "01 - Choose seamless 360 first frame"
+    }
+  },
+  "1294": {
+    "inputs": {
+      "upscale_method": "lanczos",
+      "keep_proportion": "stretch",
+      "pad_color": "0, 0, 0",
+      "crop_position": "center",
+      "divisible_by": 2,
+      "device": "cpu",
+      "image": [
+        "1304",
+        0
+      ],
+      "width": [
+        "933",
+        0
+      ],
+      "height": [
+        "935",
+        0
+      ]
+    },
+    "class_type": "ImageResizeKJv2",
+    "_meta": {
+      "title": "Resize full panorama - no crop"
+    }
+  },
+  "1267": {
+    "inputs": {
+      "cfg": 1.0,
+      "model": [
+        "1951",
+        0
+      ],
+      "positive": [
+        "1700",
+        0
+      ],
+      "negative": [
+        "1700",
+        1
+      ]
+    },
+    "class_type": "CFGGuider",
+    "_meta": {
+      "title": "DISTILLED - CFG 1"
+    }
+  },
+  "423": {
+    "inputs": {
+      "av_latent": [
+        "1269",
+        0
+      ]
+    },
+    "class_type": "LTXVSeparateAVLatent",
+    "_meta": {
+      "title": "Separate AV Latent"
+    }
+  },
+  "937": {
+    "inputs": {
+      "value": 65
+    },
+    "class_type": "INTConstant",
+    "_meta": {
+      "title": "FRAMES - use 8n+1 (33 / 65 / 97)"
+    }
+  },
+  "1501": {
+    "inputs": {
+      "enabled": false,
+      "blend": 1.0,
+      "epsilon": 0.01,
+      "threshold": 10.0,
+      "pole_gamma": 3.0,
+      "pole_side": "both",
+      "model": [
+        "821",
+        0
+      ]
+    },
+    "class_type": "EquiRoPE",
+    "_meta": {
+      "title": "EquiRoPE - spherical geometry"
+    }
+  },
+  "1505": {
+    "inputs": {
+      "filename_prefix": "seam-diagnosis-20261018/screened-firstframe_stock_nolora/dual",
+      "images": [
+        "445",
+        0
+      ]
+    },
+    "class_type": "SaveImage",
+    "_meta": {
+      "title": "PNG SEQUENCE - lossless frames"
+    }
+  },
+  "1700": {
+    "class_type": "LTXVImgToVideo",
+    "inputs": {
+      "positive": [
+        "563",
+        0
+      ],
+      "negative": [
+        "563",
+        1
+      ],
+      "vae": [
+        "822",
+        0
+      ],
+      "image": [
+        "1294",
+        0
+      ],
+      "width": [
+        "933",
+        0
+      ],
+      "height": [
+        "935",
+        0
+      ],
+      "length": [
+        "937",
+        0
+      ],
+      "batch_size": 1,
+      "strength": 1.0
+    },
+    "_meta": {
+      "title": "First frame conditioning - no source video"
+    }
+  },
+  "959": {
+    "class_type": "ComfyNumberConvert",
+    "inputs": {
+      "value": [
+        "936",
+        0
+      ]
+    },
+    "_meta": {
+      "title": "ComfyNumberConvert"
+    }
+  },
+  "1950": {
+    "class_type": "EquirectSphericalRoPE",
+    "inputs": {
+      "model": [
+        "1501",
+        0
+      ],
+      "enabled": false,
+      "blend": 1.0,
+      "path_b_threshold": 10.0,
+      "r_scale": 1.0
+    }
+  },
+  "1951": {
+    "class_type": "EquirectPerStepRoll",
+    "inputs": {
+      "model": [
+        "1950",
+        0
+      ],
+      "enabled": false,
+      "mode": "dual_average",
+      "seed": 42,
+      "feather_columns": 0,
+      "start_percent": 0.0,
+      "end_percent": 1.0
+    }
+  },
+  "1970": {
+    "class_type": "VHS_VideoCombine",
+    "inputs": {
+      "images": [
+        "445",
+        0
+      ],
+      "frame_rate": 24,
+      "loop_count": 0,
+      "filename_prefix": "seam-diagnosis-20261018/screened-firstframe_stock_nolora/video",
+      "format": "video/h264-mp4",
+      "pingpong": false,
+      "save_output": true,
+      "pix_fmt": "yuv420p",
+      "crf": 12,
+      "save_metadata": true
+    }
+  }
+}

@@ -82,9 +82,9 @@ def _collapse_grid(indices_grid: torch.Tensor, use_middle_indices_grid: bool) ->
     return indices_grid
 
 
-def _recover_w(p: torch.Tensor):
+def _recover_w(p: torch.Tensor, w_scale=None):
     """Recover integer latent column index w and W_count from the W pixel coord p."""
-    wf = p / _W_SCALE
+    wf = p / (_W_SCALE if w_scale is None else w_scale)
     wf = wf - wf.amin(dim=-1, keepdim=True)
     w = torch.round(wf)
     W_count = int(w.amax().item()) + 1
@@ -97,7 +97,8 @@ def _recover_w(p: torch.Tensor):
 # ---------------------------------------------------------------------------
 
 def _build_width_angles(W_count: int, H_count: int, freqs_per_dim: int,
-                        device, dtype) -> torch.Tensor:
+                        device, dtype, *, w_scale=None, r_scale=None,
+                        path_b_threshold=None, base_width=2048.0) -> torch.Tensor:
     """Build spherical-aware width angles for the full (H, W) latent grid.
 
     Follows SpheRoPE's _build_ltx23_width_angles exactly.
@@ -114,6 +115,9 @@ def _build_width_angles(W_count: int, H_count: int, freqs_per_dim: int,
     """
     # Use float64 for precision (SpheRoPE does this)
     fd = torch.float64
+    w_scale = _W_SCALE if w_scale is None else w_scale
+    r_scale = _R_SCALE if r_scale is None else r_scale
+    path_b_threshold = _PATH_B_THRESHOLD if path_b_threshold is None else path_b_threshold
     theta = _THETA  # 10000.0
 
     # ---- Frequency vector (SpheRoPE's formula, NOT the same as RoPE indices) ----
@@ -122,14 +126,14 @@ def _build_width_angles(W_count: int, H_count: int, freqs_per_dim: int,
     freq_vec = pow_indices * (math.pi / 2.0)  # [K]
 
     # ---- width_span ----
-    width_span = (W_count * 1.0 * _W_SCALE / 2048.0) * 2.0  # scalar
+    width_span = (W_count * w_scale / base_width) * 2.0  # scalar
 
     # ---- Stock positions (1D per column) ----
     rows = torch.arange(H_count, dtype=fd, device=device)
     cols = torch.arange(W_count, dtype=fd, device=device)
 
     # Normalized width coordinate [-1, 1] for each column
-    col_grid = ((cols + 0.5) * _W_SCALE / 2048.0) * 2.0 - 1.0  # [W]
+    col_grid = ((cols + 0.5) * w_scale / base_width) * 2.0 - 1.0  # [W]
     col_frac = cols / W_count  # [W], fraction of width in [0, 1)
     # Tile across all H*W tokens
     col_grid_flat = col_grid.unsqueeze(0).expand(H_count, -1).reshape(-1)  # [H*W]
@@ -153,7 +157,7 @@ def _build_width_angles(W_count: int, H_count: int, freqs_per_dim: int,
     # SpheRoPE uses indexing="xy" for meshgrid
     lon_grid, lat_grid = torch.meshgrid(lon, lat, indexing="xy")  # both [H, W]
 
-    R_width = width_span / 2.0 * _R_SCALE  # scalar
+    R_width = width_span / 2.0 * r_scale  # scalar
     X_sph = (torch.cos(lat_grid) * torch.cos(lon_grid) * R_width).reshape(-1)  # [H*W]
     Y_sph = (torch.cos(lat_grid) * torch.sin(lon_grid) * R_width).reshape(-1)  # [H*W]
 
@@ -164,7 +168,7 @@ def _build_width_angles(W_count: int, H_count: int, freqs_per_dim: int,
     spherical_angles[:, 1::2] = spherical_y
 
     # ---- Selection: Path A for high-freq, Path B for low-freq ----
-    use_corrected = (cycles >= _PATH_B_THRESHOLD)  # [K], bool
+    use_corrected = (cycles >= path_b_threshold)  # [K], bool
     width_angles = torch.where(use_corrected.unsqueeze(0), corrected_angles, spherical_angles)
 
     return width_angles.to(dtype=dtype)
@@ -174,12 +178,15 @@ def _build_width_angles(W_count: int, H_count: int, freqs_per_dim: int,
 # Main construction
 # ---------------------------------------------------------------------------
 
-def build_freqs_periodic(indices, indices_grid, max_pos, use_middle_indices_grid):
+def build_freqs_periodic(indices, indices_grid, max_pos, use_middle_indices_grid,
+                         *, alpha=None, w_scale=None, path_b_threshold=None, r_scale=None):
     """Reimplementation of generate_freqs with SpheRoPE spherical W.
 
     alpha=0 reproduces original generate_freqs byte-exact.
     alpha=1 applies SpheRoPE two-path spectral split.
     """
+    alpha = _ALPHA if alpha is None else alpha
+    w_scale = _W_SCALE if w_scale is None else w_scale
     g = _collapse_grid(indices_grid, use_middle_indices_grid)            # [B,3,N]
     indices = indices.to(device=g.device)
     K = indices.shape[-1]
@@ -188,36 +195,26 @@ def build_freqs_periodic(indices, indices_grid, max_pos, use_middle_indices_grid
     frac = torch.stack([g[:, i] / max_pos[i] for i in range(3)], dim=-1)  # [B,N,3]
     A = indices * (frac.unsqueeze(-1) * 2.0 - 1.0)                         # [B,N,3,K]
 
-    if _ALPHA == 0.0:
+    if alpha == 0.0:
         return A.transpose(-1, -2).flatten(2)
 
     # ---- Recover grid dimensions ----
-    w, W_count = _recover_w(g[:, 2])                                      # [B,N]
-    # Infer H_count from the token count
-    N_tokens = g.shape[-1]
-    if W_count > 0 and N_tokens % W_count == 0:
-        H_count = N_tokens // W_count
-    else:
-        H_count = 1  # fallback — won't crash but sphere coords are trivial
+    w, W_count = _recover_w(g[:, 2], w_scale)                              # [B,N]
+    # Time and appended guide frames must not become extra latitude rows.
+    h, H_count = _recover_w(g[:, 1], w_scale)
 
     phi_linear = A[:, :, 2, :]                                            # [B,N,K]
 
     # ---- Pre-compute SpheRoPE width angles for this grid size ----
     try:
         width_angles = _build_width_angles(W_count, H_count, K,
-                                            device=g.device, dtype=A.dtype)  # [H*W, K]
-        # Tile across batch — all batches have the same spatial layout
-        num_frames = N_tokens // (H_count * W_count)
-        if num_frames > 0:
-            width_angles_tiled = width_angles.unsqueeze(0).expand(num_frames, -1, -1)
-            width_angles_tiled = width_angles_tiled.reshape(-1, K)  # [N, K]
-        else:
-            width_angles_tiled = width_angles  # [N, K]
-        width_angles_tiled = width_angles_tiled.unsqueeze(0).expand(A.shape[0], -1, -1)  # [B, N, K]
+            device=g.device, dtype=A.dtype, w_scale=w_scale, r_scale=r_scale,
+            path_b_threshold=path_b_threshold, base_width=max_pos[2])
+        width_angles_tiled = width_angles[(h * W_count + w).long()]
 
         # Blend between linear and spherical
         A_hat = A.clone()
-        A_hat[:, :, 2, :] = (1.0 - _ALPHA) * phi_linear + _ALPHA * width_angles_tiled
+        A_hat[:, :, 2, :] = (1.0 - alpha) * phi_linear + alpha * width_angles_tiled
 
         result = A_hat.transpose(-1, -2).flatten(2)
         if not torch.isfinite(result).all():
@@ -226,11 +223,11 @@ def build_freqs_periodic(indices, indices_grid, max_pos, use_middle_indices_grid
     except Exception as e:
         print(f"[periodic_rope] SpheRoPE Path B failed ({e}), using harmonic Path A only")
         # Fall back to Path A only
-        w = _recover_w(g[:, 2])[0]
+        w = _recover_w(g[:, 2], w_scale)[0]
         m = periodic_harmonics(K, W_count, device=g.device, dtype=A.dtype)
         phi_periodic = m * (2.0 * math.pi / W_count) * w.unsqueeze(-1)
         A_hat = A.clone()
-        A_hat[:, :, 2, :] = (1.0 - _ALPHA) * phi_linear + _ALPHA * phi_periodic
+        A_hat[:, :, 2, :] = (1.0 - alpha) * phi_linear + alpha * phi_periodic
         return A_hat.transpose(-1, -2).flatten(2)
 
 
