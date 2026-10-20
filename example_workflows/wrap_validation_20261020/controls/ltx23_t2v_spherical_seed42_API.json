@@ -1,0 +1,416 @@
+{
+  "388": {
+    "inputs": {
+      "text": "blurry, low resolution, compression artifacts, temporal flicker, visible equirectangular seam, discontinuous terrain, warped ground",
+      "clip": [
+        "1318",
+        0
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "Negative prompt (inactive at CFG 1)"
+    }
+  },
+  "563": {
+    "inputs": {
+      "positive": [
+        "814",
+        0
+      ],
+      "negative": [
+        "388",
+        0
+      ],
+      "frame_rate": [
+        "959",
+        0
+      ]
+    },
+    "class_type": "LTXVConditioning",
+    "_meta": {
+      "title": "LTXVConditioning"
+    }
+  },
+  "1257": {
+    "inputs": {
+      "frames_number": [
+        "937",
+        0
+      ],
+      "frame_rate": [
+        "936",
+        0
+      ],
+      "batch_size": 1,
+      "audio_vae": [
+        "448",
+        0
+      ]
+    },
+    "class_type": "LTXVEmptyLatentAudio",
+    "_meta": {
+      "title": "Empty LTXV Latent Audio"
+    }
+  },
+  "1259": {
+    "inputs": {
+      "video_latent": [
+        "1700",
+        0
+      ],
+      "audio_latent": [
+        "1257",
+        0
+      ]
+    },
+    "class_type": "LTXVConcatAVLatent",
+    "_meta": {
+      "title": "Concat AV Latent"
+    }
+  },
+  "445": {
+    "class_type": "EquirectCircularVAEDecodeLTX",
+    "inputs": {
+      "samples": [
+        "423",
+        0
+      ],
+      "vae": [
+        "821",
+        2
+      ],
+      "pad_w": 4,
+      "target_width": 1024
+    }
+  },
+  "1269": {
+    "inputs": {
+      "noise": [
+        "1266",
+        0
+      ],
+      "guider": [
+        "1267",
+        0
+      ],
+      "sampler": [
+        "1265",
+        0
+      ],
+      "sigmas": [
+        "1319",
+        0
+      ],
+      "latent_image": [
+        "1259",
+        0
+      ]
+    },
+    "class_type": "SamplerCustomAdvanced",
+    "_meta": {
+      "title": "SamplerCustomAdvanced"
+    }
+  },
+  "1318": {
+    "class_type": "LTXAVTextEncoderLoader",
+    "inputs": {
+      "text_encoder": "gemma_3_12B_it.safetensors",
+      "ckpt_name": "ltx-2.3-22b-distilled-fp8.safetensors",
+      "device": "default"
+    }
+  },
+  "448": {
+    "class_type": "LTXVAudioVAELoader",
+    "inputs": {
+      "ckpt_name": "ltx-2.3-22b-distilled-fp8.safetensors"
+    }
+  },
+  "1265": {
+    "inputs": {
+      "sampler_name": "euler"
+    },
+    "class_type": "KSamplerSelect",
+    "_meta": {
+      "title": "KSamplerSelect"
+    }
+  },
+  "821": {
+    "class_type": "CheckpointLoaderSimple",
+    "inputs": {
+      "ckpt_name": "ltx-2.3-22b-distilled-fp8.safetensors"
+    }
+  },
+  "1266": {
+    "inputs": {
+      "noise_seed": 42
+    },
+    "class_type": "RandomNoise",
+    "_meta": {
+      "title": "SEED - fixed for repeatability"
+    }
+  },
+  "1319": {
+    "inputs": {
+      "scheduler": "simple",
+      "steps": 8,
+      "denoise": 1.0,
+      "model": [
+        "1951",
+        0
+      ]
+    },
+    "class_type": "BasicScheduler",
+    "_meta": {
+      "title": "DISTILLED - eight steps"
+    }
+  },
+  "936": {
+    "inputs": {
+      "value": 24
+    },
+    "class_type": "INTConstant",
+    "_meta": {
+      "title": "FPS - shared across graph"
+    }
+  },
+  "935": {
+    "inputs": {
+      "value": 512
+    },
+    "class_type": "INTConstant",
+    "_meta": {
+      "title": "HEIGHT - half the width"
+    }
+  },
+  "933": {
+    "inputs": {
+      "value": 1024
+    },
+    "class_type": "INTConstant",
+    "_meta": {
+      "title": "WIDTH - keep 2:1 ratio"
+    }
+  },
+  "814": {
+    "inputs": {
+      "text": "Equirectangular 360-degree panoramic video. An alpine mountain ridge at golden hour, surrounded by distant mountains and valleys in every direction. A rocky hiking trail and green grass in the foreground. Warm sunset clouds overhead. One boy in an orange jacket jumps, lands on the trail and steadies his balance. Camera fixed at constant eye height, level horizon, no translation, pan, rotation or zoom. Continuous surrounding landscape, continuous left-right wrap, no cuts.",
+      "clip": [
+        "1318",
+        0
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "ARTIST PROMPT - scene and camera"
+    }
+  },
+  "1267": {
+    "inputs": {
+      "cfg": 1.0,
+      "model": [
+        "1951",
+        0
+      ],
+      "positive": [
+        "563",
+        0
+      ],
+      "negative": [
+        "563",
+        1
+      ]
+    },
+    "class_type": "CFGGuider",
+    "_meta": {
+      "title": "DISTILLED - CFG 1"
+    }
+  },
+  "423": {
+    "inputs": {
+      "av_latent": [
+        "1269",
+        0
+      ]
+    },
+    "class_type": "LTXVSeparateAVLatent",
+    "_meta": {
+      "title": "Separate AV Latent"
+    }
+  },
+  "937": {
+    "inputs": {
+      "value": 65
+    },
+    "class_type": "INTConstant",
+    "_meta": {
+      "title": "FRAMES - use 8n+1 (33 / 65 / 97)"
+    }
+  },
+  "1501": {
+    "inputs": {
+      "enabled": false,
+      "blend": 1.0,
+      "epsilon": 0.01,
+      "threshold": 10.0,
+      "pole_gamma": 3.0,
+      "pole_side": "both",
+      "model": [
+        "1990",
+        0
+      ]
+    },
+    "class_type": "EquiRoPE",
+    "_meta": {
+      "title": "EquiRoPE - spherical geometry"
+    }
+  },
+  "1505": {
+    "inputs": {
+      "filename_prefix": "comfy-wrap-20261020/ltx23_t2v_spherical_seed42/seam",
+      "images": [
+        "445",
+        0
+      ]
+    },
+    "class_type": "SaveImage",
+    "_meta": {
+      "title": "PNG SEQUENCE - lossless frames"
+    }
+  },
+  "1700": {
+    "class_type": "EmptyLTXVLatentVideo",
+    "inputs": {
+      "width": [
+        "933",
+        0
+      ],
+      "height": [
+        "935",
+        0
+      ],
+      "length": [
+        "937",
+        0
+      ],
+      "batch_size": 1
+    }
+  },
+  "959": {
+    "class_type": "ComfyNumberConvert",
+    "inputs": {
+      "value": [
+        "936",
+        0
+      ]
+    },
+    "_meta": {
+      "title": "ComfyNumberConvert"
+    }
+  },
+  "1950": {
+    "class_type": "EquirectSphericalRoPE",
+    "inputs": {
+      "model": [
+        "1501",
+        0
+      ],
+      "enabled": true,
+      "blend": 1.0,
+      "path_b_threshold": 10.0,
+      "r_scale": 1.0
+    }
+  },
+  "1951": {
+    "class_type": "EquirectPerStepRoll",
+    "inputs": {
+      "model": [
+        "1950",
+        0
+      ],
+      "enabled": false,
+      "mode": "dual_average",
+      "seed": 42,
+      "feather_columns": 0,
+      "start_percent": 0.0,
+      "end_percent": 1.0
+    }
+  },
+  "1970": {
+    "class_type": "VHS_VideoCombine",
+    "inputs": {
+      "images": [
+        "445",
+        0
+      ],
+      "frame_rate": 24,
+      "loop_count": 0,
+      "filename_prefix": "comfy-wrap-20261020/ltx23_t2v_spherical_seed42/video",
+      "format": "video/h264-mp4",
+      "pingpong": false,
+      "save_output": true,
+      "pix_fmt": "yuv420p",
+      "crf": 12,
+      "save_metadata": true
+    }
+  },
+  "1990": {
+    "class_type": "LoraLoaderModelOnly",
+    "inputs": {
+      "model": [
+        "821",
+        0
+      ],
+      "lora_name": "Seamless-Equirectangular-LTX2.3-LoRA.safetensors",
+      "strength_model": 0.0
+    }
+  },
+  "1991": {
+    "class_type": "VAEDecode",
+    "inputs": {
+      "samples": [
+        "423",
+        0
+      ],
+      "vae": [
+        "821",
+        2
+      ]
+    }
+  },
+  "1992": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "images": [
+        "1991",
+        0
+      ],
+      "filename_prefix": "comfy-wrap-20261020/ltx23_t2v_spherical_seed42/stock"
+    }
+  },
+  "2001": {
+    "class_type": "EquirectCircularVAEDecodeLTX",
+    "inputs": {
+      "samples": [
+        "423",
+        0
+      ],
+      "vae": [
+        "821",
+        2
+      ],
+      "pad_w": 8,
+      "target_width": 1024
+    }
+  },
+  "2002": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "images": [
+        "2001",
+        0
+      ],
+      "filename_prefix": "comfy-wrap-20261020/ltx23_t2v_spherical_seed42/pad8"
+    }
+  }
+}

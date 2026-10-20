@@ -1,5 +1,7 @@
 # Native-reference follow-up experiments
 
+> Historical comparison graphs: settings are preserved to reproduce their recorded results. Use the [current canvas workflow index](../README.md) for October 20 wrap defaults.
+
 These ten API graphs transfer ideas from the standalone SpheRoPE comparison: six FLUX.2 Klein image experiments and four LTX 2.3 video experiments. Their original versions all completed through MCP; current versions use integrated `Equirect` node names. For the tested fixed-camera ERP first-frame case, start with [ltx23_firstframe_stockrope.json](ltx23_firstframe_stockrope.json). LTX 2.5 users should use the separate [artist workflows](../ltx25/README.md).
 
 | Graph | Purpose |

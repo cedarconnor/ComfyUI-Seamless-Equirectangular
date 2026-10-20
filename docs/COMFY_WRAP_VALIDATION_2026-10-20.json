@@ -1,0 +1,627 @@
+{
+  "acceptance": {
+    "authority": "User October20: prioritize spherical wrap in ComfyUI; poles non-blocking",
+    "pass": "No conspicuous hard left-right join in perspective view; inspect temporal stability for videos; verify model patch active. Edge metrics support but do not replace visual judgment.",
+    "pole_policy": "Record distortion and prefer less distorted settings when wrap is comparable; poles do not block a wrap pass.",
+    "scope": [
+      "FLUX.2 Klein base9B FP8",
+      "FLUX.2 Klein distilled9B",
+      "LTX2.3",
+      "LTX2.5",
+      "MiniMaxH3 periodic longitude"
+    ],
+    "qualification": "Per checkpoint/settings/seed; full FLUX.2-dev only if installed. Earlier strict-gate failures remain historical, not rewritten."
+  },
+  "provenance": {
+    "repo_head": "79deed581d97959b40faf0e1203cd4e4374fe27c",
+    "comfy_head": "af89add63f71a487fde45efc7fba744f3455ae73",
+    "source_sha256": {
+      "seamless_equirect/nodes.py": "35bc72c2879a007004236e3e9fea3e7aa108e66a0aba2158f3a6ef5f4ca5ef03",
+      "seamless_equirect/periodic_rope.py": "100a2b1d904f4cd2045b3477867ad2bb9142e2c35bb831ef30882d497c771d53",
+      "seamless_equirect/ltx_rope_patch.py": "92adbc4f7888bb38683af9362a2a2502d7c4cf1de2d76265e419ee37ffcea1c4",
+      "seamless_equirect/flux2_rope.py": "c969e24245f8511dc2afd2e296b31146c70e6efa57b0f640afbb9aafe104b31e",
+      "seamless_equirect/flux2_angles.py": "e7463d1548e1b68e087301a9c3ed9740fe051c8aa37697af604e61109d7051b5",
+      "seamless_equirect/minimax_h3.py": "7dc5b0b35db38c45ea6a7076bcee88ff397979961c336b88c8388969dbe4ae0f"
+    },
+    "unit_tests": {
+      "passed": 118,
+      "skipped": 4,
+      "seconds": 10.76
+    },
+    "native_scope": "This round renders only through ComfyUI; prior standalone results remain in first-principles-20261019."
+  },
+  "full_evidence_root": "E:\\ComfyUI-test-results\\comfy-wrap-20261020",
+  "cases": [
+    {
+      "name": "klein_base_spherical_seed42",
+      "prompt_id": "23f76653-6782-4074-a333-ad1cc437494a",
+      "workflow_sha256": "de96312fd59592ce9652954b04d9286ec5fedc518aeb3e997df45ccd4411a041",
+      "verdict": {
+        "wrap_decision": "pass",
+        "decoder": "circular pad9",
+        "reviewed": [
+          "circular/sampled_views.jpg",
+          "circular/wrap_latitudes.jpg"
+        ],
+        "join": "No conspicuous vertical cut at horizon, sky or ground in wrap views pitched -45,0,+45 degrees",
+        "pole_quality": "Nadir swirl and fine radial sky texture remain; non-blocking by user instruction",
+        "scope": "Still seed42; profile also qualified separately on seed43."
+      },
+      "metrics": {
+        "circular_pad18": {
+          "frame_count": 1,
+          "edge_mae_mean": 7.279947757720947,
+          "edge_ratio_mean": 0.9676148891448975,
+          "edge_ratio_max": 0.9676148891448975,
+          "note": "Measurements do not establish visual pass. Inspect all wrap sheets; poles are non-blocking under October20 user instruction."
+        },
+        "circular": {
+          "frame_count": 1,
+          "edge_mae_mean": 7.294921875,
+          "edge_ratio_mean": 0.9685575366020203,
+          "edge_ratio_max": 0.9685575366020203,
+          "note": "Measurements do not establish visual pass. Inspect all wrap sheets; poles are non-blocking under October20 user instruction."
+        },
+        "stock_decode": {
+          "frame_count": 1,
+          "edge_mae_mean": 15.992512702941895,
+          "edge_ratio_mean": 2.115896224975586,
+          "edge_ratio_max": 2.115896224975586,
+          "note": "Measurements do not establish visual pass. Inspect all wrap sheets; poles are non-blocking under October20 user instruction."
+        }
+      }
+    },
+    {
+      "name": "klein_base_spherical_seed43",
+      "prompt_id": "ef8850f4-7dc7-4fdf-af17-afc8ccb185b6",
+      "workflow_sha256": "996069dfeb547962e73ea78601b621cacf1bc4ab2f5229c607b9417267155aca",
+      "verdict": {
+        "wrap_decision": "pass",
+        "decoder": "circular pad9",
+        "reviewed": [
+          "circular/wrap_latitudes.jpg",
+          "circular/sampled_views.jpg"
+        ],
+        "join": "No conspicuous vertical cut at ground, horizon or sky across the wrap",
+        "pole_quality": "Nadir grass bullseye and fine sky radial texture remain; non-blocking",
+        "scope": "Second seed confirms same profile on this prompt and runtime"
+      },
+      "metrics": {
+        "circular_pad18": {
+          "frame_count": 1,
+          "edge_mae_mean": 6.0751953125,
+          "edge_ratio_mean": 0.843315839767456,
+          "edge_ratio_max": 0.843315839767456,
+          "note": "Measurements do not establish visual pass. Inspect all wrap sheets; poles are non-blocking under October20 user instruction."
+        },
+        "circular": {
+          "frame_count": 1,
+          "edge_mae_mean": 6.080078125,
+          "edge_ratio_mean": 0.841484010219574,
+          "edge_ratio_max": 0.841484010219574,
+          "note": "Measurements do not establish visual pass. Inspect all wrap sheets; poles are non-blocking under October20 user instruction."
+        },
+        "stock_decode": {
+          "frame_count": 1,
+          "edge_mae_mean": 10.887043952941895,
+          "edge_ratio_mean": 1.4998430013656616,
+          "edge_ratio_max": 1.4998430013656616,
+          "note": "Measurements do not establish visual pass. Inspect all wrap sheets; poles are non-blocking under October20 user instruction."
+        }
+      }
+    },
+    {
+      "name": "klein_distilled_spherical_seed42",
+      "prompt_id": "ab69b569-60c8-45fd-bab7-80267bdb6571",
+      "workflow_sha256": "c313e6107dffb6b9c90a72e31e8f6a4320388c3e069977646cdf207dd830d391",
+      "verdict": {
+        "wrap_decision": "pass",
+        "decoder": "circular pad9",
+        "reviewed": [
+          "circular/wrap_latitudes.jpg",
+          "circular/sampled_views.jpg"
+        ],
+        "join": "Mountains, forest, grass and clouds remain continuous across the join at all three inspected pitches",
+        "pole_quality": "Radial grass/rock pinch and sky convergence persist; non-blocking",
+        "scope": "Four-step distilled profile, seed42"
+      },
+      "metrics": {
+        "circular_pad18": {
+          "frame_count": 1,
+          "edge_mae_mean": 8.388346672058105,
+          "edge_ratio_mean": 0.8463143110275269,
+          "edge_ratio_max": 0.8463143110275269,
+          "note": "Measurements do not establish visual pass. Inspect all wrap sheets; poles are non-blocking under October20 user instruction."
+        },
+        "circular": {
+          "frame_count": 1,
+          "edge_mae_mean": 8.408854484558105,
+          "edge_ratio_mean": 0.8484808206558228,
+          "edge_ratio_max": 0.8484808206558228,
+          "note": "Measurements do not establish visual pass. Inspect all wrap sheets; poles are non-blocking under October20 user instruction."
+        },
+        "stock_decode": {
+          "frame_count": 1,
+          "edge_mae_mean": 16.95540428161621,
+          "edge_ratio_mean": 1.7211161851882935,
+          "edge_ratio_max": 1.7211161851882935,
+          "note": "Measurements do not establish visual pass. Inspect all wrap sheets; poles are non-blocking under October20 user instruction."
+        }
+      }
+    },
+    {
+      "name": "klein_distilled_spherical_seed43",
+      "prompt_id": "41ebca71-6afe-4886-b08c-54ef4b2b0749",
+      "workflow_sha256": "735e4bb9e68364944c169f6ad3ca549ac72458f824b62df30a783a2ab934279a",
+      "verdict": {
+        "wrap_decision": "pass",
+        "decoder": "circular pad9",
+        "reviewed": [
+          "circular/wrap_latitudes.jpg",
+          "circular/sampled_views.jpg"
+        ],
+        "join": "Mountains, forest, grass and clouds remain continuous across the join at all three inspected pitches",
+        "pole_quality": "Radial grass/rock pinch and sky convergence persist; non-blocking",
+        "scope": "Four-step distilled profile, seed43"
+      },
+      "metrics": {
+        "circular_pad18": {
+          "frame_count": 1,
+          "edge_mae_mean": 11.070637702941895,
+          "edge_ratio_mean": 1.0987480878829956,
+          "edge_ratio_max": 1.0987480878829956,
+          "note": "Measurements do not establish visual pass. Inspect all wrap sheets; poles are non-blocking under October20 user instruction."
+        },
+        "circular": {
+          "frame_count": 1,
+          "edge_mae_mean": 11.0400390625,
+          "edge_ratio_mean": 1.097004771232605,
+          "edge_ratio_max": 1.097004771232605,
+          "note": "Measurements do not establish visual pass. Inspect all wrap sheets; poles are non-blocking under October20 user instruction."
+        },
+        "stock_decode": {
+          "frame_count": 1,
+          "edge_mae_mean": 16.06640625,
+          "edge_ratio_mean": 1.5887465476989746,
+          "edge_ratio_max": 1.5887465476989746,
+          "note": "Measurements do not establish visual pass. Inspect all wrap sheets; poles are non-blocking under October20 user instruction."
+        }
+      }
+    },
+    {
+      "name": "ltx23_i2v_spherical_seed42",
+      "prompt_id": "8acccf5d-5f93-42ec-9622-6d17abee1f84",
+      "workflow_sha256": "0f97895918918a03c57556ad276287888438796ecc74504b4856b8a8f663d32f",
+      "verdict": {
+        "wrap_decision": "pass",
+        "decoder": "seam",
+        "reviewed": [
+          "seam/wrap_latitudes.jpg",
+          "seam/all_wrap_00.jpg",
+          "seam/all_wrap_01.jpg",
+          "seam/all_wrap_02.jpg"
+        ],
+        "join": "No conspicuous hard longitude cut, mismatched terrain, or repair band in all-frame horizontal sheets and five sampled pitched views. Broad sky gradient remains.",
+        "pole_quality": "Radial ground stretching remains, including in the input image; non-blocking.",
+        "content_quality": "Subject identity, scale and motion change; wrap pass does not qualify animation fidelity.",
+        "scope": "Short fixed-camera I2V clip, seed 42; no LoRA, rolling disabled."
+      },
+      "metrics": {
+        "stock": {
+          "frame_count": 65,
+          "edge_mae_mean": 13.245452719468338,
+          "edge_ratio_mean": 2.484503779044518,
+          "edge_ratio_max": 2.6646358966827393,
+          "note": "Measurements do not establish visual pass. Inspect all wrap sheets; poles are non-blocking under October20 user instruction."
+        },
+        "seam": {
+          "frame_count": 65,
+          "edge_mae_mean": 6.948447520916279,
+          "edge_ratio_mean": 1.3118955318744365,
+          "edge_ratio_max": 1.4799021482467651,
+          "note": "Measurements do not establish visual pass. Inspect all wrap sheets; poles are non-blocking under October20 user instruction."
+        },
+        "pad8": {
+          "frame_count": 65,
+          "edge_mae_mean": 6.924188679915208,
+          "edge_ratio_mean": 1.3077903619179359,
+          "edge_ratio_max": 1.466357707977295,
+          "note": "Measurements do not establish visual pass. Inspect all wrap sheets; poles are non-blocking under October20 user instruction."
+        }
+      }
+    },
+    {
+      "name": "ltx23_i2v_spherical_seed43",
+      "prompt_id": "694b9e5c-d77d-4193-abcd-d3933f9cad46",
+      "workflow_sha256": "6c1657b21ed063bee8965813d23a4351811c2a7c73baa44b7fbdd020dc39b444",
+      "verdict": {
+        "wrap_decision": "pass",
+        "decoder": "seam",
+        "reviewed": [
+          "seam/wrap_latitudes.jpg",
+          "seam/all_wrap_00.jpg",
+          "seam/all_wrap_01.jpg",
+          "seam/all_wrap_02.jpg"
+        ],
+        "join": "No conspicuous hard longitude cut, mismatched terrain, or repair band in all-frame horizontal sheets and five sampled pitched views. Broad sky gradient remains.",
+        "pole_quality": "Radial ground stretching remains, including in the input image; non-blocking.",
+        "content_quality": "Subject identity, scale and motion change; wrap pass does not qualify animation fidelity.",
+        "scope": "Short fixed-camera I2V clip, seed 43; no LoRA, rolling disabled."
+      },
+      "metrics": {
+        "stock": {
+          "frame_count": 65,
+          "edge_mae_mean": 16.234325012793906,
+          "edge_ratio_mean": 3.0841577493227446,
+          "edge_ratio_max": 4.355906009674072,
+          "note": "Measurements do not establish visual pass. Inspect all wrap sheets; poles are non-blocking under October20 user instruction."
+        },
+        "seam": {
+          "frame_count": 65,
+          "edge_mae_mean": 7.492898640265832,
+          "edge_ratio_mean": 1.4264210114112268,
+          "edge_ratio_max": 1.651928424835205,
+          "note": "Measurements do not establish visual pass. Inspect all wrap sheets; poles are non-blocking under October20 user instruction."
+        },
+        "pad8": {
+          "frame_count": 65,
+          "edge_mae_mean": 7.483002816713773,
+          "edge_ratio_mean": 1.424755520087022,
+          "edge_ratio_max": 1.6565818786621094,
+          "note": "Measurements do not establish visual pass. Inspect all wrap sheets; poles are non-blocking under October20 user instruction."
+        }
+      }
+    },
+    {
+      "name": "ltx25_i2v_spherical_seed42",
+      "prompt_id": "07aa7395-564c-487b-af5b-7365233485a8",
+      "workflow_sha256": "a4c65a61fa484f8e3313701b99e606af4bc4182f4bf7ec2291b2f7f6e4dae221",
+      "verdict": {
+        "wrap_decision": "pass",
+        "decoder": "narrow",
+        "reviewed": [
+          "narrow/wrap_latitudes.jpg",
+          "narrow/all_wrap_00.jpg",
+          "narrow/all_wrap_01.jpg",
+          "narrow/all_wrap_02.jpg"
+        ],
+        "join": "No conspicuous hard longitude cut, mismatched terrain, or repair band in all-frame horizontal sheets and five sampled pitched views. Broad sky gradient remains.",
+        "pole_quality": "Radial ground stretching remains, including in the input image; non-blocking.",
+        "content_quality": "Subject identity, scale and motion change; wrap pass does not qualify animation fidelity.",
+        "scope": "Short fixed-camera I2V clip, seed 42; no LoRA, rolling disabled."
+      },
+      "metrics": {
+        "stock": {
+          "frame_count": 65,
+          "edge_mae_mean": 15.326191975520207,
+          "edge_ratio_mean": 3.881459742326003,
+          "edge_ratio_max": 6.495489120483398,
+          "note": "Measurements do not establish visual pass. Inspect all wrap sheets; poles are non-blocking under October20 user instruction."
+        },
+        "seam": {
+          "frame_count": 65,
+          "edge_mae_mean": 4.789923865978534,
+          "edge_ratio_mean": 1.2239682206740745,
+          "edge_ratio_max": 1.7008382081985474,
+          "note": "Measurements do not establish visual pass. Inspect all wrap sheets; poles are non-blocking under October20 user instruction."
+        },
+        "narrow": {
+          "frame_count": 65,
+          "edge_mae_mean": 4.789923865978534,
+          "edge_ratio_mean": 1.2026086036975567,
+          "edge_ratio_max": 1.66592538356781,
+          "note": "Measurements do not establish visual pass. Inspect all wrap sheets; poles are non-blocking under October20 user instruction."
+        }
+      }
+    },
+    {
+      "name": "ltx25_i2v_spherical_seed43",
+      "prompt_id": "85be69f5-6d63-4c9e-b588-a7ac7b3aee57",
+      "workflow_sha256": "613b637c5ab4ad22137b8ca58ca5099c952e0d9b5e059d582b2d8d32311652e9",
+      "verdict": {
+        "wrap_decision": "pass",
+        "decoder": "narrow",
+        "reviewed": [
+          "narrow/wrap_latitudes.jpg",
+          "narrow/all_wrap_00.jpg",
+          "narrow/all_wrap_01.jpg",
+          "narrow/all_wrap_02.jpg"
+        ],
+        "join": "No conspicuous hard longitude cut, mismatched terrain, or repair band in all-frame horizontal sheets and five sampled pitched views. Broad sky gradient remains.",
+        "pole_quality": "Radial ground stretching remains, including in the input image; non-blocking.",
+        "content_quality": "Subject identity, scale and motion change; wrap pass does not qualify animation fidelity.",
+        "scope": "Short fixed-camera I2V clip, seed 43; no LoRA, rolling disabled."
+      },
+      "metrics": {
+        "stock": {
+          "frame_count": 65,
+          "edge_mae_mean": 15.044911854083722,
+          "edge_ratio_mean": 4.0121869013859675,
+          "edge_ratio_max": 6.561481475830078,
+          "note": "Measurements do not establish visual pass. Inspect all wrap sheets; poles are non-blocking under October20 user instruction."
+        },
+        "seam": {
+          "frame_count": 65,
+          "edge_mae_mean": 5.323117010410016,
+          "edge_ratio_mean": 1.433535256752601,
+          "edge_ratio_max": 1.8556233644485474,
+          "note": "Measurements do not establish visual pass. Inspect all wrap sheets; poles are non-blocking under October20 user instruction."
+        },
+        "narrow": {
+          "frame_count": 65,
+          "edge_mae_mean": 5.323117010410016,
+          "edge_ratio_mean": 1.4154246256901668,
+          "edge_ratio_max": 1.8216363191604614,
+          "note": "Measurements do not establish visual pass. Inspect all wrap sheets; poles are non-blocking under October20 user instruction."
+        }
+      }
+    },
+    {
+      "name": "h3_i2v_periodic_seed42",
+      "prompt_id": "a1e199c7-108e-470c-bcbe-f0a9ab1e95fc",
+      "workflow_sha256": "c39ede2f5240ba97397200187e11a17aa4dfa92bdb3877342b4746e9be605dfa",
+      "verdict": {
+        "wrap_decision": "pass",
+        "decoder": "dual",
+        "reviewed": [
+          "dual/wrap_latitudes.jpg",
+          "dual/all_wrap_00.jpg",
+          "dual/all_wrap_01.jpg",
+          "dual/all_wrap_02.jpg"
+        ],
+        "join": "No conspicuous hard longitude cut, mismatched terrain, or repair band in all-frame horizontal sheets and five sampled pitched views. Broad sky gradient remains.",
+        "pole_quality": "Radial ground stretching remains, including in the input image; non-blocking.",
+        "content_quality": "Subject identity, scale and motion change; wrap pass does not qualify animation fidelity.",
+        "scope": "Short fixed-camera I2V clip, seed 42; no LoRA, rolling disabled."
+      },
+      "metrics": {
+        "dual": {
+          "frame_count": 56,
+          "edge_mae_mean": 6.605515250137874,
+          "edge_ratio_mean": 1.3858086647731918,
+          "edge_ratio_max": 1.7704893350601196,
+          "note": "Measurements do not establish visual pass. Inspect all wrap sheets; poles are non-blocking under October20 user instruction."
+        },
+        "stock": {
+          "frame_count": 56,
+          "edge_mae_mean": 9.584507499422346,
+          "edge_ratio_mean": 2.017358590449606,
+          "edge_ratio_max": 3.170620918273926,
+          "note": "Measurements do not establish visual pass. Inspect all wrap sheets; poles are non-blocking under October20 user instruction."
+        }
+      }
+    },
+    {
+      "name": "h3_i2v_periodic_seed43",
+      "prompt_id": "b340f72a-bdfd-48cb-905a-57853aeb2063",
+      "workflow_sha256": "613ac758cf6dc597c2e879f70804c419b1512d56365eabe643372b1604c58532",
+      "verdict": {
+        "wrap_decision": "pass",
+        "decoder": "dual",
+        "reviewed": [
+          "dual/wrap_latitudes.jpg",
+          "dual/all_wrap_00.jpg",
+          "dual/all_wrap_01.jpg",
+          "dual/all_wrap_02.jpg"
+        ],
+        "join": "No conspicuous hard longitude cut, mismatched terrain, or repair band in all-frame horizontal sheets and five sampled pitched views. Broad sky gradient remains.",
+        "pole_quality": "Radial ground stretching remains, including in the input image; non-blocking.",
+        "content_quality": "Subject identity, scale and motion change; wrap pass does not qualify animation fidelity.",
+        "scope": "Short fixed-camera I2V clip, seed 43; no LoRA, rolling disabled."
+      },
+      "metrics": {
+        "dual": {
+          "frame_count": 56,
+          "edge_mae_mean": 6.532900869846344,
+          "edge_ratio_mean": 1.357877024582454,
+          "edge_ratio_max": 1.5182511806488037,
+          "note": "Measurements do not establish visual pass. Inspect all wrap sheets; poles are non-blocking under October20 user instruction."
+        },
+        "stock": {
+          "frame_count": 56,
+          "edge_mae_mean": 9.18540734904153,
+          "edge_ratio_mean": 1.9169042195592607,
+          "edge_ratio_max": 2.841183662414551,
+          "note": "Measurements do not establish visual pass. Inspect all wrap sheets; poles are non-blocking under October20 user instruction."
+        }
+      }
+    },
+    {
+      "name": "klein_base_radius_half_seed42",
+      "prompt_id": "f672e16f-2694-40c3-a017-dba7a256dc58",
+      "workflow_sha256": "4d88985e7501e084ee41e250404f229e31be3467963a1a14600ec55f9f7c3e72",
+      "verdict": {
+        "wrap_decision": "pass",
+        "decoder": "circular pad9",
+        "reviewed": [
+          "circular/sampled_views.jpg",
+          "circular/wrap_latitudes.jpg"
+        ],
+        "join": "Continuous sky, mountains and grass in all three pitched wrap views.",
+        "pole_quality": "Compared with scale2 seed42, prominent nadir bullseye and fine zenith spokes are reduced; radial ground texture remains. Composition also changes.",
+        "recommendation": "Tested optional Klein-base scale4 profile: reduced bullseye/spokes on seeds42 and43 while preserving wrap. Not established for distilled/full FLUX2 or other scenes."
+      },
+      "metrics": {
+        "circular_pad18": {
+          "frame_count": 1,
+          "edge_mae_mean": 12.102864265441895,
+          "edge_ratio_mean": 1.1932921409606934,
+          "edge_ratio_max": 1.1932921409606934,
+          "note": "Measurements do not establish visual pass. Inspect all wrap sheets; poles are non-blocking under October20 user instruction."
+        },
+        "circular": {
+          "frame_count": 1,
+          "edge_mae_mean": 12.019856452941895,
+          "edge_ratio_mean": 1.1917247772216797,
+          "edge_ratio_max": 1.1917247772216797,
+          "note": "Measurements do not establish visual pass. Inspect all wrap sheets; poles are non-blocking under October20 user instruction."
+        },
+        "stock_decode": {
+          "frame_count": 1,
+          "edge_mae_mean": 17.41341209411621,
+          "edge_ratio_mean": 1.7396141290664673,
+          "edge_ratio_max": 1.7396141290664673,
+          "note": "Measurements do not establish visual pass. Inspect all wrap sheets; poles are non-blocking under October20 user instruction."
+        }
+      }
+    },
+    {
+      "name": "ltx23_t2v_spherical_seed42",
+      "prompt_id": "d6ba943e-b3d8-4931-b874-78229d2c1881",
+      "workflow_sha256": "fc28030fa7c8c734e5c951f270857e3d6cd4420ccc0f622ee2145998834f05d8",
+      "verdict": {
+        "wrap_decision": "pass_single_seed",
+        "decoder": "circular pad4",
+        "reviewed": [
+          "seam/wrap_latitudes.jpg",
+          "seam/all_wrap_00.jpg",
+          "seam/all_wrap_01.jpg",
+          "seam/all_wrap_02.jpg"
+        ],
+        "join": "Mountains, grass and clouds remain connected across the longitude join in all 65 frames; no conspicuous vertical repair strip.",
+        "pole_quality": "Severe cloud starburst and ground convergence; non-blocking.",
+        "content_quality": "Soft low-detail output and distorted subject; wrap pass does not qualify image quality.",
+        "scope": "Exploratory text-only control, seed42 only; no first-frame input. Does not qualify a two-seed T2V preset."
+      },
+      "metrics": {
+        "stock": {
+          "frame_count": 65,
+          "edge_mae_mean": 24.43072917644794,
+          "edge_ratio_mean": 6.683859473008376,
+          "edge_ratio_max": 7.970970630645752,
+          "note": "Measurements do not establish visual pass. Inspect all wrap sheets; poles are non-blocking under October20 user instruction."
+        },
+        "seam": {
+          "frame_count": 65,
+          "edge_mae_mean": 3.6236177847935602,
+          "edge_ratio_mean": 0.9859585046768189,
+          "edge_ratio_max": 1.2591938972473145,
+          "note": "Measurements do not establish visual pass. Inspect all wrap sheets; poles are non-blocking under October20 user instruction."
+        },
+        "pad8": {
+          "frame_count": 65,
+          "edge_mae_mean": 3.6156049655033993,
+          "edge_ratio_mean": 0.9837385626939626,
+          "edge_ratio_max": 1.2548052072525024,
+          "note": "Measurements do not establish visual pass. Inspect all wrap sheets; poles are non-blocking under October20 user instruction."
+        }
+      }
+    },
+    {
+      "name": "ltx25_t2v_spherical_seed42",
+      "prompt_id": "19cab9f0-0e96-4dc8-aefc-d5f75bbd336e",
+      "workflow_sha256": "5f5c8bf2ebf7ab179ca5c5dbda9456bade669493002b54dfc1c05a6ed923faf4",
+      "verdict": {
+        "wrap_decision": "pass_single_seed",
+        "decoder": "dual rotation blend1",
+        "reviewed": [
+          "narrow/wrap_latitudes.jpg",
+          "narrow/all_wrap_00.jpg",
+          "narrow/all_wrap_01.jpg",
+          "narrow/all_wrap_02.jpg"
+        ],
+        "join": "Mountain forms, terrain and sky remain connected at the longitude boundary in all 65 frames; no conspicuous vertical cut.",
+        "pole_quality": "Severe sky convergence, radial ground stretching and bowed horizon; non-blocking for this wrap-only decision.",
+        "content_quality": "Strong global geometry distortion and stylized/soft detail. Not recommended as an artist-quality T2V preset.",
+        "scope": "Exploratory text-only control, seed42 only; no first-frame input. Does not qualify a two-seed T2V preset."
+      },
+      "metrics": {
+        "stock": {
+          "frame_count": 65,
+          "edge_mae_mean": 9.70623997908372,
+          "edge_ratio_mean": 3.39314828652602,
+          "edge_ratio_max": 3.9993014335632324,
+          "note": "Measurements do not establish visual pass. Inspect all wrap sheets; poles are non-blocking under October20 user instruction."
+        },
+        "seam": {
+          "frame_count": 65,
+          "edge_mae_mean": 3.3360176233144907,
+          "edge_ratio_mean": 1.1740366458892821,
+          "edge_ratio_max": 1.517765760421753,
+          "note": "Measurements do not establish visual pass. Inspect all wrap sheets; poles are non-blocking under October20 user instruction."
+        },
+        "narrow": {
+          "frame_count": 65,
+          "edge_mae_mean": 3.3360176233144907,
+          "edge_ratio_mean": 1.1609119369433476,
+          "edge_ratio_max": 1.5041061639785767,
+          "note": "Measurements do not establish visual pass. Inspect all wrap sheets; poles are non-blocking under October20 user instruction."
+        }
+      }
+    },
+    {
+      "name": "h3_t2v_periodic_seed42",
+      "prompt_id": "d2553872-4b2d-4c2a-a7d6-9a168c99a24c",
+      "workflow_sha256": "3a349e0ea44671d89c2cdaaa60d57ce3f9e573e94b703b7836c514de7a942dcd",
+      "verdict": {
+        "wrap_decision": "pass_single_seed",
+        "decoder": "dual rotation blend4",
+        "reviewed": [
+          "dual/wrap_latitudes.jpg",
+          "dual/all_wrap_00.jpg",
+          "dual/all_wrap_01.jpg",
+          "dual/all_wrap_02.jpg"
+        ],
+        "join": "Terrain and mountain silhouettes continue across the longitude join throughout all 56 frames. No conspicuous repair strip.",
+        "pole_quality": "Strong zenith convergence and nadir pinch; non-blocking.",
+        "content_quality": "Camera drifts despite fixed-camera prompt. Geometry is distorted. This is not a motion-quality pass.",
+        "scope": "Exploratory text-only control, seed42 only; no first-frame input. Does not qualify a two-seed T2V preset."
+      },
+      "metrics": {
+        "dual": {
+          "frame_count": 56,
+          "edge_mae_mean": 3.564115984099252,
+          "edge_ratio_mean": 0.888735440160547,
+          "edge_ratio_max": 1.1582893133163452,
+          "note": "Measurements do not establish visual pass. Inspect all wrap sheets; poles are non-blocking under October20 user instruction."
+        },
+        "stock": {
+          "frame_count": 56,
+          "edge_mae_mean": 4.207112644399915,
+          "edge_ratio_mean": 1.044927858880588,
+          "edge_ratio_max": 1.5747464895248413,
+          "note": "Measurements do not establish visual pass. Inspect all wrap sheets; poles are non-blocking under October20 user instruction."
+        }
+      }
+    },
+    {
+      "name": "klein_base_radius_half_seed43",
+      "prompt_id": "8f87526d-a95b-4c5d-a549-ddb0f7d41a21",
+      "workflow_sha256": "f7104e8068feab49c1032c462791ea7ffccb19f0fd1d2d0f47e415cf5b7b2d59",
+      "verdict": {
+        "wrap_decision": "pass",
+        "decoder": "circular pad9",
+        "reviewed": [
+          "circular/sampled_views.jpg",
+          "circular/wrap_latitudes.jpg"
+        ],
+        "join": "Continuous sky, mountains and grass in all three pitched wrap views.",
+        "pole_quality": "Compared with scale2 seed43, distinct nadir bullseye and fine sky spokes reduced; radial grass texture remains. Composition changes.",
+        "recommendation": "Tested optional Klein-base scale4 profile: reduced bullseye/spokes on seeds42 and43 while preserving wrap. Not established for distilled/full FLUX2 or other scenes."
+      },
+      "metrics": {
+        "circular_pad18": {
+          "frame_count": 1,
+          "edge_mae_mean": 7.927083492279053,
+          "edge_ratio_mean": 0.8783091902732849,
+          "edge_ratio_max": 0.8783091902732849,
+          "note": "Measurements do not establish visual pass. Inspect all wrap sheets; poles are non-blocking under October20 user instruction."
+        },
+        "circular": {
+          "frame_count": 1,
+          "edge_mae_mean": 7.996419429779053,
+          "edge_ratio_mean": 0.8796147108078003,
+          "edge_ratio_max": 0.8796147108078003,
+          "note": "Measurements do not establish visual pass. Inspect all wrap sheets; poles are non-blocking under October20 user instruction."
+        },
+        "stock_decode": {
+          "frame_count": 1,
+          "edge_mae_mean": 12.4013671875,
+          "edge_ratio_mean": 1.3603641986846924,
+          "edge_ratio_max": 1.3603641986846924,
+          "note": "Measurements do not establish visual pass. Inspect all wrap sheets; poles are non-blocking under October20 user instruction."
+        }
+      }
+    }
+  ]
+}

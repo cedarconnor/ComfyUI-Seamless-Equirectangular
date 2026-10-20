@@ -208,7 +208,8 @@ class EquirectPerStepRoll:
             ):
                 is_minimax_h3 = True
             patch_size = getattr(diffusion_model, "patch_size", None)
-            if patch_size is not None and len(patch_size) >= 3:
+            # Video models use (T,H,W); FLUX exposes a scalar image patch size.
+            if isinstance(patch_size, (tuple, list)) and len(patch_size) >= 3:
                 width_patch_multiple = int(patch_size[-1])
             if krea2.is_krea2_model(diffusion_model):
                 is_krea2 = True

@@ -1,0 +1,43 @@
+{
+  "date": "2026-10-20",
+  "ui_workflow": "example_workflows/ltx25/FirstFrame_NoPanoramaLoRA_LTX25_360.json",
+  "api_reference": "example_workflows/wrap_validation_20261020/ltx25_pano13_final_121f_API.json",
+  "reference_prompt_id": "119d216b-e38b-4970-a6a7-2fe9c8d1f7cc",
+  "canvas_prompt_id": "379cdcae-a571-401e-a110-14a5135ef11b",
+  "status": "success",
+  "identical_png_frames": 121,
+  "frame_size": [
+    1024,
+    512
+  ],
+  "all_reference_core_inputs_match": true,
+  "cached_core_nodes": [
+    "388",
+    "563",
+    "1257",
+    "1259",
+    "1269",
+    "1318",
+    "448",
+    "822",
+    "1265",
+    "821",
+    "1266",
+    "1319",
+    "936",
+    "935",
+    "933",
+    "814",
+    "1304",
+    "1294",
+    "1267",
+    "423",
+    "937",
+    "1700",
+    "959",
+    "1950",
+    "2001"
+  ],
+  "qualification": "UI conversion and export equivalence; sampling/decoder reused the final accepted run from the ComfyUI cache, not an independent resampling test.",
+  "workflow_sha256": "520b54f7b2943082759c2a7991e908de37f24f6fabc81a82164a9adbf448e4b6"
+}

@@ -2,7 +2,7 @@
 
 **ComfyUI-Seamless-Equirectangular** is a ComfyUI custom node pack by **Burgstall Labs** for seamless equirectangular, 360-degree, VR, and panoramic image or video generation with Krea2, LTX-2.3, LTX-2.5, and MiniMax H3. It provides training-free seam mitigation and geometry enhancement for equirectangular inference.
 
-The pack combines circular VAE padding, native dual-rotation decoding, latent rolling, wrapped noise and positional encoding methods inspired by [SpheRoPE](https://arxiv.org/abs/2606.32033). **EquiRoPE** is a distinct latitude-scaled RoPE with pole gating and hemisphere selection. Which methods help depends on the model and conditioning: the tested LTX 2.5 starting points below use existing equirectangular inputs, native dual-rotation decoding and no panorama LoRA or geometry patches. These methods reduce seam artifacts; they do not guarantee coherent poles, stable textures or artifact-free moving-camera video.
+The pack combines circular VAE padding, native dual-rotation decoding, latent rolling, wrapped noise and positional encoding methods inspired by [SpheRoPE](https://arxiv.org/abs/2606.32033). **EquiRoPE** is a distinct latitude-scaled RoPE with pole gating and hemisphere selection. Which methods help depends on the model and conditioning: the tested LTX 2.5 starting points below use existing equirectangular inputs, spherical positional encoding, native dual-rotation decoding and no panorama LoRA. These methods reduce seam artifacts; they do not guarantee coherent poles, stable textures or artifact-free moving-camera video.
 
 The LoRA is available on Hugging Face: [TheBurgstall/Seamless-Equirectangular-LTX2.3-LoRA](https://huggingface.co/TheBurgstall/Seamless-Equirectangular-LTX2.3-LoRA)
 
@@ -10,24 +10,41 @@ The LoRA is available on Hugging Face: [TheBurgstall/Seamless-Equirectangular-LT
 
 **Keywords:** ComfyUI seamless equirectangular, Krea2 360 image, LTX-2.3 360 video, SpheRoPE, circular VAE padding, per-step latent roll, panoramic video generation, Burgstall Labs.
 
+## October 20: spherical wrap through ComfyUI
+
+The current qualification separates **longitude continuity** from **pole quality**.
+Klein base and distilled stills, and LTX 2.3/2.5 and H3 first-frame clips, pass the
+left/right-wrap inspection on seeds 42 and 43 with their positional patches and
+model-specific seam-aware decoding. Pole pinching and subject/motion defects
+remain; these are wrap-only results, not artifact-free generation claims.
+
+See the [current validation and limits](docs/COMFY_WRAP_VALIDATION_2026-10-20.md)
+and the [current canvas workflow index](example_workflows/README.md).
+The [executed API workflows](example_workflows/wrap_validation_20261020/README.md) preserve the comparison branches.
+The new profiles use no panorama LoRA and no rolling. Full FLUX.2-dev is not
+runtime-qualified by the Klein results. MiniMax H3 uses periodic longitude
+encoding rather than the paper's latitude-dependent spherical encoding.
+An optional Klein-base scale-4 profile reduces the distinct pole bullseye
+and sky spokes on both tested seeds while preserving the wrap. Global defaults
+are unchanged. Text-only video controls also wrap, but retain severe geometry
+defects and are included as diagnostics rather than artist presets.
+
 ## LTX 2.5 support and artist workflows
 
-LTX 2.5 uses its native video VAE through **EquirectLTX25VAEDecode**. This node decodes the original and half-rotated video latents, then composites the rotated decode around the longitude boundary. The October 18 tested presets use `blend_columns=4` (latent columns). Generic circular convolution padding alone did not remove the wider boundary band in these tests. Dual rotation requires two VAE decodes.
+LTX 2.5 uses its native video VAE through **EquirectLTX25VAEDecode**, which decodes the original and half-rotated latents and composites around the longitude boundary. The current profile uses **one blend column**, spherical RoPE at blend 1 / threshold 10 / radius 1, no panorama LoRA and no rolling.
 
-Start with these ready-to-load ComfyUI workflows:
-
-| Workflow | Required input | Conditioning |
+| Canvas workflow | Input | Current defaults |
 |---|---|---|
-| [Ripple without panorama LoRA](example_workflows/ltx25/Ripple_NoPanoramaLoRA_LTX25_360.json) | Gray 2:1 equirectangular video plus a textured look frame aligned to its first frame | Native LTX 2.5 Ripple adapter at 1.35 |
-| [First-frame I2V without panorama LoRA](example_workflows/ltx25/FirstFrame_NoPanoramaLoRA_LTX25_360.json) | One textured, seamless 2:1 panorama plus a camera-move prompt | Native first-frame conditioning; no LoRA |
+| [First-frame I2V](example_workflows/ltx25/FirstFrame_NoPanoramaLoRA_LTX25_360.json) | One textured seamless 2:1 panorama | 1024×512, 121 frames at 24 fps, seed 42, eight Euler/simple steps, CFG 1 |
+| [Ripple guide template](example_workflows/ltx25/Ripple_NoPanoramaLoRA_LTX25_360.json) | Gray ERP video plus aligned textured look frame | 1024×512, 65 frames; same wrap settings; native Ripple adapter 1.35 |
 
-Both use 1024x512, 65 frames at 24 fps, fixed seed 80084, eight Euler/simple steps, CFG 1 and native dual-rotation decode with four blend columns. EquiRoPE, spherical RoPE and per-step rolling are off. See the [setup and model list](example_workflows/ltx25/README.md) and [API graphs](example_workflows/seam_diagnosis_20261018/README.md). Restart ComfyUI once after upgrading from the old global RoPE implementation.
+The first-frame preset reproduces the final jumping-boy panorama test. Its **longitude wrap passes**, but the subject changes scale/appearance and the poles stretch. Ripple's updated spherical settings pass live graph validation; its guide behavior has not been visually requalified. See [setup and limits](example_workflows/ltx25/README.md). Both legacy LTX 2.5 filenames are updated too; they no longer enable the cross-version panorama LoRA.
 
-**October 18 validation:** both UI graphs rendered through MCP conversion, and all 65 PNG frames exactly matched their API references. Separate 1536x768, 33-frame runs with seed 80085 also completed. In the 65-frame tests, mean boundary-jump ratios dropped from 15.161 to 1.341 for Ripple and from 8.644 to 0.595 for first-frame I2V when decoding the same latents with dual rotation. This measures a pixel boundary contribution; a naturally sharp object crossing the join can also produce a high score. Floor texture swimming, creases and ceiling/pole deformation remain. These results do not qualify 4K, guarantee a camera path or establish a universal seam solution. Negative prompts and geometric CFG have no CFG effect at CFG 1.
+[![Final LTX 2.5 panorama: wrap, zenith and nadir samples](docs/media/wrap-validation-2026-10-20/ltx25_final_views.jpg)](docs/media/wrap-validation-2026-10-20/pano13_ltx25_360.mp4)
 
-The [investigation report](docs/SEAM_DIAGNOSIS_2026-10-18.md) records 34 successful MCP jobs across LTX 2.5, H3 and FLUX.2 Klein, including three comparisons excluded as confounded controls. It documents fixes for video latitude indexing, the H3 `PackedLayout` constructor and LTX RoPE state leaking across cached workflows. The original regression suite passed **41 tests, with 4 skipped**; the integrated suite now passes **116 tests, with 4 skipped**. A live stock → spherical → cached-stock test reproduced all 65 original stock frames exactly after the cache-isolation fix.
+[Watch the 5.04-second MP4](docs/media/wrap-validation-2026-10-20/pano13_ltx25_360.mp4) · [Exact executed API graph](example_workflows/wrap_validation_20261020/ltx25_pano13_final_121f_API.json). All 121 exported MP4 frames were inspected at the join; this is spatial wrap, not a temporal loop.
 
-The [September Ripple](example_workflows/ltx25/Ripple_Playblast_LTX25_360.json) and [September first-frame](example_workflows/ltx25/FirstFrame_CameraMove_LTX25_360.json) presets retain their historical EquiRoPE and one-column decode settings for comparison. The latter uses a **2.3-trained** panorama LoRA at 0.20, not a native 2.5 adapter. Earlier text-to-video observations below do not establish that workflows conditioned on an existing panorama require that LoRA.
+The [October 18 investigation](docs/SEAM_DIAGNOSIS_2026-10-18.md) records the earlier geometry-off, four-column decoder comparisons and fixes for latitude indexing, H3 `PackedLayout`, and cached RoPE state. Those historical settings are superseded for the current wrap profiles. The integrated regression suite passes **118 tests, with 4 skipped**. A stock → spherical → cached-stock test previously reproduced all 65 stock frames exactly after the cache-isolation fix.
 
 `EquirectGuideAttentionMask` is available for optional Ripple seam-release experiments. Per-step rolling synchronizes its pixel masks with the latent shift. The shipped artist presets do not use this mask; it is not a universal quality improvement. `EquirectPerStepRoll` also accepts an optional `end_percent` (default 1.0) to stop rolling before late detail steps, alongside `start_percent`.
 
@@ -60,15 +77,17 @@ The October 18 [first-frame and gray-video Canny API graphs](example_workflows/s
 
 The Canny graph requires MiniMax H3 Fun ControlNet Union. It follows edges from the gray guide and is an experimental control path, not a qualified appearance-transfer replacement for Ripple. Keep rolling off: alignment of this separate ControlNet stream under rolling has not been qualified.
 
-The older [MiniMax H3 FL2VA UI example](example_workflows/MiniMax-H3-SEAMLESS-FL2VA.json) retains its historical defaults with RoPE, wrapped noise and rolling disabled. It uses VideoHelperSuite for MP4 output and `comfyui-rtx-simple` for optional final upscaling; those extensions are workflow dependencies, not nodepack runtime dependencies.
+The current [MiniMax H3 FL2VA canvas](example_workflows/MiniMax-H3-SEAMLESS-FL2VA.json) uses the October 20 periodic-RoPE blend-1 profile, native INT8 encoder, 56 frames, and dual decode blend 4. It saves directly through VideoHelperSuite; the conventional post-decode upscaler is removed. Rolling and wrapped noise are omitted.
 
-## FLUX.2 Klein screening
+## FLUX.2 Klein workflows
+
+Start with the [Klein base, distilled and smaller-radius canvas presets](example_workflows/README.md). The current 2048×1024 profiles use circular decode pad 9, spherical scale 2 (optional scale 4 for base), fixed seed 42 and no rolling. Base uses 50 Euler steps / CFG 4 / ERP gamma 6; distilled uses four Euler steps / CFG 1. Both seed 42 and 43 passed longitude-wrap inspection. The following paragraph records the earlier October 18 screening:
 
 [API examples](example_workflows/seam_diagnosis_20261018/README.md) cover Klein 9B distilled (four steps, CFG 1) and Klein base 9B FP8 (20 steps, CFG 4, geometric guidance 3). Their guider, spherical FLUX.2 patch, circular decoder and diagnostics are now included in this pack under `Equirect` node names; ComfyUI-SpheRoPE is not required. Both produced 1024x512 images with spherical width encoding and circular VAE decoding. Radial pole distortion remains. The base comparison changed both RoPE and guidance, so their individual effects are not isolated. Full FLUX.2-dev and its Mistral encoder were not installed or tested. FLUX outputs here are images, not videos.
 
-## Latest native comparison and LTX 2.3 first-frame workflow
+## Historical native comparison — October 18
 
-**For the tested LTX 2.3 ERP first-frame case, start with [ltx23_firstframe_stockrope.json](example_workflows/native_reference_20261018/ltx23_firstframe_stockrope.json).** This saved API graph keeps ordinary positional encoding, circular latent upscaling and circular VAE decoding. It uses no panorama LoRA; the distilled refinement LoRA is still required. All required custom nodes and fixes are included in this repository. Update this pack and restart ComfyUI; ComfyUI-SpheRoPE is not required. See the [input/model setup and controls](example_workflows/native_reference_20261018/README.md#ltx-23-two-stage-transfer).
+**For the current spherical-wrap baseline, use [LTX 2.3 first-frame](example_workflows/ltx23/FirstFrame_LTX23_360.json).** The following results concern the earlier living-room comparison, where [stock RoPE](example_workflows/native_reference_20261018/ltx23_firstframe_stockrope.json) was preferred for that sample. This saved API graph keeps ordinary positional encoding, circular latent upscaling and circular VAE decoding. It uses no panorama LoRA; the distilled refinement LoRA is still required. All required custom nodes and fixes are included in this repository. Update this pack and restart ComfyUI; ComfyUI-SpheRoPE is not required. See the [input/model setup and controls](example_workflows/native_reference_20261018/README.md#ltx-23-two-stage-transfer).
 
 | Tested LTX 2.3 API graph | Frames | Mean boundary ratio | Visual finding |
 |---|---:|---:|---|
@@ -83,7 +102,7 @@ The integrated first-frame and Klein graphs also completed in an isolated ComfyU
 
 [Watch the integrated first-frame result](docs/media/native-2026-10-18/ltx23_integrated_firstframe.mp4).
 
-The original SpheRoPE also rendered FLUX.1 images and LTX 2.3 video outside ComfyUI using existing local weights. Its full LTX method reduced the tested boundary jump by about 87%, but text-to-video poles remained distorted; native first-frame conditioning preserved the room better. Six Klein follow-up jobs found no meaningful benefit from increasing decoder padding from 8 to 18 columns, and inconsistent benefit from delayed guidance. The native comparison does not qualify LTX 2.5, H3, full FLUX.2-dev, moving cameras, gray-guide video or 4K. The established LTX 2.5 artist defaults remain unchanged.
+The original SpheRoPE also rendered FLUX.1 images and LTX 2.3 video outside ComfyUI using existing local weights. Its full LTX method reduced the tested boundary jump by about 87%, but text-to-video poles remained distorted; native first-frame conditioning preserved the room better. Six Klein follow-up jobs found no meaningful benefit from increasing decoder padding from 8 to 18 columns, and inconsistent benefit from delayed guidance. The native comparison does not qualify LTX 2.5, H3, full FLUX.2-dev, moving cameras, gray-guide video or 4K. The October 20 wrap qualification above supersedes the artist defaults from this historical comparison.
 
 See the [full report, previews and execution evidence](docs/NATIVE_SPHEROPE_COMPARISON_2026-10-18.md), [all ten follow-up API graphs](example_workflows/native_reference_20261018/README.md), [standalone LTX runner](scripts/compare_native_ltx.py) and [FLUX runner](scripts/compare_native_spherope.py).
 
@@ -95,7 +114,7 @@ These are actual outputs from the October 18 tests, with no panorama LoRA. Click
 |---|---|
 | [![Animated first-frame living-room panorama](docs/media/native-2026-10-18/ltx23_integrated_firstframe.gif)](docs/media/native-2026-10-18/ltx23_integrated_firstframe.mp4) | [![Animated text-to-video living-room panorama](docs/media/native-2026-10-18/ltx23_comfy_t2v.gif)](docs/media/native-2026-10-18/ltx23_comfy_t2v.mp4) |
 | **33 frames / 1.375 s.** Integrated pack only; stock RoPE, circular upscale/decode. Continuous sampled join and no pronounced floor pinch; minor texture/lighting drift remains. | **17 frames / 0.708 s.** Spherical RoPE and geometry guidance. Continuous sampled join, but severe floor swirling remains. This render predates node-name integration. |
-| [MP4](docs/media/native-2026-10-18/ltx23_integrated_firstframe.mp4) · [Saved first-frame workflow](example_workflows/native_reference_20261018/ltx23_firstframe_stockrope.json) | [MP4](docs/media/native-2026-10-18/ltx23_comfy_t2v.mp4) · [Current text-to-video workflow](example_workflows/native_reference_20261018/ltx23_two_stage.json) |
+| [MP4](docs/media/native-2026-10-18/ltx23_integrated_firstframe.mp4) · [Saved first-frame workflow](example_workflows/native_reference_20261018/ltx23_firstframe_stockrope.json) | [MP4](docs/media/native-2026-10-18/ltx23_comfy_t2v.mp4) · [Historical text-to-video workflow](example_workflows/native_reference_20261018/ltx23_two_stage.json) |
 
 ### Full panorama stills
 
@@ -182,6 +201,8 @@ See the [comparison report and runtime evidence](docs/NATIVE_SPHEROPE_COMPARISON
 ## History
 
 ### Pre-SpheRoPE development
+
+> Historical development notes below describe the original LoRA-based experiments. Their LoRA/rolling requirements are not the current defaults: October 20 tests above pass longitude-wrap inspection without either. Pole and general scene-quality limitations still apply.
 
 I started with training a dedicated equirectangular LoRA — a rank-128 LoRA for 15k steps. In my previous experiments, the model could not produce text-to-video equirectangular output without it; the frozen 22B base model's rectilinear bias is too strong even with inference-time tricks.
 

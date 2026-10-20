@@ -1,0 +1,220 @@
+{
+  "1": {
+    "class_type": "UNETLoader",
+    "inputs": {
+      "unet_name": "FLUX\\flux-2-klein-base-9b-fp8.safetensors",
+      "weight_dtype": "default"
+    }
+  },
+  "2": {
+    "class_type": "CLIPLoader",
+    "inputs": {
+      "clip_name": "qwen_3_8b.safetensors",
+      "type": "flux2",
+      "device": "default"
+    }
+  },
+  "3": {
+    "class_type": "VAELoader",
+    "inputs": {
+      "vae_name": "flux2-vae.safetensors"
+    }
+  },
+  "4": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "text": "A full spherical view from an alpine hiking trail at golden hour, surrounded in every direction by distant mountain ranges and grassy slopes. One boy in an orange jacket and dark trousers jumps joyfully above the trail, arms spread wide. Small rocks and short grass cover the ground beneath the viewpoint. Blue sky with soft clouds overhead, warm sunlight, realistic outdoor photography.",
+      "clip": [
+        "2",
+        0
+      ]
+    }
+  },
+  "5": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "text": "",
+      "clip": [
+        "2",
+        0
+      ]
+    }
+  },
+  "6": {
+    "class_type": "EquirectSphericalRoPEFlux",
+    "inputs": {
+      "model": [
+        "1",
+        0
+      ],
+      "scale": 4.0
+    }
+  },
+  "7": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "text": "A full spherical view from an alpine hiking trail at golden hour, surrounded in every direction by distant mountain ranges and grassy slopes. One boy in an orange jacket and dark trousers jumps joyfully above the trail, arms spread wide. Small rocks and short grass cover the ground beneath the viewpoint. Blue sky with soft clouds overhead, warm sunlight, realistic outdoor photography.. Single unified continuous environment, monolithic scene composition, solitary spatial layout, flawlessly stitched 360 panorama, true equirectangular projection, accurate spherical geometry, continuous horizontal wrap, zero parallax error.",
+      "clip": [
+        "2",
+        0
+      ]
+    }
+  },
+  "8": {
+    "class_type": "EquirectERPGuider",
+    "inputs": {
+      "model": [
+        "6",
+        0
+      ],
+      "positive": [
+        "4",
+        0
+      ],
+      "negative": [
+        "5",
+        0
+      ],
+      "geometry": [
+        "7",
+        0
+      ],
+      "cfg": 4,
+      "erp_gamma": 6.0
+    }
+  },
+  "9": {
+    "class_type": "RandomNoise",
+    "inputs": {
+      "noise_seed": 42
+    }
+  },
+  "10": {
+    "class_type": "KSamplerSelect",
+    "inputs": {
+      "sampler_name": "euler"
+    }
+  },
+  "11": {
+    "class_type": "Flux2Scheduler",
+    "inputs": {
+      "steps": 50,
+      "width": 2048,
+      "height": 1024
+    }
+  },
+  "12": {
+    "class_type": "EmptyFlux2LatentImage",
+    "inputs": {
+      "width": 2048,
+      "height": 1024,
+      "batch_size": 1
+    }
+  },
+  "13": {
+    "class_type": "SamplerCustomAdvanced",
+    "inputs": {
+      "noise": [
+        "9",
+        0
+      ],
+      "guider": [
+        "8",
+        0
+      ],
+      "sampler": [
+        "10",
+        0
+      ],
+      "sigmas": [
+        "11",
+        0
+      ],
+      "latent_image": [
+        "12",
+        0
+      ]
+    }
+  },
+  "15": {
+    "class_type": "EquirectCircularVAEDecodeFlux",
+    "inputs": {
+      "samples": [
+        "13",
+        0
+      ],
+      "vae": [
+        "3",
+        0
+      ],
+      "pad_w": 9
+    }
+  },
+  "19": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "images": [
+        "15",
+        0
+      ],
+      "filename_prefix": "comfy-wrap-20261020/klein_base_radius_half_seed42/circular"
+    }
+  },
+  "20": {
+    "class_type": "SaveLatent",
+    "inputs": {
+      "samples": [
+        "13",
+        0
+      ],
+      "filename_prefix": "comfy-wrap-20261020/klein_base_radius_half_seed42/final"
+    }
+  },
+  "21": {
+    "class_type": "VAEDecode",
+    "inputs": {
+      "samples": [
+        "13",
+        0
+      ],
+      "vae": [
+        "3",
+        0
+      ]
+    }
+  },
+  "22": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "images": [
+        "21",
+        0
+      ],
+      "filename_prefix": "comfy-wrap-20261020/klein_base_radius_half_seed42/stock_decode"
+    }
+  },
+  "23": {
+    "class_type": "EquirectCircularVAEDecodeFlux",
+    "inputs": {
+      "samples": [
+        "13",
+        0
+      ],
+      "vae": [
+        "3",
+        0
+      ],
+      "pad_w": 18
+    }
+  },
+  "24": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "images": [
+        "23",
+        0
+      ],
+      "filename_prefix": "comfy-wrap-20261020/klein_base_radius_half_seed42/circular_pad18"
+    }
+  }
+}

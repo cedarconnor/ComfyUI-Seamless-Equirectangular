@@ -1,6 +1,13 @@
 # Native SpheRoPE comparison — October 18, 2026
 
-Standalone FLUX.1-dev images and native LTX 2.3 video now render through the original SpheRoPE implementation outside ComfyUI, using existing local weights. The full method reduces the tested left/right boundary jump, but the generated pole views still contain substantial distortion. This establishes that the remaining problem is not confined to ComfyUI. It does not transfer automatically to LTX 2.5, H3 or Klein.
+Standalone FLUX.1-dev images and native LTX 2.3 video render through the original SpheRoPE implementation outside ComfyUI, using existing local weights. The full method reduces the tested left/right boundary jump, but the generated pole views still contain substantial distortion. This shows artifacts in these adapted standalone runs; it does not establish a faithful reproduction of the paper or rule out additional ComfyUI defects. It does not transfer automatically to LTX 2.5, H3 or Klein. See the [October 19 root-cause audit](SPHEROPE_ROOT_CAUSE_AUDIT_2026-10-19.md) for the reference differences and component-level investigation.
+
+The subsequent [first-principles validation](FIRST_PRINCIPLES_GATES_2026-10-19.md)
+starts with text-to-still and holds outpainting/video until a still passes
+visual inspection and a second seed. It includes 2K native reference runs,
+published-image pole checks, decoder-only controls and matched Klein component
+comparisons. Its gate decisions supersede any inference that execution success
+or a low boundary score alone demonstrates a usable full-sphere result.
 
 ## Integrated Seamless-Equirectangular delivery
 

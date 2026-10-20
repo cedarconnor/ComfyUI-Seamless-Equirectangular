@@ -1,5 +1,7 @@
 # October 18 API workflows
 
+> Historical comparison graphs: settings are preserved to reproduce their recorded results. Use the [current canvas workflow index](../README.md) for October 20 wrap defaults.
+
 These API-format graphs are for MCP or ComfyUI API submission. For editable canvas workflows, use the [LTX 2.5 UI presets](../ltx25/README.md). Models and sample media are not included. Replace the living-room input filenames with your own 2:1 assets; preserve alignment between a gray video and its textured look frame.
 
 | Graph | Tested settings | Dependencies beyond core and this pack |

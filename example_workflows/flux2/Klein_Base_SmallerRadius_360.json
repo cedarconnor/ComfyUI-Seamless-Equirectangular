@@ -1,0 +1,984 @@
+{
+  "last_node_id": 20,
+  "last_link_id": 16,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "UNETLoader",
+      "pos": [
+        0,
+        0
+      ],
+      "size": [
+        400,
+        110
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "unet_name",
+          "type": "COMBO",
+          "link": null,
+          "widget": {
+            "name": "unet_name"
+          }
+        },
+        {
+          "name": "weight_dtype",
+          "type": "COMBO",
+          "link": null,
+          "widget": {
+            "name": "weight_dtype"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            3
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "UNETLoader"
+      },
+      "widgets_values": [
+        "FLUX\\flux-2-klein-base-9b-fp8.safetensors",
+        "default"
+      ],
+      "widgets_values_named": {
+        "unet_name": "FLUX\\flux-2-klein-base-9b-fp8.safetensors",
+        "weight_dtype": "default"
+      },
+      "title": "UNETLoader"
+    },
+    {
+      "id": 2,
+      "type": "CLIPLoader",
+      "pos": [
+        0,
+        370
+      ],
+      "size": [
+        400,
+        135
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "clip_name",
+          "type": "COMBO",
+          "link": null,
+          "widget": {
+            "name": "clip_name"
+          }
+        },
+        {
+          "name": "type",
+          "type": "COMBO",
+          "link": null,
+          "widget": {
+            "name": "type"
+          }
+        },
+        {
+          "name": "device",
+          "type": "COMBO",
+          "link": null,
+          "widget": {
+            "name": "device"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "CLIP",
+          "type": "CLIP",
+          "links": [
+            1,
+            2,
+            4
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "CLIPLoader"
+      },
+      "widgets_values": [
+        "qwen_3_8b.safetensors",
+        "flux2",
+        "default"
+      ],
+      "widgets_values_named": {
+        "clip_name": "qwen_3_8b.safetensors",
+        "type": "flux2",
+        "device": "default"
+      },
+      "title": "CLIPLoader"
+    },
+    {
+      "id": 3,
+      "type": "VAELoader",
+      "pos": [
+        0,
+        740
+      ],
+      "size": [
+        400,
+        100
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "vae_name",
+          "type": "COMBO",
+          "link": null,
+          "widget": {
+            "name": "vae_name"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "VAE",
+          "type": "VAE",
+          "links": [
+            15
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "VAELoader"
+      },
+      "widgets_values": [
+        "flux2-vae.safetensors"
+      ],
+      "widgets_values_named": {
+        "vae_name": "flux2-vae.safetensors"
+      },
+      "title": "VAELoader"
+    },
+    {
+      "id": 9,
+      "type": "RandomNoise",
+      "pos": [
+        0,
+        1110
+      ],
+      "size": [
+        400,
+        110
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "noise_seed",
+          "type": "INT",
+          "link": null,
+          "widget": {
+            "name": "noise_seed"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "NOISE",
+          "type": "NOISE",
+          "links": [
+            9
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "RandomNoise"
+      },
+      "widgets_values": [
+        42,
+        "fixed"
+      ],
+      "widgets_values_named": {
+        "noise_seed": 42
+      },
+      "title": "RandomNoise"
+    },
+    {
+      "id": 10,
+      "type": "KSamplerSelect",
+      "pos": [
+        0,
+        1480
+      ],
+      "size": [
+        400,
+        100
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "sampler_name",
+          "type": "COMBO",
+          "link": null,
+          "widget": {
+            "name": "sampler_name"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "SAMPLER",
+          "type": "SAMPLER",
+          "links": [
+            11
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "KSamplerSelect"
+      },
+      "widgets_values": [
+        "euler"
+      ],
+      "widgets_values_named": {
+        "sampler_name": "euler"
+      },
+      "title": "KSamplerSelect"
+    },
+    {
+      "id": 11,
+      "type": "Flux2Scheduler",
+      "pos": [
+        0,
+        1850
+      ],
+      "size": [
+        400,
+        135
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "steps",
+          "type": "INT",
+          "link": null,
+          "widget": {
+            "name": "steps"
+          }
+        },
+        {
+          "name": "width",
+          "type": "INT",
+          "link": null,
+          "widget": {
+            "name": "width"
+          }
+        },
+        {
+          "name": "height",
+          "type": "INT",
+          "link": null,
+          "widget": {
+            "name": "height"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "SIGMAS",
+          "type": "SIGMAS",
+          "links": [
+            12
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "Flux2Scheduler"
+      },
+      "widgets_values": [
+        50,
+        2048,
+        1024
+      ],
+      "widgets_values_named": {
+        "steps": 50,
+        "width": 2048,
+        "height": 1024
+      },
+      "title": "Flux2Scheduler"
+    },
+    {
+      "id": 12,
+      "type": "EmptyFlux2LatentImage",
+      "pos": [
+        0,
+        2220
+      ],
+      "size": [
+        400,
+        135
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "width",
+          "type": "INT",
+          "link": null,
+          "widget": {
+            "name": "width"
+          }
+        },
+        {
+          "name": "height",
+          "type": "INT",
+          "link": null,
+          "widget": {
+            "name": "height"
+          }
+        },
+        {
+          "name": "batch_size",
+          "type": "INT",
+          "link": null,
+          "widget": {
+            "name": "batch_size"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "LATENT",
+          "type": "LATENT",
+          "links": [
+            13
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "EmptyFlux2LatentImage"
+      },
+      "widgets_values": [
+        2048,
+        1024,
+        1
+      ],
+      "widgets_values_named": {
+        "width": 2048,
+        "height": 1024,
+        "batch_size": 1
+      },
+      "title": "EmptyFlux2LatentImage"
+    },
+    {
+      "id": 4,
+      "type": "CLIPTextEncode",
+      "pos": [
+        460,
+        0
+      ],
+      "size": [
+        400,
+        320
+      ],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "text",
+          "type": "STRING",
+          "link": null,
+          "widget": {
+            "name": "text"
+          }
+        },
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 1
+        }
+      ],
+      "outputs": [
+        {
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "links": [
+            6
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "CLIPTextEncode"
+      },
+      "widgets_values": [
+        "A full spherical view from an alpine hiking trail at golden hour, surrounded in every direction by distant mountain ranges and grassy slopes. One boy in an orange jacket and dark trousers jumps joyfully above the trail, arms spread wide. Small rocks and short grass cover the ground beneath the viewpoint. Blue sky with soft clouds overhead, warm sunlight, realistic outdoor photography."
+      ],
+      "widgets_values_named": {
+        "text": "A full spherical view from an alpine hiking trail at golden hour, surrounded in every direction by distant mountain ranges and grassy slopes. One boy in an orange jacket and dark trousers jumps joyfully above the trail, arms spread wide. Small rocks and short grass cover the ground beneath the viewpoint. Blue sky with soft clouds overhead, warm sunlight, realistic outdoor photography."
+      },
+      "title": "PROMPT"
+    },
+    {
+      "id": 5,
+      "type": "CLIPTextEncode",
+      "pos": [
+        460,
+        370
+      ],
+      "size": [
+        400,
+        320
+      ],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "text",
+          "type": "STRING",
+          "link": null,
+          "widget": {
+            "name": "text"
+          }
+        },
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 2
+        }
+      ],
+      "outputs": [
+        {
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "links": [
+            7
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "CLIPTextEncode"
+      },
+      "widgets_values": [
+        ""
+      ],
+      "widgets_values_named": {
+        "text": ""
+      },
+      "title": "CONDITIONING"
+    },
+    {
+      "id": 6,
+      "type": "EquirectSphericalRoPEFlux",
+      "pos": [
+        460,
+        740
+      ],
+      "size": [
+        400,
+        100
+      ],
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 3
+        },
+        {
+          "name": "scale",
+          "type": "FLOAT",
+          "link": null,
+          "widget": {
+            "name": "scale"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "links": [
+            5
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "EquirectSphericalRoPEFlux"
+      },
+      "widgets_values": [
+        4.0
+      ],
+      "widgets_values_named": {
+        "scale": 4.0
+      },
+      "title": "EquirectSphericalRoPEFlux"
+    },
+    {
+      "id": 7,
+      "type": "CLIPTextEncode",
+      "pos": [
+        460,
+        1110
+      ],
+      "size": [
+        400,
+        320
+      ],
+      "flags": {},
+      "order": 10,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "text",
+          "type": "STRING",
+          "link": null,
+          "widget": {
+            "name": "text"
+          }
+        },
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 4
+        }
+      ],
+      "outputs": [
+        {
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "links": [
+            8
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "CLIPTextEncode"
+      },
+      "widgets_values": [
+        "A full spherical view from an alpine hiking trail at golden hour, surrounded in every direction by distant mountain ranges and grassy slopes. One boy in an orange jacket and dark trousers jumps joyfully above the trail, arms spread wide. Small rocks and short grass cover the ground beneath the viewpoint. Blue sky with soft clouds overhead, warm sunlight, realistic outdoor photography.. Single unified continuous environment, monolithic scene composition, solitary spatial layout, flawlessly stitched 360 panorama, true equirectangular projection, accurate spherical geometry, continuous horizontal wrap, zero parallax error."
+      ],
+      "widgets_values_named": {
+        "text": "A full spherical view from an alpine hiking trail at golden hour, surrounded in every direction by distant mountain ranges and grassy slopes. One boy in an orange jacket and dark trousers jumps joyfully above the trail, arms spread wide. Small rocks and short grass cover the ground beneath the viewpoint. Blue sky with soft clouds overhead, warm sunlight, realistic outdoor photography.. Single unified continuous environment, monolithic scene composition, solitary spatial layout, flawlessly stitched 360 panorama, true equirectangular projection, accurate spherical geometry, continuous horizontal wrap, zero parallax error."
+      },
+      "title": "CONDITIONING"
+    },
+    {
+      "id": 8,
+      "type": "EquirectERPGuider",
+      "pos": [
+        920,
+        0
+      ],
+      "size": [
+        400,
+        110
+      ],
+      "flags": {},
+      "order": 11,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 5
+        },
+        {
+          "name": "positive",
+          "type": "CONDITIONING",
+          "link": 6
+        },
+        {
+          "name": "negative",
+          "type": "CONDITIONING",
+          "link": 7
+        },
+        {
+          "name": "geometry",
+          "type": "CONDITIONING",
+          "link": 8
+        },
+        {
+          "name": "cfg",
+          "type": "FLOAT",
+          "link": null,
+          "widget": {
+            "name": "cfg"
+          }
+        },
+        {
+          "name": "erp_gamma",
+          "type": "FLOAT",
+          "link": null,
+          "widget": {
+            "name": "erp_gamma"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "GUIDER",
+          "type": "GUIDER",
+          "links": [
+            10
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "EquirectERPGuider"
+      },
+      "widgets_values": [
+        4,
+        6.0
+      ],
+      "widgets_values_named": {
+        "cfg": 4,
+        "erp_gamma": 6.0
+      },
+      "title": "EquirectERPGuider"
+    },
+    {
+      "id": 13,
+      "type": "SamplerCustomAdvanced",
+      "pos": [
+        1380,
+        0
+      ],
+      "size": [
+        400,
+        100
+      ],
+      "flags": {},
+      "order": 12,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "noise",
+          "type": "NOISE",
+          "link": 9
+        },
+        {
+          "name": "guider",
+          "type": "GUIDER",
+          "link": 10
+        },
+        {
+          "name": "sampler",
+          "type": "SAMPLER",
+          "link": 11
+        },
+        {
+          "name": "sigmas",
+          "type": "SIGMAS",
+          "link": 12
+        },
+        {
+          "name": "latent_image",
+          "type": "LATENT",
+          "link": 13
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "type": "LATENT",
+          "links": [
+            14
+          ]
+        },
+        {
+          "name": "denoised_output",
+          "type": "LATENT",
+          "links": []
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "SamplerCustomAdvanced"
+      },
+      "widgets_values": [],
+      "widgets_values_named": {},
+      "title": "SamplerCustomAdvanced"
+    },
+    {
+      "id": 15,
+      "type": "EquirectCircularVAEDecodeFlux",
+      "pos": [
+        1840,
+        0
+      ],
+      "size": [
+        400,
+        100
+      ],
+      "flags": {},
+      "order": 13,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "samples",
+          "type": "LATENT",
+          "link": 14
+        },
+        {
+          "name": "vae",
+          "type": "VAE",
+          "link": 15
+        },
+        {
+          "name": "pad_w",
+          "type": "INT",
+          "link": null,
+          "widget": {
+            "name": "pad_w"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            16
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "EquirectCircularVAEDecodeFlux"
+      },
+      "widgets_values": [
+        9
+      ],
+      "widgets_values_named": {
+        "pad_w": 9
+      },
+      "title": "EquirectCircularVAEDecodeFlux"
+    },
+    {
+      "id": 19,
+      "type": "SaveImage",
+      "pos": [
+        2300,
+        0
+      ],
+      "size": [
+        400,
+        100
+      ],
+      "flags": {},
+      "order": 14,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 16
+        },
+        {
+          "name": "filename_prefix",
+          "type": "STRING",
+          "link": null,
+          "widget": {
+            "name": "filename_prefix"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "links": []
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "SaveImage"
+      },
+      "widgets_values": [
+        "wrap/Klein_Base_SmallerRadius_360/frames"
+      ],
+      "widgets_values_named": {
+        "filename_prefix": "wrap/Klein_Base_SmallerRadius_360/frames"
+      },
+      "title": "SaveImage"
+    },
+    {
+      "id": 20,
+      "type": "Note",
+      "pos": [
+        0,
+        -300
+      ],
+      "size": [
+        1300,
+        250
+      ],
+      "flags": {},
+      "order": 15,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "properties": {},
+      "widgets_values": [
+        "FLUX.2 Klein text-to-image: 2048x1024 / fixed seed 42 / circular decode pad 9. Base: 50 Euler steps, CFG 4, ERP gamma 6. Distilled: 4 Euler steps, CFG 1. SmallerRadius variant uses scale 4; other variants scale 2. Wrap passed seeds 42/43. Pole distortion remains. Full FLUX.2-dev and image editing are not qualified.\nNo panorama LoRA, rolling or wrapped noise. Exports come directly from the selected wrap-aware decoder. Keep full 2:1 ERP framing. Longitude-wrap qualification does not establish pole quality, subject identity or camera-path accuracy. See example_workflows/README.md."
+      ],
+      "title": "START HERE - October 20 wrap profile"
+    }
+  ],
+  "links": [
+    [
+      1,
+      2,
+      0,
+      4,
+      1,
+      "CLIP"
+    ],
+    [
+      2,
+      2,
+      0,
+      5,
+      1,
+      "CLIP"
+    ],
+    [
+      3,
+      1,
+      0,
+      6,
+      0,
+      "MODEL"
+    ],
+    [
+      4,
+      2,
+      0,
+      7,
+      1,
+      "CLIP"
+    ],
+    [
+      5,
+      6,
+      0,
+      8,
+      0,
+      "MODEL"
+    ],
+    [
+      6,
+      4,
+      0,
+      8,
+      1,
+      "CONDITIONING"
+    ],
+    [
+      7,
+      5,
+      0,
+      8,
+      2,
+      "CONDITIONING"
+    ],
+    [
+      8,
+      7,
+      0,
+      8,
+      3,
+      "CONDITIONING"
+    ],
+    [
+      9,
+      9,
+      0,
+      13,
+      0,
+      "NOISE"
+    ],
+    [
+      10,
+      8,
+      0,
+      13,
+      1,
+      "GUIDER"
+    ],
+    [
+      11,
+      10,
+      0,
+      13,
+      2,
+      "SAMPLER"
+    ],
+    [
+      12,
+      11,
+      0,
+      13,
+      3,
+      "SIGMAS"
+    ],
+    [
+      13,
+      12,
+      0,
+      13,
+      4,
+      "LATENT"
+    ],
+    [
+      14,
+      13,
+      0,
+      15,
+      0,
+      "LATENT"
+    ],
+    [
+      15,
+      3,
+      0,
+      15,
+      1,
+      "VAE"
+    ],
+    [
+      16,
+      15,
+      0,
+      19,
+      0,
+      "IMAGE"
+    ]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.55,
+      "offset": [
+        30,
+        330
+      ]
+    }
+  },
+  "version": 0.4
+}

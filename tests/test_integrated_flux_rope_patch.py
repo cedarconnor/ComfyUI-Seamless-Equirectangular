@@ -40,12 +40,26 @@ def test_text_rows_untouched():
     assert torch.equal(wrapped[..., :n_txt, :, :, :], stock[..., :n_txt, :, :, :])
 
 
-def test_pole_row_width_converges_through_wrapper():
+def test_pole_row_width_converges_when_no_harmonic_channels():
     _, wrapped, _, n_txt = _stock_and_wrapped(5, 16)
     W = 16
-    # First image row (row 0 = top pole): width block equal across all columns.
+    # W=16 selects zero harmonic channels. This small-grid case does not
+    # establish convergence of the hybrid encoding at production resolutions.
     row0 = wrapped[0, 0, n_txt:n_txt + W, W_START:W_END, :, :]
     assert torch.allclose(row0, row0[0:1].expand_as(row0), atol=1e-5)
+
+
+def test_2k_grid_only_spherical_subspace_converges_at_poles():
+    H, W = 64, 128
+    _, wrapped, _, n_txt = _stock_and_wrapped(H, W)
+    # At W=128, theta=2000, epsilon=.06, the first six pairs are
+    # harmonic. Section 3.2 explicitly exempts them from pole convergence.
+    for row_index in (0, H - 1):
+        start = n_txt + row_index * W
+        row = wrapped[0, 0, start:start + W, W_START:W_END, :, :]
+        assert not torch.allclose(row[:, :6], row[:1, :6].expand_as(row[:, :6]))
+        torch.testing.assert_close(
+            row[:, 6:], row[:1, 6:].expand_as(row[:, 6:]), atol=1e-5, rtol=0)
 
 
 def test_guard_defers_on_reference_tokens():

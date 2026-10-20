@@ -1,0 +1,193 @@
+{
+  "1": {
+    "class_type": "UNETLoader",
+    "inputs": {
+      "unet_name": "minimax_h3_fl2va_pruned_int8_convrot.safetensors",
+      "weight_dtype": "default"
+    }
+  },
+  "2": {
+    "class_type": "VAELoader",
+    "inputs": {
+      "vae_name": "minimax_h3_video_vae_fp16.safetensors"
+    }
+  },
+  "3": {
+    "class_type": "CLIPLoader",
+    "inputs": {
+      "clip_name": "qwen3vl_32b_minimax_h3_int8_convrot.safetensors",
+      "type": "minimax",
+      "device": "default"
+    }
+  },
+  "5": {
+    "class_type": "MiniMaxH3ImageToVideo",
+    "inputs": {
+      "clip": [
+        "3",
+        0
+      ],
+      "vae": [
+        "2",
+        0
+      ],
+      "prompt": "Equirectangular 360-degree panoramic video. An alpine mountain ridge at golden hour, surrounded by distant mountains and valleys in every direction. A rocky hiking trail and green grass in the foreground. Warm sunset clouds overhead. One boy in an orange jacket jumps, lands on the trail and steadies his balance. Camera fixed at constant eye height, level horizon, no translation, pan, rotation or zoom. Continuous surrounding landscape, continuous left-right wrap, no cuts.",
+      "width": 1024,
+      "height": 512,
+      "length": 56
+    }
+  },
+  "6": {
+    "class_type": "EquirectMiniMaxH3RoPE",
+    "inputs": {
+      "model": [
+        "1",
+        0
+      ],
+      "enabled": true,
+      "blend": 1.0
+    }
+  },
+  "7": {
+    "class_type": "EquirectPerStepRoll",
+    "inputs": {
+      "model": [
+        "6",
+        0
+      ],
+      "enabled": false,
+      "mode": "dual_average",
+      "seed": 42,
+      "feather_columns": 0,
+      "start_percent": 0.0,
+      "end_percent": 1.0
+    }
+  },
+  "8": {
+    "class_type": "BasicGuider",
+    "inputs": {
+      "model": [
+        "7",
+        0
+      ],
+      "conditioning": [
+        "5",
+        0
+      ]
+    }
+  },
+  "9": {
+    "class_type": "RandomNoise",
+    "inputs": {
+      "noise_seed": 42
+    }
+  },
+  "10": {
+    "class_type": "KSamplerSelect",
+    "inputs": {
+      "sampler_name": "res_multistep"
+    }
+  },
+  "11": {
+    "class_type": "BasicScheduler",
+    "inputs": {
+      "model": [
+        "7",
+        0
+      ],
+      "scheduler": "simple",
+      "steps": 20,
+      "denoise": 1.0
+    }
+  },
+  "12": {
+    "class_type": "SamplerCustomAdvanced",
+    "inputs": {
+      "noise": [
+        "9",
+        0
+      ],
+      "guider": [
+        "8",
+        0
+      ],
+      "sampler": [
+        "10",
+        0
+      ],
+      "sigmas": [
+        "11",
+        0
+      ],
+      "latent_image": [
+        "5",
+        1
+      ]
+    }
+  },
+  "13": {
+    "class_type": "EquirectMiniMaxH3VAEDecode",
+    "inputs": {
+      "samples": [
+        "12",
+        0
+      ],
+      "vae": [
+        "2",
+        0
+      ],
+      "blend_columns": 4
+    }
+  },
+  "14": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "images": [
+        "13",
+        0
+      ],
+      "filename_prefix": "comfy-wrap-20261020/h3_t2v_periodic_seed42/dual"
+    }
+  },
+  "30": {
+    "class_type": "VHS_VideoCombine",
+    "inputs": {
+      "images": [
+        "13",
+        0
+      ],
+      "frame_rate": 24,
+      "loop_count": 0,
+      "filename_prefix": "comfy-wrap-20261020/h3_t2v_periodic_seed42/video",
+      "format": "video/h264-mp4",
+      "pingpong": false,
+      "save_output": true,
+      "pix_fmt": "yuv420p",
+      "crf": 12,
+      "save_metadata": true
+    }
+  },
+  "31": {
+    "class_type": "VAEDecode",
+    "inputs": {
+      "samples": [
+        "12",
+        0
+      ],
+      "vae": [
+        "2",
+        0
+      ]
+    }
+  },
+  "32": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "images": [
+        "31",
+        0
+      ],
+      "filename_prefix": "comfy-wrap-20261020/h3_t2v_periodic_seed42/stock"
+    }
+  }
+}

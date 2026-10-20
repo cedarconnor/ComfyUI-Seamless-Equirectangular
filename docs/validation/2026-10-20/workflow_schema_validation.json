@@ -1,0 +1,130 @@
+{
+  "date": "2026-10-20",
+  "endpoint": "http://127.0.0.1:8188",
+  "method": "ComfyUI MCP validate_workflow with live object_info and UI conversion",
+  "results": [
+    {
+      "file": "ltx25/FirstFrame_NoPanoramaLoRA_LTX25_360.json",
+      "valid": true,
+      "errors": [],
+      "warnings": 0,
+      "node_count": 27
+    },
+    {
+      "file": "ltx25/FirstFrame_CameraMove_LTX25_360.json",
+      "valid": true,
+      "errors": [],
+      "warnings": 0,
+      "node_count": 27
+    },
+    {
+      "file": "ltx25/Ripple_NoPanoramaLoRA_LTX25_360.json",
+      "valid": true,
+      "errors": [],
+      "warnings": 0,
+      "node_count": 34
+    },
+    {
+      "file": "ltx25/Ripple_Playblast_LTX25_360.json",
+      "valid": true,
+      "errors": [],
+      "warnings": 0,
+      "node_count": 34
+    },
+    {
+      "file": "MiniMax-H3-SEAMLESS-FL2VA.json",
+      "valid": true,
+      "errors": [],
+      "warnings": 0,
+      "node_count": 14
+    },
+    {
+      "file": "Burgstall-SEAMLESS-equirectangular-T2V.json",
+      "valid": true,
+      "errors": [],
+      "warnings": 0,
+      "node_count": 24
+    },
+    {
+      "file": "ltx23/FirstFrame_LTX23_360.json",
+      "valid": true,
+      "errors": [],
+      "warnings": 0,
+      "node_count": 26
+    },
+    {
+      "file": "flux2/Klein_Base_360.json",
+      "valid": true,
+      "errors": [],
+      "warnings": 0,
+      "node_count": 15
+    },
+    {
+      "file": "flux2/Klein_Base_SmallerRadius_360.json",
+      "valid": true,
+      "errors": [],
+      "warnings": 0,
+      "node_count": 15
+    },
+    {
+      "file": "flux2/Klein_Distilled_360.json",
+      "valid": true,
+      "errors": [],
+      "warnings": 0,
+      "node_count": 14
+    },
+    {
+      "file": "Burgstall-SEAMLESS-VR-Outpaint.json",
+      "valid": false,
+      "errors": [
+        {
+          "node": "5023",
+          "field": "ckpt_name",
+          "code": "unknown_enum_value",
+          "message": "'ltx-2.3-22b-dev.safetensors' not in 8 known options for ckpt_name — closest: ltx-2.3-22b-dev-fp8.safetensors, ltx-2-19b-dev.safetensors, ltx-2-19b-dev-fp8.safetensors, ltx-2.3-22b-distilled-fp8.safetensors, ltx-2-19b-distilled.safetensors"
+        },
+        {
+          "node": "5011",
+          "field": "lora_name",
+          "code": "unknown_enum_value",
+          "message": "'ltx-2/360vroutpaint_v2_step_07000.safetensors' not in 142 known options for lora_name — closest: viewport_render_v2_stage2_step02000.safetensors, WAN\\360_pano_low_noise.safetensors, WAN\\360_pano_high_noise.safetensors, QWEN\\QWEN360Edit_000002500.safetensors, QWEN\\QWEN360Edit_000002000.safetensors"
+        },
+        {
+          "node": "5156",
+          "code": "unknown_class_type",
+          "message": "class_type 'EstimateCameraGeoCalib' not found in object_info"
+        },
+        {
+          "node": "5165",
+          "field": "unet_name",
+          "code": "unknown_enum_value",
+          "message": "'ltx-2.3-22b-distilled-1.1_transformer_only_mxfp8_block32.safetensors' not in 19 known options for unet_name — closest: ltx-2.5-22b-distilled-transformer-bf16.safetensors"
+        },
+        {
+          "node": "5166",
+          "field": "vae_name",
+          "code": "unknown_enum_value",
+          "message": "'LTX23_audio_vae_bf16.safetensors' not in 21 known options for vae_name — closest: ltx-2.5-audio-vae-bf16.safetensors, hunyuan_video_vae_bf16.safetensors, minimax_h3_audio_vae_fp32.safetensors, minimax_h3_video_vae_fp16.safetensors, ltx-2.5-video-vae-bf16.safetensors"
+        },
+        {
+          "node": "5167",
+          "field": "vae_name",
+          "code": "unknown_enum_value",
+          "message": "'LTX23_video_vae_bf16.safetensors' not in 21 known options for vae_name — closest: hunyuan_video_vae_bf16.safetensors, minimax_h3_video_vae_fp16.safetensors, ltx-2.5-video-vae-bf16.safetensors, ltx-2.5-audio-vae-bf16.safetensors, seedvr2_ema_vae_fp16.safetensors"
+        },
+        {
+          "node": "5157",
+          "code": "unknown_class_type",
+          "message": "class_type 'RectilinearToEquirect' not found in object_info"
+        },
+        {
+          "node": "5177",
+          "code": "unknown_class_type",
+          "message": "class_type 'EquirectSourceComposite' not found in object_info"
+        }
+      ],
+      "warnings": 2,
+      "node_count": 46
+    }
+  ]
+}

@@ -249,7 +249,7 @@
       "widgets_values": {
         "frame_rate": 8,
         "loop_count": 0,
-        "filename_prefix": "seam-diagnosis-20261018/screened-ripple_stock_nolora/video",
+        "filename_prefix": "wrap/Ripple_NoPanoramaLoRA_LTX25_360/video",
         "format": "video/h264-mp4",
         "pix_fmt": "yuv420p",
         "crf": 12,
@@ -266,7 +266,7 @@
       "widgets_values_named": {
         "frame_rate": 8,
         "loop_count": 0,
-        "filename_prefix": "seam-diagnosis-20261018/screened-ripple_stock_nolora/video",
+        "filename_prefix": "wrap/Ripple_NoPanoramaLoRA_LTX25_360/video",
         "format": "video/h264-mp4",
         "pix_fmt": "yuv420p",
         "crf": 12,
@@ -336,10 +336,10 @@
         "Node name for S&R": "EquirectLTX25VAEDecode"
       },
       "widgets_values": [
-        4
+        1
       ],
       "widgets_values_named": {
-        "blend_columns": 4
+        "blend_columns": 1
       },
       "color": "#223",
       "bgcolor": "#283039"
@@ -1560,11 +1560,11 @@
         "Node name for S&R": "RandomNoise"
       },
       "widgets_values": [
-        80084,
+        42,
         "fixed"
       ],
       "widgets_values_named": {
-        "noise_seed": 80084,
+        "noise_seed": 42,
         "control_after_generate": "fixed"
       },
       "color": "#223",
@@ -2430,14 +2430,14 @@
     },
     {
       "id": 1501,
-      "type": "EquiRoPE",
+      "type": "EquirectSphericalRoPE",
       "pos": [
         920,
         400
       ],
       "size": [
         400,
-        178
+        160
       ],
       "flags": {},
       "order": 18,
@@ -2450,67 +2450,40 @@
           "link": 101
         },
         {
-          "localized_name": "enabled",
           "name": "enabled",
           "type": "BOOLEAN",
+          "link": null,
           "widget": {
             "name": "enabled"
-          },
-          "link": null
+          }
         },
         {
-          "localized_name": "blend",
           "name": "blend",
           "type": "FLOAT",
+          "link": null,
           "widget": {
             "name": "blend"
-          },
-          "link": null
+          }
         },
         {
-          "localized_name": "epsilon",
-          "name": "epsilon",
-          "shape": 7,
+          "name": "path_b_threshold",
           "type": "FLOAT",
+          "link": null,
           "widget": {
-            "name": "epsilon"
-          },
-          "link": null
+            "name": "path_b_threshold"
+          }
         },
         {
-          "localized_name": "threshold",
-          "name": "threshold",
-          "shape": 7,
+          "name": "r_scale",
           "type": "FLOAT",
+          "link": null,
           "widget": {
-            "name": "threshold"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "pole_gamma",
-          "name": "pole_gamma",
-          "shape": 7,
-          "type": "FLOAT",
-          "widget": {
-            "name": "pole_gamma"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "pole_side",
-          "name": "pole_side",
-          "shape": 7,
-          "type": "COMBO",
-          "widget": {
-            "name": "pole_side"
-          },
-          "link": null
+            "name": "r_scale"
+          }
         }
       ],
       "outputs": [
         {
-          "localized_name": "MODEL",
           "name": "MODEL",
           "type": "MODEL",
           "links": [
@@ -2519,28 +2492,22 @@
           ]
         }
       ],
-      "title": "EquiRoPE OFF - screened baseline",
       "properties": {
-        "Node name for S&R": "EquiRoPE"
+        "Node name for S&R": "EquirectSphericalRoPE"
       },
       "widgets_values": [
-        false,
-        1,
-        0.01,
-        10,
-        3,
-        "bottom"
+        true,
+        1.0,
+        10.0,
+        1.0
       ],
       "widgets_values_named": {
-        "enabled": false,
-        "blend": 1,
-        "epsilon": 0.01,
-        "threshold": 10,
-        "pole_gamma": 3,
-        "pole_side": "bottom"
+        "enabled": true,
+        "blend": 1.0,
+        "path_b_threshold": 10.0,
+        "r_scale": 1.0
       },
-      "color": "#223",
-      "bgcolor": "#283039"
+      "title": "EquirectSphericalRoPE"
     },
     {
       "id": 1505,
@@ -2586,10 +2553,10 @@
         "Node name for S&R": "SaveImage"
       },
       "widgets_values": [
-        "seam-diagnosis-20261018/screened-ripple_stock_nolora/frames"
+        "wrap/Ripple_NoPanoramaLoRA_LTX25_360/frames"
       ],
       "widgets_values_named": {
-        "filename_prefix": "seam-diagnosis-20261018/screened-ripple_stock_nolora/frames"
+        "filename_prefix": "wrap/Ripple_NoPanoramaLoRA_LTX25_360/frames"
       },
       "color": "#223",
       "bgcolor": "#283039"
@@ -2612,7 +2579,7 @@
       "outputs": [],
       "properties": {},
       "widgets_values": [
-        "OCT 18 SCREENING PRESET\n1024x512, 65 frames, 24 fps, 8 steps / CFG 1. No panorama LoRA. Geometry patches OFF; native dual-rotation decode 4 columns.\nRipple 1.35 still required. Supply a gray ERP video and an aligned textured first frame.\n65-frame runtime tested. Remaining floor/pole defects are documented. Cache isolation verified by pixel-identical re-sampling after switching branches."
+        "RIPPLE GUIDE TEMPLATE - October 20\nSpherical RoPE blend 1 / threshold 10 / radius 1. Native LTX 2.5 dual-rotation decode blend 1. 1024x512, 65 frames at 24 fps, fixed seed 42, 8 Euler-simple steps / CFG 1. Native Ripple adapter remains at 1.35. Load an aligned gray ERP guide video and textured look frame. New spherical settings are transferred from I2V; this guide variant has NOT been visually requalified. Inspect the join and guide adherence.\nNo panorama LoRA, rolling or wrapped noise. Exports come directly from the selected wrap-aware decoder. Keep full 2:1 ERP framing. Longitude-wrap qualification does not establish pole quality, subject identity or camera-path accuracy. See example_workflows/README.md."
       ],
       "title": "START HERE - artist instructions",
       "color": "#343",

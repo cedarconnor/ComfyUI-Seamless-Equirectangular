@@ -11,8 +11,10 @@ the width axis is replaced, via a two-path spectral split:
   * Path A (channels < split_idx): NTK-aware requantized harmonic frequencies whose
     period divides the width, preserving exact horizontal periodicity.
   * Path B (channels >= split_idx): spherical Cartesian X/Y on the unit sphere scaled by
-    W/scale, in even/odd slots. At the poles cos(lat)=0, so all polar tokens share
-    identical width embeddings (encodes pole convergence).
+    W/scale, in even/odd slots. At the poles cos(lat)=0, so polar tokens share
+    identical embeddings in this low-frequency subspace. Path A retains longitude
+    dependence at the poles; the complete hybrid table does not guarantee polar
+    convergence (an explicit tradeoff in the paper, section 3.2).
 Computation is float64; the returned tensor is float64 (the patch casts).
 """
 import math

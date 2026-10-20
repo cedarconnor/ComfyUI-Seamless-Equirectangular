@@ -182,6 +182,39 @@ def test_per_step_roll_wrapper_end_to_end():
     print("ok: EquirectPerStepRoll wrapper end-to-end (roll seen by model, exact round trip)")
 
 
+def test_per_step_roll_supports_flux_integer_patch_size():
+    """FLUX has scalar patch_size; treating it as a video tuple crashed setup."""
+    class FluxPatcher:
+        def __init__(self, patch_size):
+            self.diffusion_model = types.SimpleNamespace(patch_size=patch_size)
+
+        def clone(self):
+            return FluxPatcher(self.diffusion_model.patch_size)
+
+        def get_model_object(self, name):
+            assert name == "diffusion_model"
+            return self.diffusion_model
+
+        def set_model_unet_function_wrapper(self, wrapper):
+            self.wrapper = wrapper
+
+    def boundary_model(x, timestep, **conditioning):
+        output = x.clone()
+        output[..., 0] = 99
+        return output
+
+    for patch_size in (1, 2):  # FLUX.2 and FLUX.1 scalar forms
+        original = FluxPatcher(patch_size)
+        patched, = sn.EquirectPerStepRoll().patch(
+            original, enabled=True, mode="half_turn", seed=0)
+        x = torch.arange(8, dtype=torch.float32).reshape(1, 1, 1, 8)
+        output = patched.wrapper(
+            boundary_model, {"input": x, "timestep": torch.tensor([.5]), "c": {}})
+        # Half-turn processing moves the model's boundary effect to column 4.
+        assert output.flatten().tolist() == [0, 1, 2, 3, 99, 5, 6, 7]
+        assert not hasattr(original, "wrapper")
+
+
 def test_per_step_roll_stops_after_end_percent():
     assert "end_percent" in sn.EquirectPerStepRoll.INPUT_TYPES()["optional"]
 

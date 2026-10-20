@@ -1,8 +1,8 @@
 {
   "id": "7701ebd3-93fc-4d01-b18b-5a412a618ea8",
   "revision": 0,
-  "last_node_id": 5179,
-  "last_link_id": 13790,
+  "last_node_id": 5180,
+  "last_link_id": 13791,
   "nodes": [
     {
       "id": 5105,
@@ -894,7 +894,8 @@
           "name": "width",
           "type": "INT",
           "links": [
-            13480
+            13480,
+            13791
           ]
         },
         {
@@ -1809,15 +1810,7 @@
         "videopreview": {
           "hidden": false,
           "paused": false,
-          "params": {
-            "filename": "outpaint_00250-audio.mp4",
-            "subfolder": "",
-            "type": "output",
-            "format": "video/h264-mp4",
-            "frame_rate": 24.084450449391998,
-            "workflow": "outpaint_00250.png",
-            "fullpath": "/home/juho/ComfyUI/output/outpaint_00250-audio.mp4"
-          }
+          "params": {}
         }
       }
     },
@@ -2351,7 +2344,7 @@
       "widgets_values": [
         true,
         true,
-        true
+        false
       ]
     },
     {
@@ -2457,7 +2450,7 @@
         "widget_ue_connectable": {}
       },
       "widgets_values": [
-        668,
+        42,
         "fixed"
       ]
     },
@@ -2503,20 +2496,20 @@
         "widget_ue_connectable": {}
       },
       "widgets_values": [
-        true,
+        false,
         4
       ]
     },
     {
       "id": 5171,
-      "type": "EquirectPerStepRoll",
+      "type": "EquirectSphericalRoPE",
       "pos": [
         -901.2244256355481,
         3342.6555681983555
       ],
       "size": [
-        369.7500061035156,
-        178
+        400,
+        160
       ],
       "flags": {},
       "order": 48,
@@ -2526,6 +2519,38 @@
           "name": "model",
           "type": "MODEL",
           "link": 13772
+        },
+        {
+          "name": "enabled",
+          "type": "BOOLEAN",
+          "link": null,
+          "widget": {
+            "name": "enabled"
+          }
+        },
+        {
+          "name": "blend",
+          "type": "FLOAT",
+          "link": null,
+          "widget": {
+            "name": "blend"
+          }
+        },
+        {
+          "name": "path_b_threshold",
+          "type": "FLOAT",
+          "link": null,
+          "widget": {
+            "name": "path_b_threshold"
+          }
+        },
+        {
+          "name": "r_scale",
+          "type": "FLOAT",
+          "link": null,
+          "widget": {
+            "name": "r_scale"
+          }
         }
       ],
       "outputs": [
@@ -2538,24 +2563,21 @@
         }
       ],
       "properties": {
-        "Node name for S&R": "EquirectPerStepRoll",
-        "enableTabs": false,
-        "tabWidth": 65,
-        "tabXOffset": 10,
-        "hasSecondTab": false,
-        "secondTabText": "Send Back",
-        "secondTabOffset": 80,
-        "secondTabWidth": 65,
-        "widget_ue_connectable": {}
+        "Node name for S&R": "EquirectSphericalRoPE"
       },
       "widgets_values": [
         true,
-        "dual_average",
-        80085,
-        "fixed",
-        0,
-        0.15
-      ]
+        1.0,
+        10.0,
+        1.0
+      ],
+      "widgets_values_named": {
+        "enabled": true,
+        "blend": 1.0,
+        "path_b_threshold": 10.0,
+        "r_scale": 1.0
+      },
+      "title": "EquirectSphericalRoPE"
     },
     {
       "id": 5085,
@@ -2661,14 +2683,14 @@
     },
     {
       "id": 5174,
-      "type": "VAEDecode",
+      "type": "EquirectCircularVAEDecodeLTX",
       "pos": [
         -120.48881135883931,
         3351.9459926453255
       ],
       "size": [
-        140,
-        46
+        400,
+        110
       ],
       "flags": {},
       "order": 53,
@@ -2683,6 +2705,22 @@
           "name": "vae",
           "type": "VAE",
           "link": 13778
+        },
+        {
+          "name": "pad_w",
+          "type": "INT",
+          "link": null,
+          "widget": {
+            "name": "pad_w"
+          }
+        },
+        {
+          "name": "target_width",
+          "type": "INT",
+          "link": 13791,
+          "widget": {
+            "name": "target_width"
+          }
         }
       ],
       "outputs": [
@@ -2697,17 +2735,17 @@
         }
       ],
       "properties": {
-        "Node name for S&R": "VAEDecode",
-        "enableTabs": false,
-        "tabWidth": 65,
-        "tabXOffset": 10,
-        "hasSecondTab": false,
-        "secondTabText": "Send Back",
-        "secondTabOffset": 80,
-        "secondTabWidth": 65,
-        "widget_ue_connectable": {}
+        "Node name for S&R": "EquirectCircularVAEDecodeLTX"
       },
-      "widgets_values": []
+      "widgets_values": [
+        4,
+        2048
+      ],
+      "widgets_values_named": {
+        "pad_w": 4,
+        "target_width": 2048
+      },
+      "title": "EquirectCircularVAEDecodeLTX"
     },
     {
       "id": 2483,
@@ -2844,15 +2882,7 @@
         "videopreview": {
           "hidden": false,
           "paused": false,
-          "params": {
-            "filename": "outpaint_00009-audio.mp4",
-            "subfolder": "",
-            "type": "temp",
-            "format": "video/h264-mp4",
-            "frame_rate": 24,
-            "workflow": "outpaint_00009.png",
-            "fullpath": "/home/juho/ComfyUI/temp/outpaint_00009-audio.mp4"
-          }
+          "params": {}
         }
       }
     },
@@ -3070,15 +3100,7 @@
         "videopreview": {
           "hidden": false,
           "paused": false,
-          "params": {
-            "filename": "outpaint_00010-audio.mp4",
-            "subfolder": "",
-            "type": "temp",
-            "format": "video/h264-mp4",
-            "frame_rate": 24,
-            "workflow": "outpaint_00010.png",
-            "fullpath": "/home/juho/ComfyUI/temp/outpaint_00010-audio.mp4"
-          }
+          "params": {}
         }
       }
     },
@@ -3207,6 +3229,28 @@
       ],
       "color": "#432",
       "bgcolor": "#653"
+    },
+    {
+      "id": 5180,
+      "type": "Note",
+      "pos": [
+        -4100,
+        2700
+      ],
+      "size": [
+        1200,
+        230
+      ],
+      "order": 59,
+      "mode": 0,
+      "flags": {},
+      "inputs": [],
+      "outputs": [],
+      "properties": {},
+      "title": "DEPENDENCY-LIMITED OUTPAINT TEMPLATE",
+      "widgets_values": [
+        "October 20: spherical RoPE, rolling/noise wrapping off, explicit circular decode pad 4 with target width linked to guide width. The outpainting adapter and camera projection are retained. This is NOT a qualified wrap result. Requires 360vroutpaint_v2_step_07000, the original LTX 2.3 component filenames, EstimateCameraGeoCalib, RectilinearToEquirect and EquirectSourceComposite. These dependencies are absent from the validation installation. See example_workflows/README.md."
+      ]
     }
   ],
   "links": [
@@ -3833,6 +3877,14 @@
       5179,
       4,
       "FLOAT"
+    ],
+    [
+      13791,
+      5029,
+      0,
+      5174,
+      3,
+      "INT"
     ]
   ],
   "groups": [

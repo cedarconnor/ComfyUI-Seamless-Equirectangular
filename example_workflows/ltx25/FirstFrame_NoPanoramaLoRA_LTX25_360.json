@@ -1,381 +1,37 @@
 {
-  "id": "00000000-0000-0000-0000-000000000000",
-  "revision": 0,
-  "last_node_id": 1900,
-  "last_link_id": 76,
+  "last_node_id": 2003,
+  "last_link_id": 36,
   "nodes": [
-    {
-      "id": 388,
-      "type": "CLIPTextEncode",
-      "pos": [
-        1370,
-        395
-      ],
-      "size": [
-        400,
-        260
-      ],
-      "flags": {},
-      "order": 15,
-      "mode": 0,
-      "inputs": [
-        {
-          "localized_name": "clip",
-          "name": "clip",
-          "type": "CLIP",
-          "link": 39
-        },
-        {
-          "localized_name": "text",
-          "name": "text",
-          "type": "STRING",
-          "widget": {
-            "name": "text"
-          },
-          "link": null
-        }
-      ],
-      "outputs": [
-        {
-          "localized_name": "CONDITIONING",
-          "name": "CONDITIONING",
-          "type": "CONDITIONING",
-          "links": [
-            46
-          ]
-        }
-      ],
-      "title": "Negative prompt (inactive at CFG 1)",
-      "properties": {
-        "Node name for S&R": "CLIPTextEncode"
-      },
-      "widgets_values": [
-        "blurry, low resolution, ugly, garbled mess, compression artifacts, glitch, stop motion, still image, pixelated, robotic voice, oversaturated, visible equirectangular seam, duplicate furniture, mirrored couch, blur stripe, discontinuous floorboards"
-      ],
-      "widgets_values_named": {
-        "text": "blurry, low resolution, ugly, garbled mess, compression artifacts, glitch, stop motion, still image, pixelated, robotic voice, oversaturated, visible equirectangular seam, duplicate furniture, mirrored couch, blur stripe, discontinuous floorboards"
-      },
-      "color": "#223",
-      "bgcolor": "#283039"
-    },
-    {
-      "id": 423,
-      "type": "LTXVSeparateAVLatent",
-      "pos": [
-        2270,
-        882
-      ],
-      "size": [
-        400,
-        105
-      ],
-      "flags": {},
-      "order": 24,
-      "mode": 0,
-      "inputs": [
-        {
-          "localized_name": "av_latent",
-          "name": "av_latent",
-          "type": "LATENT",
-          "link": 40
-        }
-      ],
-      "outputs": [
-        {
-          "localized_name": "video_latent",
-          "name": "video_latent",
-          "type": "LATENT",
-          "links": [
-            43
-          ]
-        },
-        {
-          "localized_name": "audio_latent",
-          "name": "audio_latent",
-          "type": "LATENT",
-          "links": null
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "LTXVSeparateAVLatent"
-      },
-      "color": "#223",
-      "bgcolor": "#283039"
-    },
-    {
-      "id": 425,
-      "type": "VHS_VideoCombine",
-      "pos": [
-        2720,
-        240
-      ],
-      "size": [
-        400,
-        334
-      ],
-      "flags": {},
-      "order": 26,
-      "mode": 0,
-      "inputs": [
-        {
-          "localized_name": "images",
-          "name": "images",
-          "type": "IMAGE",
-          "link": 42
-        },
-        {
-          "localized_name": "audio",
-          "name": "audio",
-          "shape": 7,
-          "type": "AUDIO",
-          "link": null
-        },
-        {
-          "localized_name": "meta_batch",
-          "name": "meta_batch",
-          "shape": 7,
-          "type": "VHS_BatchManager",
-          "link": null
-        },
-        {
-          "localized_name": "vae",
-          "name": "vae",
-          "shape": 7,
-          "type": "VAE",
-          "link": null
-        },
-        {
-          "localized_name": "frame_rate",
-          "name": "frame_rate",
-          "type": "FLOAT",
-          "widget": {
-            "name": "frame_rate"
-          },
-          "link": 41
-        },
-        {
-          "localized_name": "loop_count",
-          "name": "loop_count",
-          "type": "INT",
-          "widget": {
-            "name": "loop_count"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "filename_prefix",
-          "name": "filename_prefix",
-          "type": "STRING",
-          "widget": {
-            "name": "filename_prefix"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "format",
-          "name": "format",
-          "type": "COMBO",
-          "widget": {
-            "name": "format"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "pingpong",
-          "name": "pingpong",
-          "type": "BOOLEAN",
-          "widget": {
-            "name": "pingpong"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "save_output",
-          "name": "save_output",
-          "type": "BOOLEAN",
-          "widget": {
-            "name": "save_output"
-          },
-          "link": null
-        },
-        {
-          "name": "pix_fmt",
-          "type": [
-            "yuv420p",
-            "yuv420p10le"
-          ],
-          "widget": {
-            "name": "pix_fmt"
-          },
-          "link": null
-        },
-        {
-          "name": "crf",
-          "type": "INT",
-          "widget": {
-            "name": "crf"
-          },
-          "link": null
-        },
-        {
-          "name": "save_metadata",
-          "type": "BOOLEAN",
-          "widget": {
-            "name": "save_metadata"
-          },
-          "link": null
-        },
-        {
-          "name": "trim_to_audio",
-          "type": "BOOLEAN",
-          "widget": {
-            "name": "trim_to_audio"
-          },
-          "link": null
-        }
-      ],
-      "outputs": [
-        {
-          "localized_name": "Filenames",
-          "name": "Filenames",
-          "type": "VHS_FILENAMES",
-          "links": null
-        }
-      ],
-      "title": "FINAL VIDEO - H.264 / CRF 12",
-      "properties": {
-        "Node name for S&R": "VHS_VideoCombine"
-      },
-      "widgets_values": {
-        "frame_rate": 8,
-        "loop_count": 0,
-        "filename_prefix": "seam-diagnosis-20261018/screened-firstframe_stock_nolora/video",
-        "format": "video/h264-mp4",
-        "pix_fmt": "yuv420p",
-        "crf": 12,
-        "save_metadata": true,
-        "trim_to_audio": false,
-        "pingpong": false,
-        "save_output": true,
-        "videopreview": {
-          "hidden": false,
-          "paused": false,
-          "params": {}
-        }
-      },
-      "widgets_values_named": {
-        "frame_rate": 8,
-        "loop_count": 0,
-        "filename_prefix": "seam-diagnosis-20261018/screened-firstframe_stock_nolora/video",
-        "format": "video/h264-mp4",
-        "pix_fmt": "yuv420p",
-        "crf": 12,
-        "save_metadata": true,
-        "trim_to_audio": false,
-        "pingpong": false,
-        "save_output": true,
-        "videopreview": {
-          "hidden": false,
-          "paused": false,
-          "params": {}
-        }
-      },
-      "color": "#223",
-      "bgcolor": "#283039"
-    },
-    {
-      "id": 445,
-      "type": "EquirectLTX25VAEDecode",
-      "pos": [
-        2720,
-        80
-      ],
-      "size": [
-        400,
-        105
-      ],
-      "flags": {},
-      "order": 25,
-      "mode": 0,
-      "inputs": [
-        {
-          "localized_name": "samples",
-          "name": "samples",
-          "type": "LATENT",
-          "link": 43
-        },
-        {
-          "localized_name": "vae",
-          "name": "vae",
-          "type": "VAE",
-          "link": 44
-        },
-        {
-          "localized_name": "blend_columns",
-          "name": "blend_columns",
-          "type": "INT",
-          "widget": {
-            "name": "blend_columns"
-          },
-          "link": null
-        }
-      ],
-      "outputs": [
-        {
-          "localized_name": "IMAGE",
-          "name": "IMAGE",
-          "type": "IMAGE",
-          "links": [
-            42,
-            69
-          ]
-        }
-      ],
-      "title": "LTX 2.5 seam-aware decode",
-      "properties": {
-        "Node name for S&R": "EquirectLTX25VAEDecode"
-      },
-      "widgets_values": [
-        4
-      ],
-      "widgets_values_named": {
-        "blend_columns": 4
-      },
-      "color": "#223",
-      "bgcolor": "#283039"
-    },
     {
       "id": 448,
       "type": "VAELoader",
       "pos": [
-        920,
-        954
+        0,
+        0
       ],
       "size": [
         400,
-        105
+        100
       ],
       "flags": {},
       "order": 0,
       "mode": 0,
       "inputs": [
         {
-          "localized_name": "vae_name",
           "name": "vae_name",
           "type": "COMBO",
+          "link": null,
           "widget": {
             "name": "vae_name"
-          },
-          "link": null
+          }
         }
       ],
       "outputs": [
         {
-          "localized_name": "VAE",
           "name": "VAE",
           "type": "VAE",
           "links": [
-            52
+            7
           ]
         }
       ],
@@ -388,171 +44,46 @@
       "widgets_values_named": {
         "vae_name": "ltx-2.5-audio-vae-bf16.safetensors"
       },
-      "color": "#223",
-      "bgcolor": "#283039"
-    },
-    {
-      "id": 563,
-      "type": "LTXVConditioning",
-      "pos": [
-        1370,
-        710
-      ],
-      "size": [
-        400,
-        105
-      ],
-      "flags": {},
-      "order": 18,
-      "mode": 0,
-      "inputs": [
-        {
-          "localized_name": "positive",
-          "name": "positive",
-          "type": "CONDITIONING",
-          "link": 45
-        },
-        {
-          "localized_name": "negative",
-          "name": "negative",
-          "type": "CONDITIONING",
-          "link": 46
-        },
-        {
-          "localized_name": "frame_rate",
-          "name": "frame_rate",
-          "type": "FLOAT",
-          "widget": {
-            "name": "frame_rate"
-          },
-          "link": 47
-        }
-      ],
-      "outputs": [
-        {
-          "localized_name": "positive",
-          "name": "positive",
-          "type": "CONDITIONING",
-          "links": [
-            70
-          ]
-        },
-        {
-          "localized_name": "negative",
-          "name": "negative",
-          "type": "CONDITIONING",
-          "links": [
-            71
-          ]
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "LTXVConditioning"
-      },
-      "widgets_values": [
-        25
-      ],
-      "widgets_values_named": {
-        "frame_rate": 25
-      },
-      "color": "#223",
-      "bgcolor": "#283039"
-    },
-    {
-      "id": 814,
-      "type": "CLIPTextEncode",
-      "pos": [
-        1370,
-        80
-      ],
-      "size": [
-        400,
-        260
-      ],
-      "flags": {},
-      "order": 16,
-      "mode": 0,
-      "inputs": [
-        {
-          "localized_name": "clip",
-          "name": "clip",
-          "type": "CLIP",
-          "link": 48
-        },
-        {
-          "localized_name": "text",
-          "name": "text",
-          "type": "STRING",
-          "widget": {
-            "name": "text"
-          },
-          "link": null
-        }
-      ],
-      "outputs": [
-        {
-          "localized_name": "CONDITIONING",
-          "name": "CONDITIONING",
-          "type": "CONDITIONING",
-          "links": [
-            45
-          ]
-        }
-      ],
-      "title": "ARTIST PROMPT - scene and camera",
-      "properties": {
-        "Node name for S&R": "CLIPTextEncode"
-      },
-      "widgets_values": [
-        "Equirectangular 360-degree panoramic video. Preserve the reference room, blue fabric couch, yellow cushion, wood floor, lighting and all object identities. The camera slowly dollies forward a short distance toward the couch, at constant eye height with a level horizon and steady speed. Natural subtle parallax, stable solid furniture, continuous spherical environment, consistent ceiling and floor, continuous left-right wrap. No cuts."
-      ],
-      "widgets_values_named": {
-        "text": "Equirectangular 360-degree panoramic video. Preserve the reference room, blue fabric couch, yellow cushion, wood floor, lighting and all object identities. The camera slowly dollies forward a short distance toward the couch, at constant eye height with a level horizon and steady speed. Natural subtle parallax, stable solid furniture, continuous spherical environment, consistent ceiling and floor, continuous left-right wrap. No cuts."
-      },
-      "color": "#223",
-      "bgcolor": "#283039"
+      "title": "Load VAE"
     },
     {
       "id": 821,
       "type": "UNETLoader",
       "pos": [
-        920,
-        80
+        0,
+        370
       ],
       "size": [
         400,
-        105
+        110
       ],
       "flags": {},
       "order": 1,
       "mode": 0,
       "inputs": [
         {
-          "localized_name": "unet_name",
           "name": "unet_name",
           "type": "COMBO",
+          "link": null,
           "widget": {
             "name": "unet_name"
-          },
-          "link": null
+          }
         },
         {
-          "localized_name": "weight_dtype",
           "name": "weight_dtype",
           "type": "COMBO",
+          "link": null,
           "widget": {
             "name": "weight_dtype"
-          },
-          "link": null
+          }
         }
       ],
       "outputs": [
         {
-          "localized_name": "MODEL",
           "name": "MODEL",
           "type": "MODEL",
           "links": [
-            68
+            32
           ]
         }
       ],
@@ -567,42 +98,39 @@
         "unet_name": "ltx-2.5-22b-distilled-transformer-bf16.safetensors",
         "weight_dtype": "default"
       },
-      "color": "#223",
-      "bgcolor": "#283039"
+      "title": "Load Diffusion Model"
     },
     {
       "id": 822,
       "type": "VAELoader",
       "pos": [
-        920,
-        794
+        0,
+        740
       ],
       "size": [
         400,
-        105
+        100
       ],
       "flags": {},
       "order": 2,
       "mode": 0,
       "inputs": [
         {
-          "localized_name": "vae_name",
           "name": "vae_name",
           "type": "COMBO",
+          "link": null,
           "widget": {
             "name": "vae_name"
-          },
-          "link": null
+          }
         }
       ],
       "outputs": [
         {
-          "localized_name": "VAE",
           "name": "VAE",
           "type": "VAE",
           "links": [
-            44,
-            72
+            26,
+            35
           ]
         }
       ],
@@ -615,46 +143,42 @@
       "widgets_values_named": {
         "vae_name": "ltx-2.5-video-vae-bf16.safetensors"
       },
-      "color": "#223",
-      "bgcolor": "#283039"
+      "title": "Load VAE"
     },
     {
       "id": 933,
       "type": "INTConstant",
       "pos": [
-        20,
-        80
+        0,
+        1110
       ],
       "size": [
         400,
-        105
+        100
       ],
       "flags": {},
       "order": 3,
       "mode": 0,
       "inputs": [
         {
-          "localized_name": "value",
           "name": "value",
           "type": "INT",
+          "link": null,
           "widget": {
             "name": "value"
-          },
-          "link": null
+          }
         }
       ],
       "outputs": [
         {
-          "localized_name": "value",
           "name": "value",
           "type": "INT",
           "links": [
-            64,
-            74
+            18,
+            28
           ]
         }
       ],
-      "title": "WIDTH - keep 2:1 ratio",
       "properties": {
         "Node name for S&R": "INTConstant"
       },
@@ -664,46 +188,42 @@
       "widgets_values_named": {
         "value": 1024
       },
-      "color": "#234",
-      "bgcolor": "#283039"
+      "title": "WIDTH - 2:1 ERP"
     },
     {
       "id": 935,
       "type": "INTConstant",
       "pos": [
-        20,
-        240
+        0,
+        1480
       ],
       "size": [
         400,
-        105
+        100
       ],
       "flags": {},
       "order": 4,
       "mode": 0,
       "inputs": [
         {
-          "localized_name": "value",
           "name": "value",
           "type": "INT",
+          "link": null,
           "widget": {
             "name": "value"
-          },
-          "link": null
+          }
         }
       ],
       "outputs": [
         {
-          "localized_name": "value",
           "name": "value",
           "type": "INT",
           "links": [
-            65,
-            75
+            19,
+            29
           ]
         }
       ],
-      "title": "HEIGHT - half the width",
       "properties": {
         "Node name for S&R": "INTConstant"
       },
@@ -713,46 +233,42 @@
       "widgets_values_named": {
         "value": 512
       },
-      "color": "#234",
-      "bgcolor": "#283039"
+      "title": "HEIGHT"
     },
     {
       "id": 936,
       "type": "INTConstant",
       "pos": [
-        20,
-        400
+        0,
+        1850
       ],
       "size": [
         400,
-        105
+        100
       ],
       "flags": {},
       "order": 5,
       "mode": 0,
       "inputs": [
         {
-          "localized_name": "value",
           "name": "value",
           "type": "INT",
+          "link": null,
           "widget": {
             "name": "value"
-          },
-          "link": null
+          }
         }
       ],
       "outputs": [
         {
-          "localized_name": "value",
           "name": "value",
           "type": "INT",
           "links": [
-            49,
-            51
+            6,
+            31
           ]
         }
       ],
-      "title": "FPS - shared across graph",
       "properties": {
         "Node name for S&R": "INTConstant"
       },
@@ -762,255 +278,83 @@
       "widgets_values_named": {
         "value": 24
       },
-      "color": "#234",
-      "bgcolor": "#283039"
+      "title": "FPS"
     },
     {
       "id": 937,
       "type": "INTConstant",
       "pos": [
-        20,
-        560
+        0,
+        2220
       ],
       "size": [
         400,
-        105
+        100
       ],
       "flags": {},
       "order": 6,
       "mode": 0,
       "inputs": [
         {
-          "localized_name": "value",
           "name": "value",
           "type": "INT",
+          "link": null,
           "widget": {
             "name": "value"
-          },
-          "link": null
+          }
         }
       ],
       "outputs": [
         {
-          "localized_name": "value",
           "name": "value",
           "type": "INT",
           "links": [
-            50,
-            76
+            5,
+            30
           ]
         }
       ],
-      "title": "FRAMES - use 8n+1 (33 / 65 / 97)",
       "properties": {
         "Node name for S&R": "INTConstant"
       },
       "widgets_values": [
-        65
+        121
       ],
       "widgets_values_named": {
-        "value": 65
+        "value": 121
       },
-      "color": "#234",
-      "bgcolor": "#283039"
-    },
-    {
-      "id": 959,
-      "type": "ComfyNumberConvert",
-      "pos": [
-        20,
-        720
-      ],
-      "size": [
-        400,
-        105
-      ],
-      "flags": {},
-      "order": 12,
-      "mode": 0,
-      "inputs": [
-        {
-          "localized_name": "value",
-          "name": "value",
-          "type": "INT,FLOAT,STRING,BOOLEAN",
-          "link": 49
-        }
-      ],
-      "outputs": [
-        {
-          "localized_name": "FLOAT",
-          "name": "FLOAT",
-          "type": "FLOAT",
-          "links": [
-            41,
-            47
-          ]
-        },
-        {
-          "localized_name": "INT",
-          "name": "INT",
-          "type": "INT",
-          "links": null
-        }
-      ],
-      "title": "ComfyNumberConvert",
-      "properties": {
-        "Node name for S&R": "ComfyNumberConvert"
-      },
-      "color": "#234",
-      "bgcolor": "#283039"
-    },
-    {
-      "id": 1257,
-      "type": "LTXVEmptyLatentAudio",
-      "pos": [
-        1820,
-        349
-      ],
-      "size": [
-        400,
-        106
-      ],
-      "flags": {},
-      "order": 13,
-      "mode": 0,
-      "inputs": [
-        {
-          "localized_name": "Audio VAE",
-          "name": "audio_vae",
-          "type": "VAE",
-          "link": 52
-        },
-        {
-          "localized_name": "frames_number",
-          "name": "frames_number",
-          "type": "INT",
-          "widget": {
-            "name": "frames_number"
-          },
-          "link": 50
-        },
-        {
-          "localized_name": "frame_rate",
-          "name": "frame_rate",
-          "type": "FLOAT,INT",
-          "widget": {
-            "name": "frame_rate"
-          },
-          "link": 51
-        },
-        {
-          "localized_name": "batch_size",
-          "name": "batch_size",
-          "type": "INT",
-          "widget": {
-            "name": "batch_size"
-          },
-          "link": null
-        }
-      ],
-      "outputs": [
-        {
-          "localized_name": "Latent",
-          "name": "Latent",
-          "type": "LATENT",
-          "links": [
-            54
-          ]
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "LTXVEmptyLatentAudio"
-      },
-      "widgets_values": [
-        97,
-        25,
-        1
-      ],
-      "widgets_values_named": {
-        "frames_number": 97,
-        "frame_rate": 25,
-        "batch_size": 1
-      },
-      "color": "#223",
-      "bgcolor": "#283039"
-    },
-    {
-      "id": 1259,
-      "type": "LTXVConcatAVLatent",
-      "pos": [
-        1820,
-        510
-      ],
-      "size": [
-        400,
-        105
-      ],
-      "flags": {},
-      "order": 22,
-      "mode": 0,
-      "inputs": [
-        {
-          "localized_name": "video_latent",
-          "name": "video_latent",
-          "type": "LATENT",
-          "link": 53
-        },
-        {
-          "localized_name": "audio_latent",
-          "name": "audio_latent",
-          "type": "LATENT",
-          "link": 54
-        }
-      ],
-      "outputs": [
-        {
-          "localized_name": "latent",
-          "name": "latent",
-          "type": "LATENT",
-          "links": [
-            62
-          ]
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "LTXVConcatAVLatent"
-      },
-      "color": "#223",
-      "bgcolor": "#283039"
+      "title": "FRAMES"
     },
     {
       "id": 1265,
       "type": "KSamplerSelect",
       "pos": [
-        2270,
-        240
+        0,
+        2590
       ],
       "size": [
         400,
-        105
+        100
       ],
       "flags": {},
       "order": 7,
       "mode": 0,
       "inputs": [
         {
-          "localized_name": "sampler_name",
           "name": "sampler_name",
           "type": "COMBO",
+          "link": null,
           "widget": {
             "name": "sampler_name"
-          },
-          "link": null
+          }
         }
       ],
       "outputs": [
         {
-          "localized_name": "SAMPLER",
           "name": "SAMPLER",
           "type": "SAMPLER",
           "links": [
-            60
+            12
           ]
         }
       ],
@@ -1023,324 +367,486 @@
       "widgets_values_named": {
         "sampler_name": "euler"
       },
-      "color": "#223",
-      "bgcolor": "#283039"
+      "title": "KSamplerSelect"
     },
     {
       "id": 1266,
       "type": "RandomNoise",
       "pos": [
-        2270,
-        80
+        0,
+        2960
       ],
       "size": [
         400,
-        105
+        110
       ],
       "flags": {},
       "order": 8,
       "mode": 0,
       "inputs": [
         {
-          "localized_name": "noise_seed",
           "name": "noise_seed",
           "type": "INT",
+          "link": null,
           "widget": {
             "name": "noise_seed"
-          },
-          "link": null
+          }
         }
       ],
       "outputs": [
         {
-          "localized_name": "NOISE",
           "name": "NOISE",
           "type": "NOISE",
           "links": [
-            58
+            10
           ]
         }
       ],
-      "title": "SEED - fixed for repeatability",
       "properties": {
         "Node name for S&R": "RandomNoise"
       },
       "widgets_values": [
-        80084,
+        42,
         "fixed"
       ],
       "widgets_values_named": {
-        "noise_seed": 80084,
-        "control_after_generate": "fixed"
+        "noise_seed": 42
       },
-      "color": "#223",
-      "bgcolor": "#283039"
+      "title": "SEED - fixed for repeatability"
     },
     {
-      "id": 1267,
-      "type": "CFGGuider",
+      "id": 1304,
+      "type": "LoadImage",
       "pos": [
-        2270,
-        561
+        0,
+        3330
       ],
       "size": [
         400,
-        105
+        320
       ],
       "flags": {},
-      "order": 21,
+      "order": 9,
       "mode": 0,
       "inputs": [
         {
-          "localized_name": "model",
-          "name": "model",
-          "type": "MODEL",
-          "link": 55
-        },
-        {
-          "localized_name": "positive",
-          "name": "positive",
-          "type": "CONDITIONING",
-          "link": 56
-        },
-        {
-          "localized_name": "negative",
-          "name": "negative",
-          "type": "CONDITIONING",
-          "link": 57
-        },
-        {
-          "localized_name": "cfg",
-          "name": "cfg",
-          "type": "FLOAT",
+          "name": "image",
+          "type": "COMBO",
+          "link": null,
           "widget": {
-            "name": "cfg"
-          },
-          "link": null
+            "name": "image"
+          }
         }
       ],
       "outputs": [
         {
-          "localized_name": "GUIDER",
-          "name": "GUIDER",
-          "type": "GUIDER",
+          "name": "IMAGE",
+          "type": "IMAGE",
           "links": [
-            59
+            17
           ]
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": []
         }
       ],
-      "title": "DISTILLED - CFG 1",
       "properties": {
-        "Node name for S&R": "CFGGuider"
+        "Node name for S&R": "LoadImage"
       },
       "widgets_values": [
-        1
+        "pano_2k_00013_.png",
+        "image"
       ],
       "widgets_values_named": {
-        "cfg": 1
+        "image": "pano_2k_00013_.png"
       },
-      "color": "#223",
-      "bgcolor": "#283039"
+      "title": "01 - Choose seamless 360 first frame"
     },
     {
-      "id": 1269,
-      "type": "SamplerCustomAdvanced",
+      "id": 1318,
+      "type": "CLIPLoader",
       "pos": [
-        2270,
-        721
+        0,
+        3700
       ],
       "size": [
         400,
-        106
+        135
       ],
       "flags": {},
-      "order": 23,
+      "order": 10,
       "mode": 0,
       "inputs": [
         {
-          "localized_name": "noise",
-          "name": "noise",
-          "type": "NOISE",
-          "link": 58
+          "name": "clip_name",
+          "type": "COMBO",
+          "link": null,
+          "widget": {
+            "name": "clip_name"
+          }
         },
         {
-          "localized_name": "guider",
-          "name": "guider",
-          "type": "GUIDER",
-          "link": 59
+          "name": "type",
+          "type": "COMBO",
+          "link": null,
+          "widget": {
+            "name": "type"
+          }
         },
         {
-          "localized_name": "sampler",
-          "name": "sampler",
-          "type": "SAMPLER",
-          "link": 60
-        },
-        {
-          "localized_name": "sigmas",
-          "name": "sigmas",
-          "type": "SIGMAS",
-          "link": 61
-        },
-        {
-          "localized_name": "latent_image",
-          "name": "latent_image",
-          "type": "LATENT",
-          "link": 62
+          "name": "device",
+          "type": "COMBO",
+          "link": null,
+          "widget": {
+            "name": "device"
+          }
         }
       ],
       "outputs": [
         {
-          "localized_name": "output",
-          "name": "output",
-          "type": "LATENT",
+          "name": "CLIP",
+          "type": "CLIP",
           "links": [
-            40
+            1,
+            16
           ]
-        },
-        {
-          "localized_name": "denoised_output",
-          "name": "denoised_output",
-          "type": "LATENT",
-          "links": null
         }
       ],
       "properties": {
-        "Node name for S&R": "SamplerCustomAdvanced"
+        "Node name for S&R": "CLIPLoader"
       },
-      "color": "#223",
-      "bgcolor": "#283039"
+      "widgets_values": [
+        "gemma4-12b-with-proj-ltx-2.5-bf16.safetensors",
+        "ltxv",
+        "default"
+      ],
+      "widgets_values_named": {
+        "clip_name": "gemma4-12b-with-proj-ltx-2.5-bf16.safetensors",
+        "type": "ltxv",
+        "device": "default"
+      },
+      "title": "Load CLIP"
     },
     {
-      "id": 1294,
-      "type": "ImageResizeKJv2",
+      "id": 388,
+      "type": "CLIPTextEncode",
       "pos": [
-        1370,
-        870
+        460,
+        0
       ],
       "size": [
         400,
-        286
+        320
+      ],
+      "flags": {},
+      "order": 11,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "text",
+          "type": "STRING",
+          "link": null,
+          "widget": {
+            "name": "text"
+          }
+        },
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 1
+        }
+      ],
+      "outputs": [
+        {
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "links": [
+            3
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "CLIPTextEncode"
+      },
+      "widgets_values": [
+        "blurry, low resolution, compression artifacts, temporal flicker, visible equirectangular seam, discontinuous terrain, warped ground"
+      ],
+      "widgets_values_named": {
+        "text": "blurry, low resolution, compression artifacts, temporal flicker, visible equirectangular seam, discontinuous terrain, warped ground"
+      },
+      "title": "CONDITIONING"
+    },
+    {
+      "id": 814,
+      "type": "CLIPTextEncode",
+      "pos": [
+        460,
+        370
+      ],
+      "size": [
+        400,
+        320
+      ],
+      "flags": {},
+      "order": 12,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "text",
+          "type": "STRING",
+          "link": null,
+          "widget": {
+            "name": "text"
+          }
+        },
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 16
+        }
+      ],
+      "outputs": [
+        {
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "links": [
+            2
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "CLIPTextEncode"
+      },
+      "widgets_values": [
+        "Equirectangular 360-degree panoramic video of the supplied alpine mountain ridge at golden hour. Preserve the mountains, rocky hiking trail, grass, distant valley and warm sunset lighting. The orange-jacketed hiker completes the jump, lands naturally on the trail, and steadies their balance. The camera remains completely fixed at one position and orientation, at a constant eye height with a level horizon. No camera translation, panning, rotation or zoom. Keep the entire surrounding landscape coherent and solid, continuous left-right wrap, consistent sky and ground. No cuts, no sudden rotation."
+      ],
+      "widgets_values_named": {
+        "text": "Equirectangular 360-degree panoramic video of the supplied alpine mountain ridge at golden hour. Preserve the mountains, rocky hiking trail, grass, distant valley and warm sunset lighting. The orange-jacketed hiker completes the jump, lands naturally on the trail, and steadies their balance. The camera remains completely fixed at one position and orientation, at a constant eye height with a level horizon. No camera translation, panning, rotation or zoom. Keep the entire surrounding landscape coherent and solid, continuous left-right wrap, consistent sky and ground. No cuts, no sudden rotation."
+      },
+      "title": "PROMPT"
+    },
+    {
+      "id": 959,
+      "type": "ComfyNumberConvert",
+      "pos": [
+        460,
+        740
+      ],
+      "size": [
+        400,
+        100
+      ],
+      "flags": {},
+      "order": 13,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "value",
+          "type": "INT,FLOAT,STRING,BOOLEAN",
+          "link": 31
+        }
+      ],
+      "outputs": [
+        {
+          "name": "FLOAT",
+          "type": "FLOAT",
+          "links": [
+            4
+          ]
+        },
+        {
+          "name": "INT",
+          "type": "INT",
+          "links": []
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ComfyNumberConvert"
+      },
+      "widgets_values": [],
+      "widgets_values_named": {},
+      "title": "ComfyNumberConvert"
+    },
+    {
+      "id": 1257,
+      "type": "LTXVEmptyLatentAudio",
+      "pos": [
+        460,
+        1110
+      ],
+      "size": [
+        400,
+        110
       ],
       "flags": {},
       "order": 14,
       "mode": 0,
       "inputs": [
         {
-          "localized_name": "image",
-          "name": "image",
-          "type": "IMAGE",
-          "link": 63
-        },
-        {
-          "localized_name": "mask",
-          "name": "mask",
-          "shape": 7,
-          "type": "MASK",
-          "link": null
-        },
-        {
-          "localized_name": "width",
-          "name": "width",
+          "name": "frames_number",
           "type": "INT",
+          "link": 5,
           "widget": {
-            "name": "width"
-          },
-          "link": 64
+            "name": "frames_number"
+          }
         },
         {
-          "localized_name": "height",
-          "name": "height",
+          "name": "frame_rate",
+          "type": "FLOAT,INT",
+          "link": 6
+        },
+        {
+          "name": "batch_size",
           "type": "INT",
+          "link": null,
           "widget": {
-            "name": "height"
-          },
-          "link": 65
+            "name": "batch_size"
+          }
         },
         {
-          "localized_name": "upscale_method",
-          "name": "upscale_method",
-          "type": "COMBO",
-          "widget": {
-            "name": "upscale_method"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "keep_proportion",
-          "name": "keep_proportion",
-          "type": "COMBO",
-          "widget": {
-            "name": "keep_proportion"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "pad_color",
-          "name": "pad_color",
-          "type": "STRING",
-          "widget": {
-            "name": "pad_color"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "crop_position",
-          "name": "crop_position",
-          "type": "COMBO",
-          "widget": {
-            "name": "crop_position"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "divisible_by",
-          "name": "divisible_by",
-          "type": "INT",
-          "widget": {
-            "name": "divisible_by"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "device",
-          "name": "device",
-          "shape": 7,
-          "type": "COMBO",
-          "widget": {
-            "name": "device"
-          },
-          "link": null
+          "name": "audio_vae",
+          "type": "VAE",
+          "link": 7
         }
       ],
       "outputs": [
         {
-          "localized_name": "IMAGE",
+          "name": "Latent",
+          "type": "LATENT",
+          "links": [
+            9
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LTXVEmptyLatentAudio"
+      },
+      "widgets_values": [
+        97,
+        1
+      ],
+      "widgets_values_named": {
+        "frames_number": 97,
+        "batch_size": 1
+      },
+      "title": "Empty LTXV Latent Audio"
+    },
+    {
+      "id": 1294,
+      "type": "ImageResizeKJv2",
+      "pos": [
+        460,
+        1480
+      ],
+      "size": [
+        400,
+        260
+      ],
+      "flags": {},
+      "order": 15,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 17
+        },
+        {
+          "name": "width",
+          "type": "INT",
+          "link": 18,
+          "widget": {
+            "name": "width"
+          }
+        },
+        {
+          "name": "height",
+          "type": "INT",
+          "link": 19,
+          "widget": {
+            "name": "height"
+          }
+        },
+        {
+          "name": "upscale_method",
+          "type": "COMBO",
+          "link": null,
+          "widget": {
+            "name": "upscale_method"
+          }
+        },
+        {
+          "name": "keep_proportion",
+          "type": "COMBO",
+          "link": null,
+          "widget": {
+            "name": "keep_proportion"
+          }
+        },
+        {
+          "name": "pad_color",
+          "type": "STRING",
+          "link": null,
+          "widget": {
+            "name": "pad_color"
+          }
+        },
+        {
+          "name": "crop_position",
+          "type": "COMBO",
+          "link": null,
+          "widget": {
+            "name": "crop_position"
+          }
+        },
+        {
+          "name": "divisible_by",
+          "type": "INT",
+          "link": null,
+          "widget": {
+            "name": "divisible_by"
+          }
+        },
+        {
+          "name": "mask",
+          "type": "MASK",
+          "link": null
+        },
+        {
+          "name": "device",
+          "type": "COMBO",
+          "link": null,
+          "widget": {
+            "name": "device"
+          }
+        }
+      ],
+      "outputs": [
+        {
           "name": "IMAGE",
           "type": "IMAGE",
           "links": [
-            73
+            27
           ]
         },
         {
-          "localized_name": "width",
           "name": "width",
           "type": "INT",
-          "links": null
+          "links": []
         },
         {
-          "localized_name": "height",
           "name": "height",
           "type": "INT",
-          "links": null
+          "links": []
         },
         {
-          "localized_name": "mask",
           "name": "mask",
           "type": "MASK",
-          "links": null
+          "links": []
         }
       ],
-      "title": "Resize full panorama - no crop",
       "properties": {
         "Node name for S&R": "ImageResizeKJv2"
       },
@@ -1364,499 +870,317 @@
         "divisible_by": 2,
         "device": "cpu"
       },
-      "color": "#223",
-      "bgcolor": "#283039"
+      "title": "Resize full panorama - no crop"
     },
     {
-      "id": 1304,
-      "type": "LoadImage",
+      "id": 1950,
+      "type": "EquirectSphericalRoPE",
       "pos": [
-        470,
-        80
+        460,
+        1850
       ],
       "size": [
         400,
-        380
+        160
       ],
       "flags": {},
-      "order": 9,
+      "order": 16,
       "mode": 0,
       "inputs": [
         {
-          "localized_name": "image",
-          "name": "image",
-          "type": "COMBO",
-          "widget": {
-            "name": "image"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "choose file to upload",
-          "name": "upload",
-          "type": "IMAGEUPLOAD",
-          "widget": {
-            "name": "upload"
-          },
-          "link": null
-        }
-      ],
-      "outputs": [
-        {
-          "localized_name": "IMAGE",
-          "name": "IMAGE",
-          "type": "IMAGE",
-          "links": [
-            63
-          ]
-        },
-        {
-          "localized_name": "MASK",
-          "name": "MASK",
-          "type": "MASK",
-          "links": null
-        }
-      ],
-      "title": "01 - Choose seamless 360 first frame",
-      "properties": {
-        "Node name for S&R": "LoadImage"
-      },
-      "widgets_values": [
-        "Living_Room_01_Couch_color_firstframe.png",
-        "image"
-      ],
-      "widgets_values_named": {
-        "image": "Living_Room_01_Couch_color_firstframe.png",
-        "upload": "image"
-      },
-      "color": "#234",
-      "bgcolor": "#283039"
-    },
-    {
-      "id": 1318,
-      "type": "CLIPLoader",
-      "pos": [
-        920,
-        633
-      ],
-      "size": [
-        400,
-        106
-      ],
-      "flags": {},
-      "order": 10,
-      "mode": 0,
-      "inputs": [
-        {
-          "localized_name": "clip_name",
-          "name": "clip_name",
-          "type": "COMBO",
-          "widget": {
-            "name": "clip_name"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "type",
-          "name": "type",
-          "type": "COMBO",
-          "widget": {
-            "name": "type"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "device",
-          "name": "device",
-          "shape": 7,
-          "type": "COMBO",
-          "widget": {
-            "name": "device"
-          },
-          "link": null
-        }
-      ],
-      "outputs": [
-        {
-          "localized_name": "CLIP",
-          "name": "CLIP",
-          "type": "CLIP",
-          "links": [
-            39,
-            48
-          ]
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "CLIPLoader"
-      },
-      "widgets_values": [
-        "gemma4-12b-with-proj-ltx-2.5-bf16.safetensors",
-        "ltxv",
-        "default"
-      ],
-      "widgets_values_named": {
-        "clip_name": "gemma4-12b-with-proj-ltx-2.5-bf16.safetensors",
-        "type": "ltxv",
-        "device": "default"
-      },
-      "color": "#223",
-      "bgcolor": "#283039"
-    },
-    {
-      "id": 1319,
-      "type": "BasicScheduler",
-      "pos": [
-        2270,
-        400
-      ],
-      "size": [
-        400,
-        106
-      ],
-      "flags": {},
-      "order": 19,
-      "mode": 0,
-      "inputs": [
-        {
-          "localized_name": "model",
           "name": "model",
           "type": "MODEL",
-          "link": 66
+          "link": 32
         },
         {
-          "localized_name": "scheduler",
-          "name": "scheduler",
-          "type": "COMBO",
+          "name": "enabled",
+          "type": "BOOLEAN",
+          "link": null,
           "widget": {
-            "name": "scheduler"
-          },
-          "link": null
+            "name": "enabled"
+          }
         },
         {
-          "localized_name": "steps",
-          "name": "steps",
-          "type": "INT",
-          "widget": {
-            "name": "steps"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "denoise",
-          "name": "denoise",
+          "name": "blend",
           "type": "FLOAT",
+          "link": null,
           "widget": {
-            "name": "denoise"
-          },
-          "link": null
+            "name": "blend"
+          }
+        },
+        {
+          "name": "path_b_threshold",
+          "type": "FLOAT",
+          "link": null,
+          "widget": {
+            "name": "path_b_threshold"
+          }
+        },
+        {
+          "name": "r_scale",
+          "type": "FLOAT",
+          "link": null,
+          "widget": {
+            "name": "r_scale"
+          }
         }
       ],
       "outputs": [
         {
-          "localized_name": "SIGMAS",
-          "name": "SIGMAS",
-          "type": "SIGMAS",
+          "name": "MODEL",
+          "type": "MODEL",
           "links": [
-            61
+            15,
+            20
           ]
         }
       ],
-      "title": "DISTILLED - eight steps",
       "properties": {
-        "Node name for S&R": "BasicScheduler"
+        "Node name for S&R": "EquirectSphericalRoPE"
       },
       "widgets_values": [
-        "simple",
-        8,
-        1
+        true,
+        1.0,
+        10.0,
+        1.0
       ],
       "widgets_values_named": {
-        "scheduler": "simple",
-        "steps": 8,
-        "denoise": 1
+        "enabled": true,
+        "blend": 1.0,
+        "path_b_threshold": 10.0,
+        "r_scale": 1.0
       },
-      "color": "#223",
-      "bgcolor": "#283039"
+      "title": "EquirectSphericalRoPE"
     },
     {
-      "id": 1501,
-      "type": "EquiRoPE",
+      "id": 563,
+      "type": "LTXVConditioning",
       "pos": [
         920,
-        400
+        0
       ],
       "size": [
         400,
-        178
+        100
       ],
       "flags": {},
       "order": 17,
       "mode": 0,
       "inputs": [
         {
-          "localized_name": "model",
-          "name": "model",
-          "type": "MODEL",
-          "link": 68
+          "name": "positive",
+          "type": "CONDITIONING",
+          "link": 2
         },
         {
-          "localized_name": "enabled",
-          "name": "enabled",
-          "type": "BOOLEAN",
-          "widget": {
-            "name": "enabled"
-          },
-          "link": null
+          "name": "negative",
+          "type": "CONDITIONING",
+          "link": 3
         },
         {
-          "localized_name": "blend",
-          "name": "blend",
+          "name": "frame_rate",
           "type": "FLOAT",
+          "link": 4,
           "widget": {
-            "name": "blend"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "epsilon",
-          "name": "epsilon",
-          "shape": 7,
-          "type": "FLOAT",
-          "widget": {
-            "name": "epsilon"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "threshold",
-          "name": "threshold",
-          "shape": 7,
-          "type": "FLOAT",
-          "widget": {
-            "name": "threshold"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "pole_gamma",
-          "name": "pole_gamma",
-          "shape": 7,
-          "type": "FLOAT",
-          "widget": {
-            "name": "pole_gamma"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "pole_side",
-          "name": "pole_side",
-          "shape": 7,
-          "type": "COMBO",
-          "widget": {
-            "name": "pole_side"
-          },
-          "link": null
+            "name": "frame_rate"
+          }
         }
       ],
       "outputs": [
         {
-          "localized_name": "MODEL",
-          "name": "MODEL",
-          "type": "MODEL",
+          "name": "positive",
+          "type": "CONDITIONING",
           "links": [
-            55,
-            66
+            24
+          ]
+        },
+        {
+          "name": "negative",
+          "type": "CONDITIONING",
+          "links": [
+            25
           ]
         }
       ],
-      "title": "EquiRoPE OFF - screened baseline",
       "properties": {
-        "Node name for S&R": "EquiRoPE"
+        "Node name for S&R": "LTXVConditioning"
       },
       "widgets_values": [
-        false,
-        1,
-        0.01,
-        10,
-        3,
-        "both"
+        25.0
       ],
       "widgets_values_named": {
-        "enabled": false,
-        "blend": 1,
-        "epsilon": 0.01,
-        "threshold": 10,
-        "pole_gamma": 3,
-        "pole_side": "both"
+        "frame_rate": 25.0
       },
-      "color": "#223",
-      "bgcolor": "#283039"
+      "title": "LTXVConditioning"
     },
     {
-      "id": 1505,
-      "type": "SaveImage",
+      "id": 1319,
+      "type": "BasicScheduler",
       "pos": [
-        2720,
-        629
+        920,
+        370
       ],
       "size": [
         400,
-        105
+        135
       ],
       "flags": {},
-      "order": 27,
+      "order": 18,
       "mode": 0,
       "inputs": [
         {
-          "localized_name": "images",
-          "name": "images",
-          "type": "IMAGE",
-          "link": 69
+          "name": "model",
+          "type": "MODEL",
+          "link": 15
         },
         {
-          "localized_name": "filename_prefix",
-          "name": "filename_prefix",
-          "type": "STRING",
+          "name": "scheduler",
+          "type": "COMBO",
+          "link": null,
           "widget": {
-            "name": "filename_prefix"
-          },
-          "link": null
+            "name": "scheduler"
+          }
+        },
+        {
+          "name": "steps",
+          "type": "INT",
+          "link": null,
+          "widget": {
+            "name": "steps"
+          }
+        },
+        {
+          "name": "denoise",
+          "type": "FLOAT",
+          "link": null,
+          "widget": {
+            "name": "denoise"
+          }
         }
       ],
       "outputs": [
         {
-          "localized_name": "images",
-          "name": "images",
-          "type": "IMAGE",
-          "links": null
+          "name": "SIGMAS",
+          "type": "SIGMAS",
+          "links": [
+            13
+          ]
         }
       ],
-      "title": "PNG SEQUENCE - lossless frames",
       "properties": {
-        "Node name for S&R": "SaveImage"
+        "Node name for S&R": "BasicScheduler"
       },
       "widgets_values": [
-        "seam-diagnosis-20261018/screened-firstframe_stock_nolora/frames"
+        "simple",
+        8,
+        1.0
       ],
       "widgets_values_named": {
-        "filename_prefix": "seam-diagnosis-20261018/screened-firstframe_stock_nolora/frames"
+        "scheduler": "simple",
+        "steps": 8,
+        "denoise": 1.0
       },
-      "color": "#223",
-      "bgcolor": "#283039"
+      "title": "DISTILLED - eight steps"
     },
     {
       "id": 1700,
       "type": "LTXVImgToVideo",
       "pos": [
-        1820,
-        80
+        1380,
+        0
       ],
       "size": [
         400,
-        214
+        185
       ],
       "flags": {},
-      "order": 20,
+      "order": 19,
       "mode": 0,
       "inputs": [
         {
-          "localized_name": "positive",
           "name": "positive",
           "type": "CONDITIONING",
-          "link": 70
+          "link": 24
         },
         {
-          "localized_name": "negative",
           "name": "negative",
           "type": "CONDITIONING",
-          "link": 71
+          "link": 25
         },
         {
-          "localized_name": "vae",
           "name": "vae",
           "type": "VAE",
-          "link": 72
+          "link": 26
         },
         {
-          "localized_name": "image",
           "name": "image",
           "type": "IMAGE",
-          "link": 73
+          "link": 27
         },
         {
-          "localized_name": "width",
           "name": "width",
           "type": "INT",
+          "link": 28,
           "widget": {
             "name": "width"
-          },
-          "link": 74
+          }
         },
         {
-          "localized_name": "height",
           "name": "height",
           "type": "INT",
+          "link": 29,
           "widget": {
             "name": "height"
-          },
-          "link": 75
+          }
         },
         {
-          "localized_name": "length",
           "name": "length",
           "type": "INT",
+          "link": 30,
           "widget": {
             "name": "length"
-          },
-          "link": 76
+          }
         },
         {
-          "localized_name": "batch_size",
           "name": "batch_size",
           "type": "INT",
+          "link": null,
           "widget": {
             "name": "batch_size"
-          },
-          "link": null
+          }
         },
         {
-          "localized_name": "strength",
           "name": "strength",
           "type": "FLOAT",
+          "link": null,
           "widget": {
             "name": "strength"
-          },
-          "link": null
+          }
         }
       ],
       "outputs": [
         {
-          "localized_name": "positive",
           "name": "positive",
           "type": "CONDITIONING",
           "links": [
-            56
+            21
           ]
         },
         {
-          "localized_name": "negative",
           "name": "negative",
           "type": "CONDITIONING",
           "links": [
-            57
+            22
           ]
         },
         {
-          "localized_name": "latent",
           "name": "latent",
           "type": "LATENT",
           "links": [
-            53
+            8
           ]
         }
       ],
-      "title": "First frame conditioning - no source video",
       "properties": {
         "Node name for S&R": "LTXVImgToVideo"
       },
@@ -1865,94 +1189,520 @@
         512,
         97,
         1,
-        1
+        1.0
       ],
       "widgets_values_named": {
         "width": 768,
         "height": 512,
         "length": 97,
         "batch_size": 1,
-        "strength": 1
+        "strength": 1.0
       },
-      "color": "#223",
-      "bgcolor": "#283039"
+      "title": "First frame conditioning - no source video"
     },
     {
-      "id": 1900,
-      "type": "Note",
+      "id": 1259,
+      "type": "LTXVConcatAVLatent",
       "pos": [
-        20,
-        -340
+        1840,
+        0
       ],
       "size": [
-        1260,
-        280
+        400,
+        100
       ],
       "flags": {},
-      "order": 28,
+      "order": 20,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "video_latent",
+          "type": "LATENT",
+          "link": 8
+        },
+        {
+          "name": "audio_latent",
+          "type": "LATENT",
+          "link": 9
+        }
+      ],
+      "outputs": [
+        {
+          "name": "latent",
+          "type": "LATENT",
+          "links": [
+            14
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LTXVConcatAVLatent"
+      },
+      "widgets_values": [],
+      "widgets_values_named": {},
+      "title": "Concat AV Latent"
+    },
+    {
+      "id": 1267,
+      "type": "CFGGuider",
+      "pos": [
+        1840,
+        370
+      ],
+      "size": [
+        400,
+        100
+      ],
+      "flags": {},
+      "order": 21,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 20
+        },
+        {
+          "name": "positive",
+          "type": "CONDITIONING",
+          "link": 21
+        },
+        {
+          "name": "negative",
+          "type": "CONDITIONING",
+          "link": 22
+        },
+        {
+          "name": "cfg",
+          "type": "FLOAT",
+          "link": null,
+          "widget": {
+            "name": "cfg"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "GUIDER",
+          "type": "GUIDER",
+          "links": [
+            11
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "CFGGuider"
+      },
+      "widgets_values": [
+        1.0
+      ],
+      "widgets_values_named": {
+        "cfg": 1.0
+      },
+      "title": "DISTILLED - CFG 1"
+    },
+    {
+      "id": 1269,
+      "type": "SamplerCustomAdvanced",
+      "pos": [
+        2300,
+        0
+      ],
+      "size": [
+        400,
+        100
+      ],
+      "flags": {},
+      "order": 22,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "noise",
+          "type": "NOISE",
+          "link": 10
+        },
+        {
+          "name": "guider",
+          "type": "GUIDER",
+          "link": 11
+        },
+        {
+          "name": "sampler",
+          "type": "SAMPLER",
+          "link": 12
+        },
+        {
+          "name": "sigmas",
+          "type": "SIGMAS",
+          "link": 13
+        },
+        {
+          "name": "latent_image",
+          "type": "LATENT",
+          "link": 14
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "type": "LATENT",
+          "links": [
+            23
+          ]
+        },
+        {
+          "name": "denoised_output",
+          "type": "LATENT",
+          "links": []
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "SamplerCustomAdvanced"
+      },
+      "widgets_values": [],
+      "widgets_values_named": {},
+      "title": "SamplerCustomAdvanced"
+    },
+    {
+      "id": 423,
+      "type": "LTXVSeparateAVLatent",
+      "pos": [
+        2760,
+        0
+      ],
+      "size": [
+        400,
+        100
+      ],
+      "flags": {},
+      "order": 23,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "av_latent",
+          "type": "LATENT",
+          "link": 23
+        }
+      ],
+      "outputs": [
+        {
+          "name": "video_latent",
+          "type": "LATENT",
+          "links": [
+            34
+          ]
+        },
+        {
+          "name": "audio_latent",
+          "type": "LATENT",
+          "links": []
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LTXVSeparateAVLatent"
+      },
+      "widgets_values": [],
+      "widgets_values_named": {},
+      "title": "Separate AV Latent"
+    },
+    {
+      "id": 2001,
+      "type": "EquirectLTX25VAEDecode",
+      "pos": [
+        3220,
+        0
+      ],
+      "size": [
+        400,
+        100
+      ],
+      "flags": {},
+      "order": 24,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "samples",
+          "type": "LATENT",
+          "link": 34
+        },
+        {
+          "name": "vae",
+          "type": "VAE",
+          "link": 35
+        },
+        {
+          "name": "blend_columns",
+          "type": "INT",
+          "link": null,
+          "widget": {
+            "name": "blend_columns"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            33,
+            36
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "EquirectLTX25VAEDecode"
+      },
+      "widgets_values": [
+        1
+      ],
+      "widgets_values_named": {
+        "blend_columns": 1
+      },
+      "title": "EquirectLTX25VAEDecode"
+    },
+    {
+      "id": 1970,
+      "type": "VHS_VideoCombine",
+      "pos": [
+        3680,
+        0
+      ],
+      "size": [
+        400,
+        320
+      ],
+      "flags": {},
+      "order": 25,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 33
+        },
+        {
+          "name": "frame_rate",
+          "type": "FLOAT",
+          "link": null,
+          "widget": {
+            "name": "frame_rate"
+          }
+        },
+        {
+          "name": "loop_count",
+          "type": "INT",
+          "link": null,
+          "widget": {
+            "name": "loop_count"
+          }
+        },
+        {
+          "name": "filename_prefix",
+          "type": "STRING",
+          "link": null,
+          "widget": {
+            "name": "filename_prefix"
+          }
+        },
+        {
+          "name": "format",
+          "type": "COMBO",
+          "link": null,
+          "widget": {
+            "name": "format"
+          }
+        },
+        {
+          "name": "pingpong",
+          "type": "BOOLEAN",
+          "link": null,
+          "widget": {
+            "name": "pingpong"
+          }
+        },
+        {
+          "name": "save_output",
+          "type": "BOOLEAN",
+          "link": null,
+          "widget": {
+            "name": "save_output"
+          }
+        },
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "link": null
+        },
+        {
+          "name": "meta_batch",
+          "type": "VHS_BatchManager",
+          "link": null
+        },
+        {
+          "name": "vae",
+          "type": "VAE",
+          "link": null
+        },
+        {
+          "name": "pix_fmt",
+          "type": "STRING",
+          "widget": {
+            "name": "pix_fmt"
+          },
+          "link": null
+        },
+        {
+          "name": "crf",
+          "type": "STRING",
+          "widget": {
+            "name": "crf"
+          },
+          "link": null
+        },
+        {
+          "name": "save_metadata",
+          "type": "STRING",
+          "widget": {
+            "name": "save_metadata"
+          },
+          "link": null
+        },
+        {
+          "name": "trim_to_audio",
+          "type": "STRING",
+          "widget": {
+            "name": "trim_to_audio"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Filenames",
+          "type": "VHS_FILENAMES",
+          "links": []
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "VHS_VideoCombine"
+      },
+      "widgets_values": {
+        "frame_rate": 24,
+        "loop_count": 0,
+        "filename_prefix": "wrap/FirstFrame_NoPanoramaLoRA_LTX25_360/video",
+        "format": "video/h264-mp4",
+        "pingpong": false,
+        "save_output": true,
+        "pix_fmt": "yuv420p",
+        "crf": 12,
+        "save_metadata": true,
+        "trim_to_audio": false,
+        "videopreview": {
+          "hidden": false,
+          "paused": false,
+          "params": {}
+        }
+      },
+      "widgets_values_named": {
+        "frame_rate": 24,
+        "loop_count": 0,
+        "filename_prefix": "wrap/FirstFrame_NoPanoramaLoRA_LTX25_360/video",
+        "format": "video/h264-mp4",
+        "pingpong": false,
+        "save_output": true,
+        "pix_fmt": "yuv420p",
+        "crf": 12,
+        "save_metadata": true,
+        "trim_to_audio": false,
+        "videopreview": {
+          "hidden": false,
+          "paused": false,
+          "params": {}
+        }
+      },
+      "title": "VHS_VideoCombine"
+    },
+    {
+      "id": 2002,
+      "type": "SaveImage",
+      "pos": [
+        3680,
+        370
+      ],
+      "size": [
+        400,
+        100
+      ],
+      "flags": {},
+      "order": 26,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 36
+        },
+        {
+          "name": "filename_prefix",
+          "type": "STRING",
+          "link": null,
+          "widget": {
+            "name": "filename_prefix"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "links": []
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "SaveImage"
+      },
+      "widgets_values": [
+        "wrap/FirstFrame_NoPanoramaLoRA_LTX25_360/frames"
+      ],
+      "widgets_values_named": {
+        "filename_prefix": "wrap/FirstFrame_NoPanoramaLoRA_LTX25_360/frames"
+      },
+      "title": "SaveImage"
+    },
+    {
+      "id": 2003,
+      "type": "Note",
+      "pos": [
+        0,
+        -300
+      ],
+      "size": [
+        1300,
+        250
+      ],
+      "flags": {},
+      "order": 27,
       "mode": 0,
       "inputs": [],
       "outputs": [],
       "properties": {},
       "widgets_values": [
-        "OCT 18 SCREENING PRESET\n1024x512, 65 frames, 24 fps, 8 steps / CFG 1. No panorama LoRA. Geometry patches OFF; native dual-rotation decode 4 columns.\nSupply an already-textured seamless ERP first frame; motion comes from the prompt.\n65-frame runtime tested. Remaining floor/pole defects are documented. Cache isolation verified by pixel-identical re-sampling after switching branches."
+        "LTX 2.5: exact 121-frame tested fixed-camera baseline. Load pano_2k_00013_.png or your own seamless panorama. 1024x512 / 24 fps / seed 42 / 8 Euler-simple steps / CFG 1. Spherical RoPE blend 1, threshold 10, radius 1; native dual-rotation decode blend 1. The CameraMove filename is retained for compatibility; changing motion requires a new visual check.\nNo panorama LoRA, rolling or wrapped noise. Exports come directly from the selected wrap-aware decoder. Keep full 2:1 ERP framing. Longitude-wrap qualification does not establish pole quality, subject identity or camera-path accuracy. See example_workflows/README.md."
       ],
-      "title": "START HERE - artist instructions",
-      "color": "#343",
-      "bgcolor": "#353"
+      "title": "START HERE - October 20 wrap profile"
     }
   ],
   "links": [
     [
-      39,
+      1,
       1318,
       0,
       388,
-      0,
+      1,
       "CLIP"
     ],
     [
-      40,
-      1269,
-      0,
-      423,
-      0,
-      "LATENT"
-    ],
-    [
-      41,
-      959,
-      0,
-      425,
-      4,
-      "FLOAT"
-    ],
-    [
-      42,
-      445,
-      0,
-      425,
-      0,
-      "IMAGE"
-    ],
-    [
-      43,
-      423,
-      0,
-      445,
-      0,
-      "LATENT"
-    ],
-    [
-      44,
-      822,
-      0,
-      445,
-      1,
-      "VAE"
-    ],
-    [
-      45,
+      2,
       814,
       0,
       563,
@@ -1960,7 +1710,7 @@
       "CONDITIONING"
     ],
     [
-      46,
+      3,
       388,
       0,
       563,
@@ -1968,7 +1718,7 @@
       "CONDITIONING"
     ],
     [
-      47,
+      4,
       959,
       0,
       563,
@@ -1976,47 +1726,31 @@
       "FLOAT"
     ],
     [
-      48,
-      1318,
-      0,
-      814,
-      0,
-      "CLIP"
-    ],
-    [
-      49,
-      936,
-      0,
-      959,
-      0,
-      "INT"
-    ],
-    [
-      50,
+      5,
       937,
       0,
       1257,
-      1,
+      0,
       "INT"
     ],
     [
-      51,
+      6,
       936,
       0,
       1257,
-      2,
+      1,
       "INT"
     ],
     [
-      52,
+      7,
       448,
       0,
       1257,
-      0,
+      3,
       "VAE"
     ],
     [
-      53,
+      8,
       1700,
       2,
       1259,
@@ -2024,7 +1758,7 @@
       "LATENT"
     ],
     [
-      54,
+      9,
       1257,
       0,
       1259,
@@ -2032,31 +1766,7 @@
       "LATENT"
     ],
     [
-      55,
-      1501,
-      0,
-      1267,
-      0,
-      "MODEL"
-    ],
-    [
-      56,
-      1700,
-      0,
-      1267,
-      1,
-      "CONDITIONING"
-    ],
-    [
-      57,
-      1700,
-      1,
-      1267,
-      2,
-      "CONDITIONING"
-    ],
-    [
-      58,
+      10,
       1266,
       0,
       1269,
@@ -2064,7 +1774,7 @@
       "NOISE"
     ],
     [
-      59,
+      11,
       1267,
       0,
       1269,
@@ -2072,7 +1782,7 @@
       "GUIDER"
     ],
     [
-      60,
+      12,
       1265,
       0,
       1269,
@@ -2080,7 +1790,7 @@
       "SAMPLER"
     ],
     [
-      61,
+      13,
       1319,
       0,
       1269,
@@ -2088,7 +1798,7 @@
       "SIGMAS"
     ],
     [
-      62,
+      14,
       1259,
       0,
       1269,
@@ -2096,7 +1806,23 @@
       "LATENT"
     ],
     [
-      63,
+      15,
+      1950,
+      0,
+      1319,
+      0,
+      "MODEL"
+    ],
+    [
+      16,
+      1318,
+      0,
+      814,
+      1,
+      "CLIP"
+    ],
+    [
+      17,
       1304,
       0,
       1294,
@@ -2104,47 +1830,55 @@
       "IMAGE"
     ],
     [
-      64,
+      18,
       933,
+      0,
+      1294,
+      1,
+      "INT"
+    ],
+    [
+      19,
+      935,
       0,
       1294,
       2,
       "INT"
     ],
     [
-      65,
-      935,
+      20,
+      1950,
       0,
-      1294,
-      3,
-      "INT"
-    ],
-    [
-      66,
-      1501,
-      0,
-      1319,
+      1267,
       0,
       "MODEL"
     ],
     [
-      68,
-      821,
+      21,
+      1700,
       0,
-      1501,
-      0,
-      "MODEL"
+      1267,
+      1,
+      "CONDITIONING"
     ],
     [
-      69,
-      445,
-      0,
-      1505,
-      0,
-      "IMAGE"
+      22,
+      1700,
+      1,
+      1267,
+      2,
+      "CONDITIONING"
     ],
     [
-      70,
+      23,
+      1269,
+      0,
+      423,
+      0,
+      "LATENT"
+    ],
+    [
+      24,
       563,
       0,
       1700,
@@ -2152,7 +1886,7 @@
       "CONDITIONING"
     ],
     [
-      71,
+      25,
       563,
       1,
       1700,
@@ -2160,7 +1894,7 @@
       "CONDITIONING"
     ],
     [
-      72,
+      26,
       822,
       0,
       1700,
@@ -2168,7 +1902,7 @@
       "VAE"
     ],
     [
-      73,
+      27,
       1294,
       0,
       1700,
@@ -2176,7 +1910,7 @@
       "IMAGE"
     ],
     [
-      74,
+      28,
       933,
       0,
       1700,
@@ -2184,7 +1918,7 @@
       "INT"
     ],
     [
-      75,
+      29,
       935,
       0,
       1700,
@@ -2192,107 +1926,70 @@
       "INT"
     ],
     [
-      76,
+      30,
       937,
       0,
       1700,
       6,
       "INT"
+    ],
+    [
+      31,
+      936,
+      0,
+      959,
+      0,
+      "INT"
+    ],
+    [
+      32,
+      821,
+      0,
+      1950,
+      0,
+      "MODEL"
+    ],
+    [
+      33,
+      2001,
+      0,
+      1970,
+      0,
+      "IMAGE"
+    ],
+    [
+      34,
+      423,
+      0,
+      2001,
+      0,
+      "LATENT"
+    ],
+    [
+      35,
+      822,
+      0,
+      2001,
+      1,
+      "VAE"
+    ],
+    [
+      36,
+      2001,
+      0,
+      2002,
+      0,
+      "IMAGE"
     ]
   ],
-  "groups": [
-    {
-      "title": "01 / SHOT SETTINGS",
-      "bounding": [
-        0,
-        20,
-        440,
-        880
-      ],
-      "color": "#3f789e",
-      "font_size": 24,
-      "flags": {}
-    },
-    {
-      "title": "02 / ARTIST INPUTS",
-      "bounding": [
-        450,
-        20,
-        440,
-        515
-      ],
-      "color": "#3f789e",
-      "font_size": 24,
-      "flags": {}
-    },
-    {
-      "title": "03 / MODELS",
-      "bounding": [
-        900,
-        20,
-        440,
-        1114
-      ],
-      "color": "#586777",
-      "font_size": 24,
-      "flags": {}
-    },
-    {
-      "title": "04 / PROMPT + RESIZE",
-      "bounding": [
-        1350,
-        20,
-        440,
-        1211
-      ],
-      "color": "#586777",
-      "font_size": 24,
-      "flags": {}
-    },
-    {
-      "title": "05 / CONDITIONING",
-      "bounding": [
-        1800,
-        20,
-        440,
-        670
-      ],
-      "color": "#586777",
-      "font_size": 24,
-      "flags": {}
-    },
-    {
-      "title": "06 / GENERATE",
-      "bounding": [
-        2250,
-        20,
-        440,
-        1042
-      ],
-      "color": "#586777",
-      "font_size": 24,
-      "flags": {}
-    },
-    {
-      "title": "07 / SAVE",
-      "bounding": [
-        2700,
-        20,
-        440,
-        789
-      ],
-      "color": "#586777",
-      "font_size": 24,
-      "flags": {}
-    }
-  ],
+  "groups": [],
   "config": {},
   "extra": {
     "ds": {
-      "scale": 0.65,
+      "scale": 0.55,
       "offset": [
-        80,
-        560
+        30,
+        330
       ]
     }
   },
